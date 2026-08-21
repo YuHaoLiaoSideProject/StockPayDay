@@ -1,4 +1,4 @@
-# StockPayDay++ 每日自動化：爬蟲 → 處理 → 部署
+# StockPayDay++ 每日自動化：爬蟲 → 處理 → 建構前端 → 部署
 name: Update Dividend Data
 
 on:
@@ -33,8 +33,8 @@ jobs:
         with:
           python-version: '3.11'
 
-      # ─── Step 3: 安裝依賴 ───
-      - name: Install dependencies
+      # ─── Step 3: 安裝 Python 依賴 ───
+      - name: Install Python dependencies
         run: pip install -r requirements.txt
 
       # ─── Step 4: 執行爬蟲（僅 cron 或手動勾選時） ───
@@ -46,11 +46,46 @@ jobs:
       - name: Run processor
         run: python processor/generate_api.py
 
-      # ─── Step 6: 部署至 GitHub Pages ───
-      - name: Deploy to GitHub Pages
-        if: hashFiles('api/**') != ''
-        uses: peaceiris/actions-gh-pages@v4
+      # ─── Step 6: 設定 Node.js 環境 ───
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./api
-          clean_dir: true
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      # ─── Step 7: 安裝前端依賴 ───
+      - name: Install frontend dependencies
+        run: cd frontend && npm ci
+
+      # ─── Step 8: 建構前端 ───
+      - name: Build frontend
+        run: cd frontend && npm run build
+
+      # ─── Step 9: 組裝部署目錄 ───
+      # 參考 AirTicketsPrice 模式：frontend/dist + api/ 合併到 _site/
+      - name: Assemble Pages site
+        run: |
+          mkdir -p _site
+          cp -r frontend/dist/* _site/
+          cp -r api _site/
+
+      # ─── Step 10: 部署至 GitHub Pages ───
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy-pages:
+    needs: update
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
