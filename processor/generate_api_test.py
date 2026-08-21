@@ -3,9 +3,10 @@
 
 覆蓋：
 - generate_upcoming 日期篩選、所有類型、排序、空結果
-- generate_securities_index 完整性
+- generate_securities_index 完整性、去重
 - generate_securities_history 檔案結構、排序
 - save_api_file 寫入正確性
+- merge_twses_and_mops 合併邏輯
 """
 import pytest
 import json
@@ -16,7 +17,7 @@ from processor.generate_api import (
     generate_securities_index,
     generate_securities_history,
     save_api_file,
-    load_all_securities,
+    merge_twses_and_mops,
 )
 
 
@@ -29,103 +30,96 @@ class TestGenerateUpcoming:
         yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
         tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
 
-        securities = [{
-            "code": "2330", "name": "台積電", "type": "stock",
-            "dividend_history": [
-                {"year": 2026, "ex_date": yesterday, "cash_dividend": 3.0},
-                {"year": 2027, "ex_date": tomorrow, "cash_dividend": 3.5},
-            ],
-        }]
+        records = [
+            {"code": "2330", "name": "台積電", "ex_date": yesterday,
+             "type": "息", "cash_dividend": 3.0, "stock_dividend": 0},
+            {"code": "2330", "name": "台積電", "ex_date": tomorrow,
+             "type": "息", "cash_dividend": 3.5, "stock_dividend": 0},
+        ]
 
-        upcoming = generate_upcoming(securities, today=today)
+        upcoming = generate_upcoming(records, today=today)
         assert len(upcoming) == 1
         assert upcoming[0]["ex_date"] == tomorrow
-        assert upcoming[0]["dividend"] == 3.5
+        assert upcoming[0]["cash_dividend"] == 3.5
 
     def test_includes_today(self):
         """包含今天（ex_date == today）"""
         today = datetime.now().strftime("%Y-%m-%d")
-        securities = [{
-            "code": "0056", "name": "元大高股息", "type": "etf",
-            "dividend_history": [
-                {"year": 2026, "ex_date": today, "cash_dividend": 1.8},
-            ],
-        }]
+        records = [
+            {"code": "0056", "name": "元大高股息", "ex_date": today,
+             "type": "息", "cash_dividend": 1.8, "stock_dividend": 0},
+        ]
 
-        upcoming = generate_upcoming(securities, today=today)
+        upcoming = generate_upcoming(records, today=today)
         assert len(upcoming) == 1
         assert upcoming[0]["ex_date"] == today
 
-    def test_includes_all_security_types(self):
-        """包含所有證券類型（stock, etf, preferred）"""
-        securities = [
-            {"code": "2330", "name": "台積電", "type": "stock",
-             "dividend_history": [{"year": 2026, "ex_date": "2099-01-01", "cash_dividend": 3.5}]},
-            {"code": "0050", "name": "元大台灣50", "type": "etf",
-             "dividend_history": [{"year": 2026, "ex_date": "2099-01-01", "cash_dividend": 1.8}]},
-            {"code": "7654", "name": "某特別股", "type": "preferred",
-             "dividend_history": [{"year": 2026, "ex_date": "2099-01-01", "cash_dividend": 0.95}]},
+    def test_includes_all_types(self):
+        """包含所有除權息類型（息、權、權息）"""
+        records = [
+            {"code": "2330", "name": "台積電", "ex_date": "2099-01-01",
+             "type": "息", "cash_dividend": 3.5, "stock_dividend": 0},
+            {"code": "2317", "name": "鴻海", "ex_date": "2099-01-01",
+             "type": "權", "cash_dividend": 0, "stock_dividend": 0.1},
+            {"code": "2454", "name": "聯發科", "ex_date": "2099-01-01",
+             "type": "權息", "cash_dividend": 5.0, "stock_dividend": 0.05},
         ]
 
-        upcoming = generate_upcoming(securities, today="2026-07-21")
+        upcoming = generate_upcoming(records, today="2026-07-21")
         assert len(upcoming) == 3
         types = {u["type"] for u in upcoming}
-        assert types == {"stock", "etf", "preferred"}
+        assert types == {"息", "權", "權息"}
 
     def test_sorted_by_ex_date(self):
         """依 ex_date 升冪排序"""
-        securities = [{
-            "code": "2330", "name": "台積電", "type": "stock",
-            "dividend_history": [
-                {"year": 2027, "ex_date": "2099-03-01", "cash_dividend": 3.5},
-                {"year": 2026, "ex_date": "2099-01-01", "cash_dividend": 3.0},
-            ],
-        }]
+        records = [
+            {"code": "2330", "name": "台積電", "ex_date": "2099-03-01",
+             "type": "息", "cash_dividend": 3.5, "stock_dividend": 0},
+            {"code": "2317", "name": "鴻海", "ex_date": "2099-01-01",
+             "type": "息", "cash_dividend": 4.0, "stock_dividend": 0},
+        ]
 
-        upcoming = generate_upcoming(securities, today="2026-07-21")
+        upcoming = generate_upcoming(records, today="2026-07-21")
         assert upcoming[0]["ex_date"] == "2099-01-01"
         assert upcoming[1]["ex_date"] == "2099-03-01"
 
     def test_empty_when_all_past(self):
         """所有配息都在過去時回傳空列表"""
-        securities = [{
-            "code": "2330", "name": "台積電", "type": "stock",
-            "dividend_history": [
-                {"year": 2020, "ex_date": "2020-07-25", "cash_dividend": 3.0},
-            ],
-        }]
+        records = [
+            {"code": "2330", "name": "台積電", "ex_date": "2020-07-25",
+             "type": "息", "cash_dividend": 3.0, "stock_dividend": 0},
+        ]
 
-        upcoming = generate_upcoming(securities, today="2026-07-21")
+        upcoming = generate_upcoming(records, today="2026-07-21")
         assert len(upcoming) == 0
 
-    def test_empty_securities_list(self):
-        """空證券列表回傳空結果"""
+    def test_empty_records_list(self):
+        """空紀錄列表回傳空結果"""
         upcoming = generate_upcoming([], today="2026-07-21")
         assert upcoming == []
 
-    def test_no_dividend_history(self):
-        """證券無 dividend_history 時不納入"""
-        securities = [{
-            "code": "9999", "name": "無配息股", "type": "stock",
-            "dividend_history": [],
-        }]
-
-        upcoming = generate_upcoming(securities, today="2026-07-21")
-        assert len(upcoming) == 0
-
     def test_missing_fields_defaults(self):
-        """缺少 pay_date 等欄位時使用預設值"""
-        securities = [{
-            "code": "1111", "name": "測試股", "type": "stock",
-            "dividend_history": [
-                {"year": 2026, "ex_date": "2099-01-01"},
-            ],
-        }]
+        """缺少欄位時使用預設值"""
+        records = [
+            {"code": "1111", "name": "測試股", "ex_date": "2099-01-01"},
+        ]
 
-        upcoming = generate_upcoming(securities, today="2026-07-21")
+        upcoming = generate_upcoming(records, today="2026-07-21")
         assert len(upcoming) == 1
-        assert upcoming[0]["pay_date"] == ""
-        assert upcoming[0]["dividend"] == 0
+        assert upcoming[0]["type"] == "息"
+        assert upcoming[0]["cash_dividend"] == 0
+        assert upcoming[0]["stock_dividend"] == 0
+
+    def test_includes_stock_dividend(self):
+        """包含 stock_dividend 欄位"""
+        records = [
+            {"code": "1583", "name": "程泰", "ex_date": "2099-01-01",
+             "type": "權息", "cash_dividend": 0.1, "stock_dividend": 0.09},
+        ]
+
+        upcoming = generate_upcoming(records, today="2026-07-21")
+        assert len(upcoming) == 1
+        assert upcoming[0]["stock_dividend"] == 0.09
 
 
 class TestGenerateSecuritiesIndex:
@@ -133,13 +127,13 @@ class TestGenerateSecuritiesIndex:
 
     def test_includes_all_securities(self):
         """包含所有證券的 code 和 name"""
-        securities = [
+        records = [
             {"code": "2330", "name": "台積電"},
             {"code": "2317", "name": "鴻海"},
             {"code": "0050", "name": "元大台灣50"},
         ]
 
-        index = generate_securities_index(securities)
+        index = generate_securities_index(records)
         assert len(index) == 3
         codes = {i["code"] for i in index}
         assert codes == {"2330", "2317", "0050"}
@@ -151,11 +145,22 @@ class TestGenerateSecuritiesIndex:
 
     def test_structure(self):
         """每筆只包含 code 和 name"""
-        securities = [{"code": "2330", "name": "台積電", "type": "stock"}]
-        index = generate_securities_index(securities)
+        records = [{"code": "2330", "name": "台積電"}]
+        index = generate_securities_index(records)
         assert len(index[0]) == 2
         assert "code" in index[0]
         assert "name" in index[0]
+
+    def test_deduplication(self):
+        """重複的 code 只保留一筆"""
+        records = [
+            {"code": "2330", "name": "台積電", "ex_date": "2026-07-25"},
+            {"code": "2330", "name": "台積電", "ex_date": "2025-07-18"},
+        ]
+
+        index = generate_securities_index(records)
+        assert len(index) == 1
+        assert index[0]["code"] == "2330"
 
 
 class TestGenerateSecuritiesHistory:
@@ -163,16 +168,16 @@ class TestGenerateSecuritiesHistory:
 
     def test_creates_one_file_per_security(self, tmp_path):
         """每支證券一個 JSON 檔案"""
-        securities = [{
-            "code": "2330",
-            "name": "台積電",
-            "dividend_history": [
-                {"year": 2026, "ex_date": "2026-07-25", "cash_dividend": 3.5},
-                {"year": 2025, "ex_date": "2025-07-18", "cash_dividend": 3.2},
-            ],
-        }]
+        records = [
+            {"code": "2330", "name": "台積電", "ex_date": "2026-07-25",
+             "cash_dividend": 3.5, "stock_dividend": 0},
+            {"code": "2330", "name": "台積電", "ex_date": "2025-07-18",
+             "cash_dividend": 3.2, "stock_dividend": 0},
+        ]
 
-        generate_securities_history(securities, output_dir=tmp_path)
+        count = generate_securities_history(records, output_dir=tmp_path)
+        assert count == 1
+
         filepath = tmp_path / "2330.json"
         assert filepath.exists()
 
@@ -187,17 +192,16 @@ class TestGenerateSecuritiesHistory:
 
     def test_history_sorted_descending(self, tmp_path):
         """歷史依年份降冪排序"""
-        securities = [{
-            "code": "0050",
-            "name": "元大台灣50",
-            "dividend_history": [
-                {"year": 2024, "ex_date": "2024-06-12", "cash_dividend": 1.5},
-                {"year": 2026, "ex_date": "2026-07-20", "cash_dividend": 1.8},
-                {"year": 2025, "ex_date": "2025-07-15", "cash_dividend": 1.6},
-            ],
-        }]
+        records = [
+            {"code": "0050", "name": "元大台灣50", "ex_date": "2024-06-12",
+             "cash_dividend": 1.5, "stock_dividend": 0},
+            {"code": "0050", "name": "元大台灣50", "ex_date": "2026-07-20",
+             "cash_dividend": 1.8, "stock_dividend": 0},
+            {"code": "0050", "name": "元大台灣50", "ex_date": "2025-07-15",
+             "cash_dividend": 1.6, "stock_dividend": 0},
+        ]
 
-        generate_securities_history(securities, output_dir=tmp_path)
+        generate_securities_history(records, output_dir=tmp_path)
         with open(tmp_path / "0050.json") as f:
             data = json.load(f)
         years = [h["year"] for h in data["history"]]
@@ -205,28 +209,75 @@ class TestGenerateSecuritiesHistory:
 
     def test_multiple_securities(self, tmp_path):
         """多支證券各自產生獨立檔案"""
-        securities = [
-            {"code": "2330", "name": "台積電",
-             "dividend_history": [{"year": 2026, "ex_date": "2026-07-25", "cash_dividend": 3.5}]},
-            {"code": "2317", "name": "鴻海",
-             "dividend_history": [{"year": 2026, "ex_date": "2026-08-15", "cash_dividend": 4.0}]},
+        records = [
+            {"code": "2330", "name": "台積電", "ex_date": "2026-07-25",
+             "cash_dividend": 3.5, "stock_dividend": 0},
+            {"code": "2317", "name": "鴻海", "ex_date": "2026-08-15",
+             "cash_dividend": 4.0, "stock_dividend": 0},
         ]
 
-        generate_securities_history(securities, output_dir=tmp_path)
+        generate_securities_history(records, output_dir=tmp_path)
         assert (tmp_path / "2330.json").exists()
         assert (tmp_path / "2317.json").exists()
 
     def test_empty_history(self, tmp_path):
         """無歷史資料時 history 為空陣列"""
-        securities = [{
-            "code": "9999", "name": "無資料股",
-            "dividend_history": [],
-        }]
+        records = [
+            {"code": "9999", "name": "無資料股", "ex_date": "",
+             "cash_dividend": 0, "stock_dividend": 0},
+        ]
 
-        generate_securities_history(securities, output_dir=tmp_path)
+        generate_securities_history(records, output_dir=tmp_path)
         with open(tmp_path / "9999.json") as f:
             data = json.load(f)
         assert data["history"] == []
+
+    def test_includes_stock_dividend(self, tmp_path):
+        """歷史包含 stock_dividend"""
+        records = [
+            {"code": "1583", "name": "程泰", "ex_date": "2026-08-26",
+             "cash_dividend": 0.1, "stock_dividend": 0.09},
+        ]
+
+        generate_securities_history(records, output_dir=tmp_path)
+        with open(tmp_path / "1583.json") as f:
+            data = json.load(f)
+        assert data["history"][0]["stock_dividend"] == 0.09
+
+
+class TestMergeTwsesAndMops:
+    """測試 TWT48U 和 MOPS 資料合併"""
+
+    def test_merge_adds_pay_date(self):
+        """MOPS 資料補充 pay_date"""
+        twses = [
+            {"code": "2330", "name": "台積電", "ex_date": "2026-07-25",
+             "type": "息", "cash_dividend": 3.5, "stock_dividend": 0},
+        ]
+        mops = [
+            {"code": "2330", "name": "台積電", "ex_date": "2026-07-25",
+             "pay_date": "2026-08-15", "cash_dividend": 3.5},
+        ]
+
+        merged = merge_twses_and_mops(twses, mops)
+        assert len(merged) == 1
+        assert merged[0]["pay_date"] == "2026-08-15"
+
+    def test_merge_without_mops(self):
+        """沒有 MOPS 資料時不影響 TWT48U"""
+        twses = [
+            {"code": "2330", "name": "台積電", "ex_date": "2026-07-25",
+             "type": "息", "cash_dividend": 3.5, "stock_dividend": 0},
+        ]
+
+        merged = merge_twses_and_mops(twses, [])
+        assert len(merged) == 1
+        assert "pay_date" not in merged[0]
+
+    def test_merge_empty(self):
+        """兩邊都空時回傳空列表"""
+        merged = merge_twses_and_mops([], [])
+        assert merged == []
 
 
 class TestSaveApiFile:

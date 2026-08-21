@@ -2,10 +2,11 @@
 資料處理器 — 將 data/ 基底資料轉換為 api/ 前端用 JSON
 
 職責：
-1. 讀取 data/{stocks,etfs,preferred}/*.json
-2. 產生 api/upcoming.json（未來配息清單）
-3. 產生 api/securities-index.json（證券清單）
-4. 產生 api/securities/{code}.json（單股歷史）
+1. 讀取 data/twses/*.json（TWT48U 除息預告）
+2. 讀取 data/mops/*.json（MOPS 配息日）
+3. 產生 api/upcoming.json（未來配息清單）
+4. 產生 api/securities-index.json（證券清單）
+5. 產生 api/securities/{code}.json（單股歷史）
 
 使用方式：
     python processor/generate_api.py
@@ -23,59 +24,144 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
 API_DIR = ROOT_DIR / "api"
 
-# 子目錄
-DATA_SUBDIRS = ["stocks", "etfs", "preferred"]
+# 資料子目錄
+TWT48U_DIR = DATA_DIR / "twses"
+MOPS_DIR = DATA_DIR / "mops"
 
 
-def load_all_securities() -> List[Dict]:
+# ------------------------------------------------------------------
+# 資料讀取
+# ------------------------------------------------------------------
+
+def load_twses() -> List[Dict]:
     """
-    從 data/ 目錄讀取所有證券基底資料
+    從 data/twses/ 讀取 TWT48U 除息預告資料
 
-    遍歷 data/stocks/、data/etfs/、data/preferred/，
-    讀取每個 JSON 檔案，合併為單一列表。
-    自動依據子目錄推斷 type 欄位（若不存在）。
+    檔案格式：
+    {
+        "last_updated": "2026-08-21",
+        "records": [
+            {
+                "code": "2330",
+                "name": "台積電",
+                "ex_date": "2026-07-25",
+                "type": "息",
+                "cash_dividend": 3.5,
+                "stock_dividend": 0.0
+            }
+        ]
+    }
 
     Returns:
-        證券資料列表，每筆包含 code, name, type, dividend_history 等欄位
+        所有除息預告紀錄列表
     """
-    securities = []
-    for subdir in DATA_SUBDIRS:
-        dir_path = DATA_DIR / subdir
-        if not dir_path.exists():
-            continue
+    records = []
+    if not TWT48U_DIR.exists():
+        logger.warning("TWT48U 資料目錄不存在: %s", TWT48U_DIR)
+        return records
 
-        # 根據子目錄映射 type
-        type_map = {
-            "stocks": "stock",
-            "etfs": "etf",
-            "preferred": "preferred",
-        }
-        default_type = type_map.get(subdir, "stock")
+    for json_file in sorted(TWT48U_DIR.glob("*.json")):
+        try:
+            with open(json_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            file_records = data.get("records", [])
+            records.extend(file_records)
+            logger.debug("讀取 %s: %d 筆", json_file.name, len(file_records))
+        except (json.JSONDecodeError, OSError) as exc:
+            logger.warning("跳過無法讀取的檔案 %s: %s", json_file.name, exc)
 
-        for json_file in sorted(dir_path.glob("*.json")):
-            try:
-                with open(json_file, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                # 若 data 中沒有 type 欄位，從子目錄推斷
-                if "type" not in data:
-                    data["type"] = default_type
-                securities.append(data)
-            except (json.JSONDecodeError, OSError) as exc:
-                logger.warning("跳過無法讀取的檔案 %s: %s", json_file.name, exc)
-    return securities
+    logger.info("TWT48U 共讀取 %d 筆紀錄", len(records))
+    return records
 
 
-def generate_upcoming(securities: List[Dict], today: Optional[str] = None) -> List[Dict]:
+def load_mops() -> List[Dict]:
+    """
+    從 data/mops/ 讀取 MOPS 配息日資料
+
+    檔案格式（預期）：
+    {
+        "year": 114,
+        "quarter": 2,
+        "records": [
+            {
+                "code": "2330",
+                "name": "台積電",
+                "ex_date": "2026-07-25",
+                "pay_date": "2026-08-15",
+                "cash_dividend": 3.5
+            }
+        ]
+    }
+
+    Returns:
+        所有配息日紀錄列表
+    """
+    records = []
+    if not MOPS_DIR.exists():
+        logger.warning("MOPS 資料目錄不存在: %s", MOPS_DIR)
+        return records
+
+    for json_file in sorted(MOPS_DIR.glob("*.json")):
+        try:
+            with open(json_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            file_records = data.get("records", [])
+            records.extend(file_records)
+            logger.debug("讀取 %s: %d 筆", json_file.name, len(file_records))
+        except (json.JSONDecodeError, OSError) as exc:
+            logger.warning("跳過無法讀取的檔案 %s: %s", json_file.name, exc)
+
+    logger.info("MOPS 共讀取 %d 筆紀錄", len(records))
+    return records
+
+
+def merge_twses_and_mops(twses: List[Dict], mops: List[Dict]) -> List[Dict]:
+    """
+    合併 TWT48U 和 MOPS 資料
+
+    TWT48U 有：code, name, ex_date, type, cash_dividend, stock_dividend
+    MOPS 有：code, name, ex_date, pay_date, cash_dividend
+
+    合併邏輯：
+    - 以 (code, ex_date) 為 key
+    - TWT48U 為主體，MOPS 補充 pay_date
+
+    Args:
+        twses: TWT48U 紀錄列表
+        mops: MOPS 紀錄列表
+
+    Returns:
+        合併後的紀錄列表
+    """
+    # 建立 TWT48U lookup
+    lookup: Dict[tuple, Dict] = {}
+    for rec in twses:
+        key = (rec["code"], rec["ex_date"])
+        lookup[key] = rec
+
+    # 用 MOPS 資料補充 pay_date
+    for rec in mops:
+        key = (rec["code"], rec.get("ex_date", ""))
+        if key in lookup:
+            lookup[key]["pay_date"] = rec.get("pay_date", "")
+
+    return list(lookup.values())
+
+
+# ------------------------------------------------------------------
+# API 產生
+# ------------------------------------------------------------------
+
+def generate_upcoming(records: List[Dict], today: Optional[str] = None) -> List[Dict]:
     """
     篩選未來配息，產生 upcoming 清單
 
     業務規則：
     - ex_date >= today（今天或未來）才納入
-    - 每筆包含 code, name, type, ex_date, pay_date, dividend
     - 依 ex_date 升冪排序
 
     Args:
-        securities: load_all_securities() 回傳的完整列表
+        records: 合併後的紀錄列表
         today: 用於測試覆蓋，預設為 datetime.now().strftime("%Y-%m-%d")
 
     Returns:
@@ -85,49 +171,52 @@ def generate_upcoming(securities: List[Dict], today: Optional[str] = None) -> Li
         today = datetime.now().strftime("%Y-%m-%d")
 
     upcoming = []
-    for sec in securities:
-        for record in sec.get("dividend_history", []):
-            ex_date = record.get("ex_date", "")
-            if ex_date >= today:
-                upcoming.append({
-                    "code": sec["code"],
-                    "name": sec["name"],
-                    "type": sec.get("type", "stock"),
-                    "ex_date": ex_date,
-                    "pay_date": record.get("pay_date", ""),
-                    "dividend": record.get("cash_dividend", 0),
-                })
+    for rec in records:
+        ex_date = rec.get("ex_date", "")
+        if ex_date >= today:
+            upcoming.append({
+                "code": rec["code"],
+                "name": rec["name"],
+                "type": rec.get("type", "息"),
+                "ex_date": ex_date,
+                "cash_dividend": rec.get("cash_dividend", 0),
+                "stock_dividend": rec.get("stock_dividend", 0),
+            })
 
     # 依 ex_date 升冪排序
     upcoming.sort(key=lambda x: x["ex_date"])
     return upcoming
 
 
-def generate_securities_index(securities: List[Dict]) -> List[Dict]:
+def generate_securities_index(records: List[Dict]) -> List[Dict]:
     """
-    產生證券清單索引
+    產生證券清單索引（去重）
 
     每筆包含 code, name，供前端搜尋功能使用。
 
     Args:
-        securities: 完整證券列表
+        records: 合併後的紀錄列表
 
     Returns:
-        證券索引列表
+        證券索引列表（已去重）
     """
+    seen = set()
     index = []
-    for sec in securities:
-        index.append({
-            "code": sec["code"],
-            "name": sec["name"],
-        })
+    for rec in records:
+        code = rec["code"]
+        if code not in seen:
+            seen.add(code)
+            index.append({
+                "code": code,
+                "name": rec["name"],
+            })
     return index
 
 
 def generate_securities_history(
-    securities: List[Dict],
+    records: List[Dict],
     output_dir: Optional[Path] = None,
-) -> None:
+) -> int:
     """
     產出每支證券的歷史配息檔案
 
@@ -139,40 +228,64 @@ def generate_securities_history(
         "code": "2330",
         "name": "台積電",
         "history": [
-            {"year": 2026, "ex_date": "2026-07-25", "dividend": 3.5},
+            {"year": 2026, "ex_date": "2026-07-25", "cash_dividend": 3.5, "stock_dividend": 0},
             ...
         ]
     }
 
     Args:
-        securities: 完整證券列表
+        records: 合併後的紀錄列表
         output_dir: 輸出目錄，預設為 api/securities/
+
+    Returns:
+        產出的檔案數量
     """
     if output_dir is None:
         output_dir = API_DIR / "securities"
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    for sec in securities:
+    # 依 code 分組
+    by_code: Dict[str, List[Dict]] = {}
+    for rec in records:
+        code = rec["code"]
+        by_code.setdefault(code, []).append(rec)
+
+    # 產出每個檔案
+    for code, code_records in by_code.items():
+        # 取得 name（用第一筆的）
+        name = code_records[0]["name"] if code_records else ""
+
+        # 建立 history（跳過沒有 ex_date 的紀錄）
         history = []
-        for record in sec.get("dividend_history", []):
+        for rec in code_records:
+            ex_date = rec.get("ex_date", "")
+            if not ex_date:
+                continue
+
+            # 從 ex_date 提取年份
+            year = int(ex_date[:4])
+
             history.append({
-                "year": record.get("year"),
-                "ex_date": record.get("ex_date", ""),
-                "dividend": record.get("cash_dividend", 0),
+                "year": year,
+                "ex_date": ex_date,
+                "cash_dividend": rec.get("cash_dividend", 0),
+                "stock_dividend": rec.get("stock_dividend", 0),
             })
 
         # 依年份降冪排序
         history.sort(key=lambda x: x["year"] or 0, reverse=True)
 
         data = {
-            "code": sec["code"],
-            "name": sec["name"],
+            "code": code,
+            "name": name,
             "history": history,
         }
 
-        filepath = output_dir / f"{sec['code']}.json"
+        filepath = output_dir / f"{code}.json"
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+
+    return len(by_code)
 
 
 def save_api_file(data, filename: str, output_dir: Optional[Path] = None) -> Path:
@@ -197,45 +310,61 @@ def save_api_file(data, filename: str, output_dir: Optional[Path] = None) -> Pat
     return filepath
 
 
+# ------------------------------------------------------------------
+# 主執行流程
+# ------------------------------------------------------------------
+
 def main():
     """
     主執行流程
 
     流程：
-    1. 讀取所有基底資料
-    2. 產生 upcoming.json
-    3. 產生 securities-index.json
-    4. 產生 securities/*.json
-    5. 輸出統計資訊
+    1. 讀取 TWT48U 資料
+    2. 讀取 MOPS 資料
+    3. 合併資料
+    4. 產生 upcoming.json
+    5. 產生 securities-index.json
+    6. 產生 securities/*.json
+    7. 輸出統計資訊
     """
     print("🔄 開始產生 API 資料...")
 
-    # 1. 讀取基底資料
-    securities = load_all_securities()
-    if not securities:
-        print("❌ 找不到基底資料，請先執行爬蟲")
+    # 1. 讀取 TWT48U
+    print("📋 讀取 TWT48U 除息預告...")
+    twses = load_twses()
+    print(f"   TWT48U: {len(twses)} 筆")
+
+    # 2. 讀取 MOPS
+    print("📋 讀取 MOPS 配息日...")
+    mops = load_mops()
+    print(f"   MOPS: {len(mops)} 筆")
+
+    # 3. 合併
+    records = merge_twses_and_mops(twses, mops)
+    if not records:
+        print("❌ 找不到任何資料，請先執行爬蟲")
         return
 
-    print(f"📊 讀取到 {len(securities)} 支證券")
+    print(f"📊 合併後共 {len(records)} 筆紀錄")
 
-    # 2. 產生 upcoming.json
+    # 4. 產生 upcoming.json
     print("📅 篩選未來配息...")
-    upcoming = generate_upcoming(securities)
+    upcoming = generate_upcoming(records)
     save_api_file(upcoming, "upcoming.json")
     print(f"   ✅ upcoming.json: {len(upcoming)} 筆未來配息")
 
-    # 3. 產生 securities-index.json
+    # 5. 產生 securities-index.json
     print("📋 產生證券清單...")
-    index = generate_securities_index(securities)
+    index = generate_securities_index(records)
     save_api_file(index, "securities-index.json")
     print(f"   ✅ securities-index.json: {len(index)} 支證券")
 
-    # 4. 產生 securities/*.json
+    # 6. 產生 securities/*.json
     print("📁 產生單股歷史...")
-    generate_securities_history(securities)
-    print(f"   ✅ securities/: {len(index)} 個檔案")
+    sec_count = generate_securities_history(records)
+    print(f"   ✅ securities/: {sec_count} 個檔案")
 
-    # 5. 統計
+    # 7. 統計
     print(f"\n{'='*50}")
     print(f"✅ API 資料產生完成")
     print(f"   未來配息：{len(upcoming)} 筆")
