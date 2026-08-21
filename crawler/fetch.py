@@ -3,13 +3,15 @@ StockPayDay++ 主爬蟲腳本
 負責協調所有爬蟲模組，抓取 TWSE 配息資料
 
 使用方式：
-    python crawler/fetch.py              # 自動使用當前年季
-    python crawler/fetch.py 114 2        # 指定民國年 114 Q2
+    python crawler/fetch.py              # 執行所有爬蟲
+    python crawler/fetch.py --twt48u     # 僅執行 TWT48U
+    python crawler/fetch.py --mops 114 2 # 僅執行 MOPS（指定年季）
 """
 
 import sys
 import json
 import logging
+import argparse
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict
@@ -27,6 +29,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 DATA_DIR = ROOT_DIR / "data"
+DATA_TWT48U_DIR = ROOT_DIR / "data" / "twses"
+DATA_MOPS_DIR = ROOT_DIR / "data" / "mops"
 
 
 # ------------------------------------------------------------------
@@ -34,16 +38,18 @@ DATA_DIR = ROOT_DIR / "data"
 # ------------------------------------------------------------------
 
 def ensure_dirs() -> None:
-    """確保資料目錄存在（含 etfs、preferred）"""
+    """確保資料目錄存在"""
     (DATA_DIR / "raw").mkdir(parents=True, exist_ok=True)
     (DATA_DIR / "stocks").mkdir(parents=True, exist_ok=True)
     (DATA_DIR / "etfs").mkdir(parents=True, exist_ok=True)
     (DATA_DIR / "preferred").mkdir(parents=True, exist_ok=True)
+    DATA_TWT48U_DIR.mkdir(parents=True, exist_ok=True)
+    DATA_MOPS_DIR.mkdir(parents=True, exist_ok=True)
     logger.info("資料目錄已確認: %s", DATA_DIR)
 
 
 # ------------------------------------------------------------------
-# 資料儲存
+# MOPS 資料儲存
 # ------------------------------------------------------------------
 
 def save_raw(data: list, filename: str) -> Path:
@@ -121,6 +127,89 @@ def save_stock(stock_data: dict, subfolder: str = "stocks") -> Path:
 
 
 # ------------------------------------------------------------------
+# TWT48U 資料儲存
+# ------------------------------------------------------------------
+
+def save_twt48u(records: List[Dict]) -> Dict[str, Path]:
+    """
+    儲存 TWT48U 資料到月分檔案
+
+    檔案結構：
+    data/twses/
+    ├── 2026-08.json    # 8月除息預告
+    ├── 2026-09.json    # 9月除息預告
+    └── 2026-10.json    # 10月除息預告
+
+    Args:
+        records: 配息資料列表
+
+    Returns:
+        {月份: 檔案路徑} 字典
+    """
+    saved_files: Dict[str, Path] = {}
+
+    # 依月份分組
+    by_month: Dict[str, List[Dict]] = {}
+    for rec in records:
+        month = rec["ex_date"][:7]  # "2026-08"
+        by_month.setdefault(month, []).append(rec)
+
+    # 合併到各月檔案
+    for month, new_records in by_month.items():
+        filepath = DATA_TWT48U_DIR / f"{month}.json"
+
+        # 讀取舊資料
+        old_records: List[Dict] = []
+        if filepath.exists():
+            with open(filepath, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                old_records = data.get("records", [])
+
+        # 合併（以 code + ex_date 為 key 去重）
+        merged = _merge_twt48u_records(old_records, new_records)
+
+        # 寫入
+        output = {
+            "last_updated": datetime.now().strftime("%Y-%m-%d"),
+            "records": merged,
+        }
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(output, f, ensure_ascii=False, indent=2)
+
+        saved_files[month] = filepath
+        logger.info("已儲存 %s.json：%d 筆", month, len(merged))
+
+    return saved_files
+
+
+def _merge_twt48u_records(old: List[Dict], new: List[Dict]) -> List[Dict]:
+    """
+    合併兩筆資料列表，以 (code, ex_date) 為 key 去重
+
+    Args:
+        old: 舊資料
+        new: 新資料
+
+    Returns:
+        合併後的資料列表
+    """
+    # 建立 lookup
+    lookup: Dict[tuple, Dict] = {}
+    for rec in old:
+        key = (rec["code"], rec["ex_date"])
+        lookup[key] = rec
+
+    # 新資料覆蓋舊資料
+    for rec in new:
+        key = (rec["code"], rec["ex_date"])
+        lookup[key] = rec
+
+    # 排序（依 ex_date）
+    merged = sorted(lookup.values(), key=lambda x: x["ex_date"])
+    return merged
+
+
+# ------------------------------------------------------------------
 # 年季工具
 # ------------------------------------------------------------------
 
@@ -141,34 +230,61 @@ def get_current_year_quarter() -> tuple:
 
 
 # ------------------------------------------------------------------
-# 主流程
+# TWT48U 主流程
 # ------------------------------------------------------------------
 
-def main(year: int | None = None, quarter: int | None = None) -> None:
+def fetch_twt48u() -> None:
     """
-    主執行流程：呼叫 twse_stock.py 抓取並儲存個股配息資料。
+    執行 TWT48U 爬蟲並儲存資料
+
+    從 TWSE 抓取未來除權除息預告資料，儲存到 data/twses/{YYYY-MM}.json
+    """
+    from crawler.sources.twse_twt48u import TWT48UCrawler
+
+    logger.info("\n📋 抓取 TWT48U 除息預告資料...")
+
+    crawler = TWT48UCrawler(max_retries=3, delay=2.0)
+
+    try:
+        records = crawler.fetch()
+    except Exception as exc:
+        logger.error("❌ TWT48U 爬蟲失敗: %s", exc)
+        return
+
+    if not records:
+        logger.warning("TWT48U 無資料（可能尚無除息預告）")
+        return
+
+    # 儲存資料
+    saved_files = save_twt48u(records)
+
+    logger.info(
+        "✅ TWT48U 完成：共 %d 筆，儲存 %d 個月分檔案",
+        len(records), len(saved_files),
+    )
+
+
+# ------------------------------------------------------------------
+# MOPS 主流程（個股/ETF/特別股）
+# ------------------------------------------------------------------
+
+def fetch_mops(year: int, quarter: int) -> None:
+    """
+    執行 MOPS 爬蟲（個股/ETF/特別股）並儲存資料
 
     Args:
-        year: 民國年（None 則自動取得當前年）
-        quarter: 季度 1-4（None 則自動取得當前季度）
+        year: 民國年
+        quarter: 季度 1-4
     """
     from crawler.sources.twse_stock import TWSEStockCrawler
 
-    # 確定年季
-    if year is None or quarter is None:
-        year, quarter = get_current_year_quarter()
-        logger.info("自動偵測: 民國 %d 年第 %d 季", year, quarter)
-    else:
-        logger.info("指定: 民國 %d 年第 %d 季", year, quarter)
-
-    # 確保目錄存在
-    ensure_dirs()
+    logger.info("\n📋 抓取 MOPS 配息資料...")
 
     # 初始化爬蟲
     crawler = TWSEStockCrawler(max_retries=3, delay=2.0)
 
     # 抓取資料
-    logger.info("🕷️ 開始抓取配息資料...")
+    logger.info("🕷️ 開始抓取個股配息資料...")
     raw_data, stocks = crawler.fetch_stock_dividends(year, quarter)
 
     if not raw_data:
@@ -193,78 +309,43 @@ def main(year: int | None = None, quarter: int | None = None) -> None:
         saved_count, len(raw_data),
     )
 
-    # ------------------------------------------------------------------
-    # 2. 抓取 ETF
-    # ------------------------------------------------------------------
-    etfs_saved = 0
-    etfs_raw_count = 0
-    try:
-        from crawler.sources.twse_etf import TWSEETFCrawler
 
-        logger.info("\n📋 抓取 ETF 資料...")
-        etf_crawler = TWSEETFCrawler(max_retries=3, delay=2.0)
-        etf_raw, etfs = etf_crawler.fetch_etf_dividends(year, quarter)
+# ------------------------------------------------------------------
+# 主執行流程
+# ------------------------------------------------------------------
 
-        etfs_raw_count = len(etf_raw)
-        if etf_raw:
-            etf_raw_filename = f"twse_etf_dividend_{year}Q{quarter}"
-            save_raw(etf_raw, etf_raw_filename)
+def main(year: int | None = None, quarter: int | None = None,
+         twt48u_only: bool = False, mops_only: bool = False) -> None:
+    """
+    主執行流程：
+    1. TWT48U — 抓取未來除息預告
+    2. MOPS — 抓取配息日資料（個股）
 
-        for etf in etfs:
-            try:
-                save_stock(etf, "etfs")
-                etfs_saved += 1
-            except Exception as exc:
-                logger.error("儲存 ETF %s 失敗: %s", etf.get("code", "?"), exc)
+    Args:
+        year: 民國年（None 則自動取得當前年）
+        quarter: 季度 1-4（None 則自動取得當前季度）
+        twt48u_only: 僅執行 TWT48U
+        mops_only: 僅執行 MOPS
+    """
+    # 確保目錄存在
+    ensure_dirs()
 
-        logger.info("✅ ETF 完成：共儲存 %d 支（原始 %d 筆）", etfs_saved, etfs_raw_count)
-    except Exception as exc:
-        logger.error("❌ ETF 爬蟲失敗: %s", exc)
+    # 根據參數決定執行哪些爬蟲
+    if not mops_only:
+        # 1. TWT48U — 除息預告
+        fetch_twt48u()
 
-    # ------------------------------------------------------------------
-    # 3. 抓取特別股
-    # ------------------------------------------------------------------
-    preferred_saved = 0
-    preferred_raw_count = 0
-    try:
-        from crawler.sources.twse_preferred import TWSEPreferredCrawler
+    if not twt48u_only:
+        # 2. MOPS — 配息日（個股）
+        if year is None or quarter is None:
+            year, quarter = get_current_year_quarter()
+            logger.info("自動偵測: 民國 %d 年第 %d 季", year, quarter)
+        else:
+            logger.info("指定: 民國 %d 年第 %d 季", year, quarter)
 
-        logger.info("\n📋 抓取特別股資料...")
-        pref_crawler = TWSEPreferredCrawler(max_retries=3, delay=2.0)
-        pref_raw, preferred = pref_crawler.fetch_preferred_dividends(year, quarter)
+        fetch_mops(year, quarter)
 
-        preferred_raw_count = len(pref_raw)
-        if pref_raw:
-            pref_raw_filename = f"twse_preferred_dividend_{year}Q{quarter}"
-            save_raw(pref_raw, pref_raw_filename)
-
-        for pref in preferred:
-            try:
-                save_stock(pref, "preferred")
-                preferred_saved += 1
-            except Exception as exc:
-                logger.error("儲存特別股 %s 失敗: %s", pref.get("code", "?"), exc)
-
-        logger.info(
-            "✅ 特別股完成：共儲存 %d 支（原始 %d 筆）",
-            preferred_saved, preferred_raw_count,
-        )
-    except Exception as exc:
-        logger.error("❌ 特別股爬蟲失敗: %s", exc)
-
-    # ------------------------------------------------------------------
-    # 4. 總計
-    # ------------------------------------------------------------------
-    total = saved_count + etfs_saved + preferred_saved
-    logger.info(
-        "\n" + "=" * 50
-        + "\n📊 爬蟲完成總計"
-        + f"\n   個股：{saved_count} 支"
-        + f"\n   ETF：{etfs_saved} 支"
-        + f"\n   特別股：{preferred_saved} 支"
-        + f"\n   總計：{total} 支"
-        + "\n" + "=" * 50
-    )
+    logger.info("\n" + "=" * 50 + "\n✅ 所有爬蟲完成\n" + "=" * 50)
 
 
 # ------------------------------------------------------------------
@@ -272,23 +353,28 @@ def main(year: int | None = None, quarter: int | None = None) -> None:
 # ------------------------------------------------------------------
 
 if __name__ == "__main__":
-    yr: int | None = None
-    qtr: int | None = None
+    parser = argparse.ArgumentParser(description="StockPayDay++ 爬蟲")
+    parser.add_argument("year", type=int, nargs="?", default=None,
+                        help="民國年（如 114）")
+    parser.add_argument("quarter", type=int, nargs="?", default=None,
+                        help="季度 1-4")
+    parser.add_argument("--twt48u", action="store_true",
+                        help="僅執行 TWT48U 爬蟲")
+    parser.add_argument("--mops", action="store_true",
+                        help="僅執行 MOPS 爬蟲")
 
-    if len(sys.argv) >= 2:
-        try:
-            yr = int(sys.argv[1])
-        except ValueError:
-            print(f"錯誤：年份必須是整數，收到 '{sys.argv[1]}'")
-            sys.exit(1)
+    args = parser.parse_args()
 
-    if len(sys.argv) >= 3:
-        try:
-            qtr = int(sys.argv[2])
-            if qtr not in (1, 2, 3, 4):
-                raise ValueError
-        except ValueError:
-            print(f"錯誤：季度必須是 1-4，收到 '{sys.argv[2]}'")
-            sys.exit(1)
+    # 驗證參數
+    if args.quarter is not None and args.year is None:
+        parser.error("指定季度時必須同時指定年份")
 
-    main(year=yr, quarter=qtr)
+    if args.quarter is not None and args.quarter not in (1, 2, 3, 4):
+        parser.error("季度必須是 1-4")
+
+    main(
+        year=args.year,
+        quarter=args.quarter,
+        twt48u_only=args.twt48u,
+        mops_only=args.mops,
+    )

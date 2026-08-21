@@ -15,8 +15,8 @@
 
 ```
 Phase 0: 專案建置 ───────→ 基礎建設完成
-Phase 1: 爬蟲（個股）────→ 可抓取個股資料
-Phase 2: 爬蟲（ETF+特別股）→ 全部證券資料齊全
+Phase 1: 爬蟲 TWT48U ────→ 取得未來除息預告
+Phase 2: 爬蟲 MOPS ──────→ 取得配息日資料
 Phase 3: 資料處理器 ──────→ 可產生前端用 API
 Phase 4: 前端基礎 ────────→ 行事曆/列表可顯示
 Phase 5: 前端進階 ────────→ 單股歷史+搜尋
@@ -42,7 +42,7 @@ Phase 8: 優化打磨 ────────→ RWD + 深色模式 + 體驗優
 ### 完成定義 (Definition of Done)
 - [ ] `pip install -r requirements.txt` 成功
 - [ ] `npm install && npm run dev` 成功，可看到 Vue 預設頁面
-- [ ] 目錄結構符合 Tech Decision 規劃
+- [ ] 目錄結構符合規劃
 - [ ] Git 可正常 commit
 
 ### 預估工時
@@ -50,46 +50,61 @@ Phase 8: 優化打磨 ────────→ RWD + 深色模式 + 體驗優
 
 ---
 
-## Phase 1：爬蟲 — 個股 🕷️
+## Phase 1：爬蟲 TWT48U 🕷️
 
-**目標**：可從 TWSE 抓取個股配息資料並儲存
+**目標**：從 TWSE 抓取未來除權除息預告資料
+
+### 資料來源
+```
+URL: https://www.twse.com.tw/rwd/zh/exRight/TWT48U
+方法: GET
+參數: response=json
+回傳: JSON 格式
+資料範圍: 未來 1-2 個月
+```
 
 ### 交付項目
-- [ ] `crawler/fetch.py` 主腳本
-- [ ] `crawler/sources/twse_stock.py` 個股爬蟲模組
-- [ ] `data/raw/` 原始資料儲存
-- [ ] `data/stocks/` 個股基底資料
-- [ ] 資料格式驗證腳本
+- [ ] `crawler/sources/twse_twt48u.py` TWT48U 爬蟲
+- [ ] `data/twses/{YYYY-MM}.json` 月分檔案
+- [ ] 資料合併邏輯（去重）
 
 ### 完成定義 (Definition of Done)
-- [ ] 執行 `python crawler/fetch.py` 可成功抓取資料
-- [ ] `data/raw/` 有 TWSE 原始回應 JSON
-- [ ] `data/stocks/` 有個股基底資料（至少 10 支）
-- [ ] 每支股票資料包含：code, name, dividend_history
-- [ ] 爬蟲可在 2 分鐘內完成
+- [ ] 執行爬蟲可成功取得 TWT48U 資料
+- [ ] `data/twses/` 有月分檔案（如 2026-08.json）
+- [ ] 每筆資料包含：code, name, ex_date, type, cash_dividend
+- [ ] ex_date 為西元年格式（YYYY-MM-DD）
+- [ ] 重複執行不會產生重複資料
+- [ ] 執行時間 < 30 秒
 
 ### 預估工時
-2 天
+1 天
 
 ---
 
-## Phase 2：爬蟲 — ETF + 特別股 🕷️
+## Phase 2：爬蟲 MOPS 🕷️
 
-**目標**：擴充爬蟲支援所有證券類型
+**目標**：從 MOPS 抓取配息日（pay_date）資料
+
+### 資料來源
+```
+URL: https://mops.twse.com.tw/mops/web/t05st09_ifrs
+方法: POST
+注意: 需要 CSRF Token，回應為 HTML 表格
+只擷取: code, ex_date, pay_date
+```
 
 ### 交付項目
-- [ ] `crawler/sources/twse_etf.py` ETF 爬蟲
-- [ ] `crawler/sources/twse_preferred.py` 特別股爬蟲
-- [ ] `data/etfs/` ETF 基底資料
-- [ ] `data/preferred/` 特別股基底資料
-- [ ] 整合測試腳本
+- [ ] `crawler/sources/twse_mops.py` MOPS 爬蟲
+- [ ] `data/mops/{YYYY}-Q{N}.json` 季檔案
+- [ ] 資料合併邏輯（去重）
 
 ### 完成定義 (Definition of Done)
-- [ ] ETF 資料正確抓取（至少 10 支，含 0050、0056）
-- [ ] 特別股資料正確抓取
-- [ ] 所有資料類型可同時抓取
-- [ ] 爬蟲錯誤處理完善（網路失敗、資料缺失）
-- [ ] 總抓取時間 < 3 分鐘
+- [ ] 執行爬蟲可成功取得 MOPS 資料
+- [ ] `data/mops/` 有季檔案（如 2026-Q3.json）
+- [ ] 每筆資料包含：code, ex_date, pay_date
+- [ ] 日期格式為西元年（YYYY-MM-DD）
+- [ ] 重複執行不會產生重複資料
+- [ ] 執行時間 < 60 秒
 
 ### 預估工時
 1 天
@@ -98,14 +113,13 @@ Phase 8: 優化打磨 ────────→ RWD + 深色模式 + 體驗優
 
 ## Phase 3：資料處理器 ⚙️
 
-**目標**：將基底資料轉換為前端可用的 API 檔案
+**目標**：將原始資料轉換為前端可用的 API 檔案
 
 ### 交付項目
 - [ ] `processor/generate_api.py` 主處理腳本
 - [ ] `api/upcoming.json` 未來配息資料
 - [ ] `api/securities-index.json` 證券清單
 - [ ] `api/securities/` 單股歷史檔案
-- [ ] 資料格式驗證
 
 ### 完成定義 (Definition of Done)
 - [ ] 執行 `python processor/generate_api.py` 可成功產出
@@ -252,6 +266,21 @@ Phase 0 ──→ Phase 1 ──→ Phase 2 ──→ Phase 3 ──→ Phase 4 
 **可並行**：
 - Phase 4（前端）可與 Phase 3（處理器）部分並行，使用假資料開發
 - Phase 6（通知）可獨立開發
+
+---
+
+## 📁 資料結構總覽
+
+```
+data/
+├── twses/                        # TWT48U（除息預告）
+│   ├── 2026-08.json
+│   ├── 2026-09.json
+│   └── 2026-10.json
+│
+└── mops/                         # MOPS（配息日）
+    └── 2026-Q3.json
+```
 
 ---
 
