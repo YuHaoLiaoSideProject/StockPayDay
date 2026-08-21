@@ -14,6 +14,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Dict
 
+# 確保專案根目錄在 sys.path，讓 `from crawler.xxx` 能正確解析
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
 # 設定 logging
 logging.basicConfig(
     level=logging.INFO,
@@ -21,8 +26,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# 專案根目錄（crawler/ 的上一層）
-ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
 
 
