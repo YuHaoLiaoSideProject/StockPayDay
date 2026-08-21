@@ -6,14 +6,18 @@ export interface UpcomingDividend {
   code: string
   /** 證券名稱，如 "台積電" */
   name: string
-  /** 證券類型：stock | etf | preferred */
-  type: 'stock' | 'etf' | 'preferred'
+  /** 證券類型：stock | etf | preferred | 息 */
+  type: string
   /** 除權息日，如 "2026-07-25" */
   ex_date: string
   /** 發放日，如 "2026-08-15" */
-  pay_date: string
+  pay_date?: string
   /** 現金配息金額 */
-  dividend: number
+  dividend?: number
+  /** 現金配息金額（API 格式） */
+  cash_dividend?: number
+  /** 股票配息金額 */
+  stock_dividend?: number
 }
 
 /**

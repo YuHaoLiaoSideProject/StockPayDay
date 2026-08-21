@@ -14,6 +14,6 @@ defineProps<{ dividend: UpcomingDividend }>()
     <span class="item-date">{{ dividend.ex_date }}</span>
     <span class="item-code">{{ dividend.code }}</span>
     <span class="item-name">{{ dividend.name }}</span>
-    <span class="item-amount">${{ dividend.dividend.toFixed(2) }}</span>
+    <span class="item-amount">${{ (dividend.dividend ?? dividend.cash_dividend ?? 0).toFixed(2) }}</span>
   </div>
 </template>

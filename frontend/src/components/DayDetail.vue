@@ -38,7 +38,7 @@ const emit = defineEmits<{
             <span class="code">{{ item.code }}</span>
             <span class="name">{{ item.name }}</span>
           </span>
-          <span class="amount">${{ item.dividend.toFixed(2) }}</span>
+          <span class="amount">${{ (item.dividend ?? item.cash_dividend ?? 0).toFixed(2) }}</span>
         </li>
       </ul>
     </div>
