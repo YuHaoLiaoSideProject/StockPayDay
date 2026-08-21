@@ -1,4 +1,4 @@
-# StockPayDay++ 每日自動化：爬蟲 → 處理 → 通知 → 部署
+# StockPayDay++ 每日自動化：爬蟲 → 處理 → 部署
 name: Update Dividend Data
 
 on:
@@ -39,15 +39,7 @@ jobs:
       - name: Run processor
         run: python processor/generate_api.py
 
-      # ─── Step 6: 執行通知 ───
-      - name: Notify
-        if: success()
-        run: python processor/notify.py
-        env:
-          LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
-        continue-on-error: true  # 通知失敗不影響部署
-
-      # ─── Step 7: 部署至 GitHub Pages ───
+      # ─── Step 6: 部署至 GitHub Pages ───
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:

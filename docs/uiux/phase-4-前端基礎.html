@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI/UX 設計規格 — Phase 4 前端基礎（行事曆 + 列表）完整規格</title>
+<style>
+
+/* ════════════════════════════════════════════════════════════
+   設計 Token（對應前端 CSS 變數）
+   ════════════════════════════════════════════════════════════ */
+:root {
+  --accent: #1a73e8; --accent-hover: #1557b0; --accent-light: rgba(26,115,232,0.12);
+  --success: #188038; --success-light: #e6f4ea; --success-border: #a8dab5;
+  --danger: #c5221f; --danger-light: #fce8e6; --danger-border: #f5c6c2;
+  --warning: #e37400; --warning-light: #fff4e5;
+  --radius: 10px; --radius-sm: 6px; --transition: 0.2s ease;
+  --h: 36px; --h-mobile: 44px; --fs: 0.875rem;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+[data-theme="light"] {
+  --bg: #ffffff; --surface: #ffffff; --surface-2: #f6f7f9; --surface-3: #eef0f3;
+  --border: #e3e6ea; --text: #374151; --muted: #9ca3af;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08); --shadow-lg: 0 12px 32px rgba(0,0,0,0.16);
+  --frame: #eef0f3;
+}
+[data-theme="dark"] {
+  --bg: #11191f; --surface: #181e25; --surface-2: #1e2530; --surface-3: #232c38;
+  --border: #262e38; --text: #c7c9ce; --muted: #7d8590;
+  --shadow: 0 2px 16px rgba(0,0,0,0.45); --shadow-lg: 0 12px 36px rgba(0,0,0,0.6);
+  --frame: #0d1318;
+}
+
+/* ── Phase 4 專用 Token ── */
+:root {
+  --dividend-dot: #1a73e8; --dividend-dot-dark: #60a5fa;
+  --dividend-bg: #eff6ff; --dividend-bg-dark: #1e3a5f;
+  --today-ring: #1a73e8; --today-ring-dark: #60a5fa;
+  --tab-active-bg: #1a73e8; --tab-active-bg-dark: #60a5fa;
+  --tab-active-text: #ffffff;
+  --modal-overlay: rgba(0,0,0,0.5); --modal-overlay-dark: rgba(0,0,0,0.7);
+  --amount-color: #188038; --amount-color-dark: #34d399;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background: var(--bg); color: var(--text); transition: background var(--transition), color var(--transition);
+  padding: 2rem 1.25rem 4rem;
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+.topbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+h1 { font-size: 1.35rem; margin: 0; }
+.sub { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+.controls { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.segmented { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 2px; }
+.segmented button { border: none; background: none; color: var(--muted); font-size: 0.85rem; padding: 0.45rem 0.9rem; border-radius: 7px; cursor: pointer; transition: all var(--transition); font-weight: 500; }
+.segmented button:hover { color: var(--text); }
+.segmented button.active { background: var(--surface); color: var(--accent); box-shadow: var(--shadow); }
+
+.frame { background: var(--frame); border: 1px solid var(--border); border-radius: 14px; padding: 1.6rem 1.5rem 1.8rem; margin-bottom: 1.5rem; }
+.frame h2 { margin: 0 0 0.25rem; font-size: 1.1rem; }
+.frame .fsub { color: var(--muted); font-size: 0.82rem; margin: 0 0 1rem; line-height: 1.6; }
+.browser-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 1rem; }
+.bdot { width: 11px; height: 11px; border-radius: 50%; }
+.bdot:nth-child(1){ background:#f87171 } .bdot:nth-child(2){ background:#fbbf24 } .bdot:nth-child(3){ background:#34d399 }
+.browser-url { flex: 1; max-width: 420px; margin-left: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.8rem; font-size: 0.75rem; color: var(--muted); }
+.elem-count { font-size: 0.72rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.2rem 0.7rem; white-space: nowrap; }
+.elem-count b { color: var(--accent); }
+
+.app-page { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); transition: background var(--transition); overflow: hidden; }
+.app-page.is-mobile { max-width: 390px; margin: 0 auto; }
+
+/* ── App Header ── */
+.app-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+.app-header h1 { font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 0.4rem; }
+.theme-toggle { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0.4rem; border-radius: 50%; transition: background var(--transition); }
+.theme-toggle:hover { background: var(--surface-2); }
+
+/* ── ViewSwitcher ── */
+.view-switcher { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 18px; padding: 3px; gap: 2px; margin: 0.75rem 1rem; }
+.view-switcher button { border: none; background: none; color: var(--muted); font-size: 0.8125rem; padding: 0.45rem 0.9rem; border-radius: 15px; cursor: pointer; transition: all var(--transition); font-weight: 500; display: flex; align-items: center; gap: 0.35rem; }
+.view-switcher button:hover { color: var(--text); }
+.view-switcher button.active { background: var(--tab-active-bg); color: var(--tab-active-text); }
+
+/* ── Calendar ── */
+.calendar { padding: 0.75rem 1rem 1rem; }
+.calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+.calendar-header button { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--text); padding: 0.3rem 0.5rem; border-radius: 6px; transition: background var(--transition); }
+.calendar-header button:hover { background: var(--surface-2); }
+.calendar-header h2 { margin: 0; font-size: 1rem; }
+.calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 4px; }
+.calendar-weekdays .weekday { text-align: center; font-size: 0.75rem; color: var(--muted); font-weight: 600; padding: 0.25rem 0; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.calendar-day { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; transition: background var(--transition); font-size: 0.8125rem; position: relative; min-width: 44px; }
+.calendar-day:hover { background: var(--surface-2); }
+.calendar-day.other-month { opacity: 0.4; }
+.calendar-day.is-today { border: 2px solid var(--today-ring); font-weight: 700; }
+.calendar-day.has-dividend { background: var(--dividend-bg); }
+.calendar-day .day-number { font-size: 0.8125rem; }
+.calendar-day .dividend-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dividend-dot); margin-top: 2px; }
+
+/* ── List View ── */
+.list-view { padding: 0.75rem 1rem; }
+.list-header { display: grid; grid-template-columns: 100px 70px 1fr 80px; gap: 8px; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.75rem; color: var(--muted); font-weight: 600; }
+.list-item { display: grid; grid-template-columns: 100px 70px 1fr 80px; gap: 8px; padding: 0.625rem 0; border-bottom: 1px solid var(--border); font-size: 0.8125rem; cursor: pointer; transition: background var(--transition); align-items: center; }
+.list-item:hover { background: var(--surface-2); }
+.list-item .item-amount { color: var(--amount-color); font-weight: 600; text-align: right; }
+
+/* ── Modal ── */
+.modal-overlay { position: fixed; inset: 0; background: var(--modal-overlay); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.modal-content { background: var(--surface); border-radius: 12px; padding: 1.5rem; max-width: 400px; width: 90%; box-shadow: var(--shadow-lg); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.modal-header h3 { margin: 0; font-size: 1rem; }
+.modal-close { background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--muted); padding: 0.25rem; border-radius: 50%; transition: background var(--transition); }
+.modal-close:hover { background: var(--surface-2); }
+.modal-list { list-style: none; padding: 0; margin: 0; }
+.modal-list li { display: flex; justify-content: space-between; padding: 0.625rem 0; border-bottom: 1px solid var(--border); font-size: 0.875rem; }
+.modal-list li:last-child { border-bottom: none; }
+.modal-list .code { font-weight: 600; }
+.modal-list .name { color: var(--muted); margin-left: 0.5rem; }
+.modal-list .amount { color: var(--amount-color); font-weight: 600; }
+
+/* ── State Screens ── */
+.loading-state, .error-state, .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; min-height: 300px; }
+.spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 1rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.error-state .icon, .empty-state .icon { font-size: 2rem; margin-bottom: 0.75rem; }
+.error-state .msg, .empty-state .msg { color: var(--muted); font-size: 0.875rem; text-align: center; }
+.retry-btn { margin-top: 1rem; padding: 0.5rem 1.5rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); cursor: pointer; font-size: 0.875rem; transition: all var(--transition); }
+.retry-btn:hover { background: var(--surface-2); border-color: var(--accent); }
+
+/* ── 元件規格（anatomy）── */
+.anatomy { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1.1rem; }
+@media (max-width: 760px) { .anatomy { grid-template-columns: 1fr; } }
+.anat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem 1.1rem; }
+.anat-card h4 { margin: 0 0 0.8rem; font-size: 0.92rem; display: flex; align-items: center; gap: 0.4rem; }
+.anat-card h4 .tag { font-size: 0.62rem; font-weight: 700; background: var(--accent-light); color: var(--accent); border-radius: 20px; padding: 0.12rem 0.5rem; }
+.anat-stage { background: var(--frame); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1rem; margin-bottom: 0.85rem; }
+.anat-dims { font-size: 0.74rem; color: var(--muted); line-height: 1.8; }
+.anat-dims b { color: var(--accent); font-family: var(--mono); }
+
+/* 狀態矩陣表 */
+.states { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 1rem; }
+.states th, .states td { border: 1px solid var(--border); padding: 0.55rem 0.75rem; text-align: left; vertical-align: top; }
+.states th { background: var(--surface-2); font-size: 0.74rem; color: var(--muted); font-weight: 700; }
+.states td:first-child { white-space: nowrap; font-weight: 600; }
+.states code { background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 0.05rem 0.35rem; font-size: 0.72rem; font-family: var(--mono); }
+
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.5rem 1.5rem; margin-top: 1rem; }
+.anno { display: flex; gap: 0.55rem; font-size: 0.8rem; color: var(--muted); align-items: flex-start; line-height: 1.55; }
+.anno .num { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-size: 0.7rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+.anno b { color: var(--text); }
+
+.note { font-size: 0.78rem; color: var(--muted); margin-top: 1rem; line-height: 1.7; background: var(--surface); border: 1px dashed var(--border); border-radius: 10px; padding: 0.6rem 0.9rem; }
+.note b { color: var(--accent); }
+
+/* Token 卡片 */
+.tokens { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+.tcard { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem 0.95rem; }
+.tcard .tk { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.4px; }
+.tcard .tv { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-top: 0.2rem; }
+.tcard .td { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; line-height: 1.5; }
+.tcard .tv.accent { color: var(--accent); }
+
+.footnote { margin-top: 2rem; font-size: 0.72rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 0.75rem; line-height: 1.7; }
+
+/* mobile 切換 */
+.frame.mobile-frame { display: none; }
+body.view-mobile .frame.mobile-frame { display: block; }
+body.view-mobile .frame.desktop-frame { display: none; }
+.mobile-frame .app-page { max-width: 390px; margin: 0 auto; }
+
+/* Phase 4 專用元件 */
+.legend-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+.legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--muted); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.legend-swatch { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+/* Calendar legend */
+.cal-legend { display: flex; gap: 1rem; font-size: 0.75rem; color: var(--muted); margin-top: 0.75rem; padding: 0 1rem; }
+.cal-legend-item { display: flex; align-items: center; gap: 0.35rem; }
+.cal-legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+.cal-legend-box { width: 12px; height: 12px; border-radius: 3px; }
+
+</style>
+</head>
+<body data-theme="light">
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <h1>📅 Phase 4 前端基礎 — 行事曆 + 列表</h1>
+      <div class="sub">完整規格：行事曆模式、列表模式、ViewSwitcher、日期明細 Modal、載入/錯誤/空狀態</div>
+    </div>
+    <div class="controls">
+      <div class="segmented" id="devSwitch">
+        <button data-dev="desktop" class="active">🖥 Desktop</button>
+        <button data-dev="mobile">📱 Mobile</button>
+      </div>
+      <button class="segmented" id="themeToggle" style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:3px;">🌙 切換深色</button>
+    </div>
+  </div>
+
+  <!-- ══════════ 1. 設計 Token ══════════ -->
+  <div class="frame">
+    <h2>1️⃣ 設計 Token</h2>
+    <p class="fsub">所有數值對應前端 CSS 變數，是各元件共用的基礎。</p>
+    <div class="tokens">
+      <div class="tcard"><div class="tk">控制高度</div><div class="tv accent">36 / 44px</div><div class="td">desktop 36px · mobile ≤767px 44px</div></div>
+      <div class="tcard"><div class="tk">字級</div><div class="tv">14 / 13 / 12px</div><div class="td">內文 / Tab / 日期數字</div></div>
+      <div class="tcard"><div class="tk">圓角</div><div class="tv">6 / 18px</div><div class="td">按鈕 6px · Tab 18px</div></div>
+      <div class="tcard"><div class="tk">間距</div><div class="tv">8 / 16px</div><div class="td">群組內 8px · 群組間 16px</div></div>
+      <div class="tcard"><div class="tk">動畫</div><div class="tv">150ms</div><div class="td">Tab 切換 · hover · Modal</div></div>
+      <div class="tcard"><div class="tk">Focus</div><div class="tv">2px ring</div><div class="td">accent 光圈</div></div>
+    </div>
+    <div class="note"><b>CSS 變數對應：</b><code>--h</code> = 36px · <code>--h-mobile</code> = 44px · <code>--fs</code> = 0.875rem · <code>--radius</code> = 10px · <code>--transition</code> = 0.2s ease</div>
+  </div>
+
+  <!-- ══════════ 2. 完整畫面（Desktop）- 行事曆模式 ══════════ -->
+  <div class="frame desktop-frame">
+    <h2>2️⃣ 完整畫面 — 行事曆模式</h2>
+    <p class="fsub">預設顯示行事曆模式。月份導航、配息日標示、點擊日期開啟明細 Modal。</p>
+    <div class="browser-bar">
+      <span class="bdot"></span><span class="bdot"></span><span class="bdot"></span>
+      <span class="browser-url">https://stockpayday.app/ · 行事曆模式</span>
+      <span class="elem-count">互動：<b>月份導航 · 日期點擊 · 模式切換 · 深色模式</b></span>
+    </div>
+    <div class="app-page">
+      <!-- App Header -->
+      <div class="app-header">
+        <h1>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          StockPayDay++
+        </h1>
+        <button class="theme-toggle" aria-label="切換深色模式">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </div>
+
+      <!-- ViewSwitcher -->
+      <div class="view-switcher" role="tablist" aria-label="顯示模式">
+        <button role="tab" aria-selected="true" class="active">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          行事曆
+        </button>
+        <button role="tab" aria-selected="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          列表
+        </button>
+      </div>
+
+      <!-- Calendar -->
+      <div class="calendar">
+        <div class="calendar-header">
+          <button aria-label="上個月">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <h2>2026 年 7 月</h2>
+          <button aria-label="下個月">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+
+        <div class="calendar-weekdays">
+          <div class="weekday">日</div>
+          <div class="weekday">一</div>
+          <div class="weekday">二</div>
+          <div class="weekday">三</div>
+          <div class="weekday">四</div>
+          <div class="weekday">五</div>
+          <div class="weekday">六</div>
+        </div>
+
+        <div class="calendar-grid">
+          <!-- Row 1: 前月補齊 -->
+          <div class="calendar-day other-month"><span class="day-number">28</span></div>
+          <div class="calendar-day other-month"><span class="day-number">29</span></div>
+          <div class="calendar-day other-month"><span class="day-number">30</span></div>
+          <div class="calendar-day"><span class="day-number">1</span></div>
+          <div class="calendar-day"><span class="day-number">2</span></div>
+          <div class="calendar-day"><span class="day-number">3</span></div>
+          <div class="calendar-day"><span class="day-number">4</span></div>
+
+          <!-- Row 2 -->
+          <div class="calendar-day"><span class="day-number">5</span></div>
+          <div class="calendar-day"><span class="day-number">6</span></div>
+          <div class="calendar-day"><span class="day-number">7</span></div>
+          <div class="calendar-day"><span class="day-number">8</span></div>
+          <div class="calendar-day"><span class="day-number">9</span></div>
+          <div class="calendar-day"><span class="day-number">10</span></div>
+          <div class="calendar-day"><span class="day-number">11</span></div>
+
+          <!-- Row 3: 有配息日 -->
+          <div class="calendar-day"><span class="day-number">12</span></div>
+          <div class="calendar-day"><span class="day-number">13</span></div>
+          <div class="calendar-day has-dividend"><span class="day-number">14</span><span class="dividend-dot"></span></div>
+          <div class="calendar-day"><span class="day-number">15</span></div>
+          <div class="calendar-day"><span class="day-number">16</span></div>
+          <div class="calendar-day has-dividend"><span class="day-number">17</span><span class="dividend-dot"></span></div>
+          <div class="calendar-day"><span class="day-number">18</span></div>
+
+          <!-- Row 4: 有配息日 + 今天 -->
+          <div class="calendar-day"><span class="day-number">19</span></div>
+          <div class="calendar-day"><span class="day-number">20</span></div>
+          <div class="calendar-day"><span class="day-number">21</span></div>
+          <div class="calendar-day"><span class="day-number">22</span></div>
+          <div class="calendar-day"><span class="day-number">23</span></div>
+          <div class="calendar-day has-dividend is-today"><span class="day-number">25</span><span class="dividend-dot"></span></div>
+          <div class="calendar-day"><span class="day-number">26</span></div>
+
+          <!-- Row 5 -->
+          <div class="calendar-day"><span class="day-number">27</span></div>
+          <div class="calendar-day has-dividend"><span class="day-number">28</span><span class="dividend-dot"></span></div>
+          <div class="calendar-day"><span class="day-number">29</span></div>
+          <div class="calendar-day"><span class="day-number">30</span></div>
+          <div class="calendar-day"><span class="day-number">31</span></div>
+          <div class="calendar-day other-month"><span class="day-number">1</span></div>
+          <div class="calendar-day other-month"><span class="day-number">2</span></div>
+        </div>
+
+        <div class="cal-legend">
+          <div class="cal-legend-item">
+            <div class="cal-legend-dot" style="background:var(--dividend-dot);"></div>
+            <span>配息日</span>
+          </div>
+          <div class="cal-legend-item">
+            <div class="cal-legend-box" style="border:2px solid var(--today-ring);background:transparent;"></div>
+            <span>今天</span>
+          </div>
+          <div class="cal-legend-item">
+            <div class="cal-legend-box" style="background:var(--dividend-bg);"></div>
+            <span>有配息</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="anno"><span class="num">1</span><span><b>月份導航</b> — 左右箭頭切換月份，顯示當前年月標題</span></div>
+      <div class="anno"><span class="num">2</span><span><b>ViewSwitcher</b> — Tab 切換行事曆/列表模式，aria-selected 控制</span></div>
+      <div class="anno"><span class="num">3</span><span><b>配息圓點</b> — 藍色圓點標示有配息的日期，點擊開啟 Modal</span></div>
+      <div class="anno"><span class="num">4</span><span><b>今天標示</b> — 藍色 ring 邊框標示今天日期</span></div>
+      <div class="anno"><span class="num">5</span><span><b>深色模式</b> — 右上角切換，系統偏好偵測 + localStorage 持久化</span></div>
+    </div>
+
+    <!-- 元件解剖 -->
+    <div class="anatomy">
+      <div class="anat-card">
+        <h4>ViewSwitcher <span class="tag">Tab</span></h4>
+        <div class="anat-stage">
+          <div class="view-switcher" role="tablist">
+            <button role="tab" aria-selected="true" class="active" style="font-size:0.8125rem;padding:0.45rem 0.9rem;border-radius:15px;">
+              📅 行事曆
+            </button>
+            <button role="tab" aria-selected="false" style="font-size:0.8125rem;padding:0.45rem 0.9rem;border-radius:15px;">
+              📋 列表
+            </button>
+          </div>
+        </div>
+        <div class="anat-dims">
+          高度：<b>36px</b> · 圓角：<b>18px</b> · 字級：<b>13px</b><br>
+          active 背景：<b>var(--tab-active-bg)</b> · 文字：<b>#fff</b>
+        </div>
+      </div>
+
+      <div class="anat-card">
+        <h4>CalendarDay <span class="tag">格子</span></h4>
+        <div class="anat-stage" style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div class="calendar-day" style="width:48px;height:48px;"><span class="day-number">15</span></div>
+          <div class="calendar-day has-dividend" style="width:48px;height:48px;"><span class="day-number">17</span><span class="dividend-dot"></span></div>
+          <div class="calendar-day is-today" style="width:48px;height:48px;"><span class="day-number">25</span></div>
+          <div class="calendar-day other-month" style="width:48px;height:48px;"><span class="day-number">1</span></div>
+        </div>
+        <div class="anat-dims">
+          最小觸控：<b>44px</b> · 圓角：<b>8px</b> · 字級：<b>13px</b><br>
+          has-dividend 背景：<b>var(--dividend-bg)</b> · 圓點：<b>6px</b>
+        </div>
+      </div>
+
+      <div class="anat-card">
+        <h4>DayDetail Modal <span class="tag">彈窗</span></h4>
+        <div class="anat-stage">
+          <div class="modal-content" style="box-shadow:none;border:1px solid var(--border);">
+            <div class="modal-header">
+              <h3 style="font-size:1rem;">2026-07-25 配息股票</h3>
+              <button class="modal-close" aria-label="關閉">✕</button>
+            </div>
+            <ul class="modal-list">
+              <li><span><span class="code">2330</span><span class="name">台積電</span></span><span class="amount">$3.50</span></li>
+              <li><span><span class="code">2317</span><span class="name">鴻海</span></span><span class="amount">$4.20</span></li>
+            </ul>
+          </div>
+        </div>
+        <div class="anat-dims">
+          最大寬度：<b>400px</b> · 圓角：<b>12px</b> · padding：<b>24px</b><br>
+          遮罩：<b>var(--modal-overlay)</b> · z-index：<b>50</b>
+        </div>
+      </div>
+
+      <div class="anat-card">
+        <h4>State Screens <span class="tag">狀態</span></h4>
+        <div class="anat-stage">
+          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+            <div class="loading-state" style="min-height:80px;padding:1rem;">
+              <div class="spinner" style="width:24px;height:24px;margin-bottom:0.5rem;"></div>
+              <span style="font-size:0.75rem;color:var(--muted);">載入中</span>
+            </div>
+            <div class="error-state" style="min-height:80px;padding:1rem;">
+              <div class="icon" style="font-size:1.5rem;">⚠️</div>
+              <span style="font-size:0.75rem;color:var(--muted);">載入失敗</span>
+            </div>
+            <div class="empty-state" style="min-height:80px;padding:1rem;">
+              <div class="icon" style="font-size:1.5rem;">📋</div>
+              <span style="font-size:0.75rem;color:var(--muted);">空狀態</span>
+            </div>
+          </div>
+        </div>
+        <div class="anat-dims">
+          Loading：spinner + 文字 · Error：icon + 訊息 + 重試按鈕<br>
+          Empty：icon + 引導文案
+        </div>
+      </div>
+    </div>
+
+    <!-- 狀態矩陣 -->
+    <table class="states">
+      <tr><th style="width:140px;">狀態</th><th>視覺</th><th>互動</th></tr>
+      <tr><td>Tab idle</td><td>灰色文字，透明背景</td><td>hover 變色</td></tr>
+      <tr><td>Tab active</td><td>藍色背景，白色文字</td><td>當前選中，aria-selected="true"</td></tr>
+      <tr><td>Calendar day hover</td><td>背景色加深</td><td>準備點擊</td></tr>
+      <tr><td>Calendar day has-dividend</td><td>淺藍背景 + 藍色圓點</td><td>點擊開啟 Modal</td></tr>
+      <tr><td>Calendar day is-today</td><td>藍色 ring 邊框</td><td>視覺標示</td></tr>
+      <tr><td>Modal open</td><td>半透明遮罩 + Modal 內容</td><td>點擊外部或 ✕ 關閉</td></tr>
+      <tr><td>Modal has dividends</td><td>列表顯示股票代號、名稱、金額</td><td>點擊股票導航（Phase 5）</td></tr>
+      <tr><td>Modal no dividends</td><td>「該日無配息股票」</td><td>僅可關閉</td></tr>
+      <tr><td>loading</td><td>spinner + 「載入中...」</td><td>不可操作</td></tr>
+      <tr><td>error</td><td>錯誤訊息 + 重試按鈕</td><td>點擊重試</td></tr>
+      <tr><td>empty</td><td>空狀態引導</td><td>正常互動</td></tr>
+    </table>
+    <div class="note"><b>無障礙：</b>ViewSwitcher 使用 <code>role="tablist"</code> + <code>aria-selected</code>。Modal 使用 <code>role="dialog"</code> + <code>aria-modal="true"</code>。所有可互動元素有 focus ring。</div>
+  </div>
+
+  <!-- ══════════ 3. 完整畫面（Desktop）- 列表模式 ══════════ -->
+  <div class="frame desktop-frame">
+    <h2>3️⃣ 完整畫面 — 列表模式</h2>
+    <p class="fsub">切換至列表模式，依日期排序顯示配息資料。</p>
+    <div class="browser-bar">
+      <span class="bdot"></span><span class="bdot"></span><span class="bdot"></span>
+      <span class="browser-url">https://stockpayday.app/ · 列表模式</span>
+      <span class="elem-count">互動：<b>模式切換 · 列表項點擊</b></span>
+    </div>
+    <div class="app-page">
+      <!-- App Header -->
+      <div class="app-header">
+        <h1>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          StockPayDay++
+        </h1>
+        <button class="theme-toggle" aria-label="切換深色模式">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+      </div>
+
+      <!-- ViewSwitcher -->
+      <div class="view-switcher" role="tablist" aria-label="顯示模式">
+        <button role="tab" aria-selected="false">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          行事曆
+        </button>
+        <button role="tab" aria-selected="true" class="active">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+          列表
+        </button>
+      </div>
+
+      <!-- List View -->
+      <div class="list-view">
+        <div class="list-header">
+          <div>日期</div>
+          <div>代號</div>
+          <div>名稱</div>
+          <div style="text-align:right;">金額</div>
+        </div>
+        <div class="list-item">
+          <div>2026-07-14</div>
+          <div>2317</div>
+          <div>鴻海</div>
+          <div class="item-amount">$4.20</div>
+        </div>
+        <div class="list-item">
+          <div>2026-07-17</div>
+          <div>2412</div>
+          <div>中華電</div>
+          <div class="item-amount">$2.80</div>
+        </div>
+        <div class="list-item">
+          <div>2026-07-25</div>
+          <div>2330</div>
+          <div>台積電</div>
+          <div class="item-amount">$3.50</div>
+        </div>
+        <div class="list-item">
+          <div>2026-07-28</div>
+          <div>0056</div>
+          <div>元大高股息</div>
+          <div class="item-amount">$2.10</div>
+        </div>
+        <div class="list-item">
+          <div>2026-08-01</div>
+          <div>0050</div>
+          <div>元大台灣50</div>
+          <div class="item-amount">$1.80</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="anno"><span class="num">1</span><span><b>列表排序</b> — 依 ex_date 升序排列（近的在前）</span></div>
+      <div class="anno"><span class="num">2</span><span><b>金額樣式</b> — 綠色粗體，對應 <code>var(--amount-color)</code></span></div>
+      <div class="anno"><span class="num">3</span><span><b>hover 效果</b> — 行背景色加深，準備點擊導航</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 4. Mobile ══════════ -->
+  <div class="frame mobile-frame">
+    <h2>4️⃣ Mobile — 行事曆 + 列表</h2>
+    <p class="fsub">手機版：Tab 全寬觸控、行事曆格子最小 44px、列表隱藏名稱欄。</p>
+    <div class="app-page is-mobile">
+      <!-- App Header -->
+      <div class="app-header">
+        <h1 style="font-size:0.9rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          StockPayDay++
+        </h1>
+        <button class="theme-toggle" aria-label="切換深色模式" style="font-size:1rem;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
+      </div>
+
+      <!-- ViewSwitcher Mobile -->
+      <div class="view-switcher" role="tablist" style="display:flex;width:calc(100% - 2rem);margin:0.75rem 1rem;" aria-label="顯示模式">
+        <button role="tab" aria-selected="true" class="active" style="flex:1;height:var(--h-mobile);justify-content:center;">
+          📅 行事曆
+        </button>
+        <button role="tab" aria-selected="false" style="flex:1;height:var(--h-mobile);justify-content:center;">
+          📋 列表
+        </button>
+      </div>
+
+      <!-- Calendar Mobile -->
+      <div class="calendar" style="padding:0.5rem;">
+        <div class="calendar-header">
+          <button aria-label="上個月" style="font-size:1rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          </button>
+          <h2 style="font-size:0.9rem;">2026 年 7 月</h2>
+          <button aria-label="下個月" style="font-size:1rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+
+        <div class="calendar-weekdays">
+          <div class="weekday">日</div>
+          <div class="weekday">一</div>
+          <div class="weekday">二</div>
+          <div class="weekday">三</div>
+          <div class="weekday">四</div>
+          <div class="weekday">五</div>
+          <div class="weekday">六</div>
+        </div>
+
+        <div class="calendar-grid" style="gap:2px;">
+          <div class="calendar-day other-month" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">28</span></div>
+          <div class="calendar-day other-month" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">29</span></div>
+          <div class="calendar-day other-month" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">30</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">1</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">2</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">3</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">4</span></div>
+
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">5</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">6</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">7</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">8</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">9</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">10</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">11</span></div>
+
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">12</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">13</span></div>
+          <div class="calendar-day has-dividend" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">14</span><span class="dividend-dot" style="width:5px;height:5px;"></span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">15</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">16</span></div>
+          <div class="calendar-day has-dividend" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">17</span><span class="dividend-dot" style="width:5px;height:5px;"></span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">18</span></div>
+
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">19</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">20</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">21</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">22</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">23</span></div>
+          <div class="calendar-day has-dividend is-today" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">25</span><span class="dividend-dot" style="width:5px;height:5px;"></span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">26</span></div>
+
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">27</span></div>
+          <div class="calendar-day has-dividend" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">28</span><span class="dividend-dot" style="width:5px;height:5px;"></span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">29</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">30</span></div>
+          <div class="calendar-day" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">31</span></div>
+          <div class="calendar-day other-month" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">1</span></div>
+          <div class="calendar-day other-month" style="min-width:40px;"><span class="day-number" style="font-size:0.75rem;">2</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="note"><b>Mobile 規範：</b>觸控目標一律 <b>44px</b>（WCAG 2.5.5）。Tab 全寬排列，行事曆格子最小 44px。</div>
+  </div>
+
+  <!-- ══════════ 5. 規格摘要 ══════════ -->
+  <div class="frame">
+    <h2>5️⃣ 規格摘要 — CSS 變數對應</h2>
+    <p class="fsub">實作時直接套用下列變數與結構。</p>
+    <table class="states">
+      <tr><th style="width:200px;">項目</th><th>值</th><th>對應</th></tr>
+      <tr><td>ViewSwitcher active</td><td>藍底白字</td><td><code>--tab-active-bg</code> / <code>--tab-active-text</code></td></tr>
+      <tr><td>配息圓點</td><td>6px 圓形，藍色</td><td><code>--dividend-dot</code></td></tr>
+      <tr><td>有配息背景</td><td>淺藍色</td><td><code>--dividend-bg</code></td></tr>
+      <tr><td>今天邊框</td><td>2px 藍色 ring</td><td><code>--today-ring</code></td></tr>
+      <tr><td>Modal 遮罩</td><td>半透明黑色</td><td><code>--modal-overlay</code></td></tr>
+      <tr><td>金額文字</td><td>綠色粗體</td><td><code>--amount-color</code></td></tr>
+      <tr><td>控制高度</td><td>36px / 44px</td><td><code>--h</code> / <code>--h-mobile</code></td></tr>
+      <tr><td>Tab 圓角</td><td>18px</td><td><code>--radius</code></td></tr>
+    </table>
+  </div>
+
+  <div class="footnote">
+    📄 設計文件：<b>docs/uiux/phase-4-前端基礎.md</b> ・ 本文件：<b>docs/uiux/phase-4-前端基礎.html</b><br>
+    實作範圍：<b>Calendar.vue · CalendarDay.vue · ListView.vue · ListItem.vue · ViewSwitcher.vue · DayDetail.vue · LoadingState.vue · ErrorState.vue · EmptyState.vue · HomeView.vue</b>
+  </div>
+</div>
+
+<script>// ── 通用切換（模板內建，勿刪）──
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', () => {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '🌙 切換深色' : '☀️ 切換淺色';
+});
+const devSwitch = document.getElementById('devSwitch');
+devSwitch.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+  devSwitch.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  document.body.classList.toggle('view-mobile', b.dataset.dev === 'mobile');
+}));
+
+// ── Phase 4 互動 Demo ──
+// ViewSwitcher Tab 切換
+document.querySelectorAll('.view-switcher').forEach(switcher => {
+  switcher.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      switcher.querySelectorAll('button').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+    });
+  });
+});
+</script>
+</body>
+</html>

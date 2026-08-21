@@ -11,9 +11,12 @@
     python processor/generate_api.py
 """
 import json
+import logging
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Optional
+
+logger = logging.getLogger(__name__)
 
 # 專案路徑
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -50,12 +53,15 @@ def load_all_securities() -> List[Dict]:
         default_type = type_map.get(subdir, "stock")
 
         for json_file in sorted(dir_path.glob("*.json")):
-            with open(json_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
+            try:
+                with open(json_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
                 # 若 data 中沒有 type 欄位，從子目錄推斷
                 if "type" not in data:
                     data["type"] = default_type
                 securities.append(data)
+            except (json.JSONDecodeError, OSError) as exc:
+                logger.warning("跳過無法讀取的檔案 %s: %s", json_file.name, exc)
     return securities
 
 

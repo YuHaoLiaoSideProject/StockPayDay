@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI/UX 設計規格 — Phase 5 前端進階（單股歷史 + 搜尋）完整規格</title>
+<style>
+
+/* ════════════════════════════════════════════════════════════
+   設計 Token（對應前端 CSS 變數）
+   ════════════════════════════════════════════════════════════ */
+:root {
+  --accent: #1a73e8; --accent-hover: #1557b0; --accent-light: rgba(26,115,232,0.12);
+  --success: #188038; --success-light: #e6f4ea; --success-border: #a8dab5;
+  --danger: #c5221f; --danger-light: #fce8e6; --danger-border: #f5c6c2;
+  --warning: #e37400; --warning-light: #fff4e5;
+  --radius: 10px; --radius-sm: 6px; --transition: 0.2s ease;
+  --h: 36px; --h-mobile: 44px; --fs: 0.875rem;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+[data-theme="light"] {
+  --bg: #ffffff; --surface: #ffffff; --surface-2: #f6f7f9; --surface-3: #eef0f3;
+  --border: #e3e6ea; --text: #374151; --muted: #9ca3af;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08); --shadow-lg: 0 12px 32px rgba(0,0,0,0.16);
+  --frame: #eef0f3;
+}
+[data-theme="dark"] {
+  --bg: #11191f; --surface: #181e25; --surface-2: #1e2530; --surface-3: #232c38;
+  --border: #262e38; --text: #c7c9ce; --muted: #7d8590;
+  --shadow: 0 2px 16px rgba(0,0,0,0.45); --shadow-lg: 0 12px 36px rgba(0,0,0,0.6);
+  --frame: #0d1318;
+}
+
+/* ── Phase 5 專用 Token ── */
+:root {
+  --search-focus: #1a73e8; --search-focus-dark: #60a5fa;
+  --search-focus-ring: rgba(26,115,232,0.12); --search-focus-ring-dark: rgba(96,165,250,0.12);
+  --link-color: #1a73e8; --link-color-dark: #60a5fa;
+  --link-hover: #1557b0; --link-hover-dark: #93bbfd;
+  --table-border: #e3e6ea; --table-border-dark: #262e38;
+  --table-hover: #f6f7f9; --table-hover-dark: #1e2530;
+  --amount-color: #188038; --amount-color-dark: #34d399;
+  --error-color: #c5221f; --error-color-dark: #f87171;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background: var(--bg); color: var(--text); transition: background var(--transition), color var(--transition);
+  padding: 2rem 1.25rem 4rem;
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+.topbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+h1 { font-size: 1.35rem; margin: 0; }
+.sub { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+.controls { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.segmented { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 2px; }
+.segmented button { border: none; background: none; color: var(--muted); font-size: 0.85rem; padding: 0.45rem 0.9rem; border-radius: 7px; cursor: pointer; transition: all var(--transition); font-weight: 500; }
+.segmented button:hover { color: var(--text); }
+.segmented button.active { background: var(--surface); color: var(--accent); box-shadow: var(--shadow); }
+
+.frame { background: var(--frame); border: 1px solid var(--border); border-radius: 14px; padding: 1.6rem 1.5rem 1.8rem; margin-bottom: 1.5rem; }
+.frame h2 { margin: 0 0 0.25rem; font-size: 1.1rem; }
+.frame .fsub { color: var(--muted); font-size: 0.82rem; margin: 0 0 1rem; line-height: 1.6; }
+.browser-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 1rem; }
+.bdot { width: 11px; height: 11px; border-radius: 50%; }
+.bdot:nth-child(1){ background:#f87171 } .bdot:nth-child(2){ background:#fbbf24 } .bdot:nth-child(3){ background:#34d399 }
+.browser-url { flex: 1; max-width: 420px; margin-left: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.8rem; font-size: 0.75rem; color: var(--muted); }
+.elem-count { font-size: 0.72rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.2rem 0.7rem; white-space: nowrap; }
+.elem-count b { color: var(--accent); }
+
+.app-page { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); transition: background var(--transition); overflow: hidden; }
+.app-page.is-mobile { max-width: 390px; margin: 0 auto; }
+
+/* ── App Header ── */
+.app-header { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); }
+.app-header h1 { font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 0.4rem; }
+.header-right { display: flex; align-items: center; gap: 0.75rem; }
+.theme-toggle { background: none; border: none; cursor: pointer; font-size: 1.1rem; padding: 0.4rem; border-radius: 50%; transition: background var(--transition); }
+.theme-toggle:hover { background: var(--surface-2); }
+
+/* ── SearchBar ── */
+.search-wrapper { position: relative; width: 256px; }
+.search-bar { position: relative; }
+.search-bar input { width: 100%; height: var(--h); padding: 0 2.5rem 0 2.25rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font-size: var(--fs); transition: border-color var(--transition), box-shadow var(--transition); }
+.search-bar input:focus { border-color: var(--search-focus); box-shadow: 0 0 0 3px var(--search-focus-ring); outline: none; }
+.search-bar input::placeholder { color: var(--muted); }
+.search-bar .search-icon { position: absolute; left: 0.7rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; display: flex; }
+.search-bar .search-clear { position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); width: 24px; height: 24px; border-radius: 50%; border: none; background: none; color: var(--muted); cursor: pointer; font-size: 0.8rem; display: none; align-items: center; justify-content: center; }
+.search-bar.has-value .search-clear { display: flex; }
+.search-bar .search-clear:hover { background: var(--border); color: var(--text); }
+
+.search-results { position: absolute; top: 100%; left: 0; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-lg); margin-top: 4px; max-height: 240px; overflow-y: auto; z-index: 50; }
+.search-result-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1rem; cursor: pointer; transition: background var(--transition); height: 44px; font-size: 0.875rem; }
+.search-result-item:hover { background: var(--surface-2); }
+.search-result-item .result-code { font-weight: 600; }
+.search-result-item .result-name { color: var(--muted); margin-left: 0.5rem; }
+.no-results { padding: 0.75rem 1rem; color: var(--muted); font-size: 0.875rem; text-align: center; }
+
+/* ── Back Button ── */
+.back-button { background: none; border: none; color: var(--link-color); cursor: pointer; font-size: 0.875rem; padding: 0; text-decoration: none; transition: color var(--transition); display: inline-flex; align-items: center; gap: 0.35rem; }
+.back-button:hover { color: var(--link-hover); text-decoration: underline; }
+.back-button:focus-visible { outline: 2px solid var(--search-focus); outline-offset: 2px; border-radius: 4px; }
+
+/* ── Stock Detail ── */
+.stock-view { max-width: 672px; margin: 0 auto; padding: 1.5rem 1rem; }
+.stock-header { margin-bottom: 1.5rem; }
+.stock-title { display: flex; align-items: baseline; gap: 0.5rem; margin-top: 0.75rem; }
+.stock-code { font-size: 1.125rem; font-weight: 700; color: var(--text); }
+.stock-name { font-size: 0.875rem; color: var(--muted); }
+.section-title { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
+
+/* ── History Table ── */
+.history-table { width: 100%; border-collapse: collapse; font-size: 0.8125rem; }
+.history-table th { font-size: 0.75rem; color: var(--muted); font-weight: 600; text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--table-border); }
+.history-table td { padding: 0.625rem 0.75rem; border-bottom: 1px solid var(--table-border); }
+.history-table tr:hover { background: var(--table-hover); }
+.history-table .amount { color: var(--amount-color); font-weight: 600; text-align: right; }
+
+/* ── State Screens ── */
+.loading-state, .error-state, .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; min-height: 300px; }
+.spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 1rem; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.state-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+.state-msg { color: var(--muted); font-size: 0.875rem; text-align: center; }
+.retry-btn { margin-top: 1rem; padding: 0.5rem 1.5rem; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); cursor: pointer; font-size: 0.875rem; transition: all var(--transition); }
+.retry-btn:hover { background: var(--surface-2); border-color: var(--accent); }
+
+/* ── 元件規格（anatomy）── */
+.anatomy { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1.1rem; }
+@media (max-width: 760px) { .anatomy { grid-template-columns: 1fr; } }
+.anat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem 1.1rem; }
+.anat-card h4 { margin: 0 0 0.8rem; font-size: 0.92rem; display: flex; align-items: center; gap: 0.4rem; }
+.anat-card h4 .tag { font-size: 0.62rem; font-weight: 700; background: var(--accent-light); color: var(--accent); border-radius: 20px; padding: 0.12rem 0.5rem; }
+.anat-stage { background: var(--frame); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1rem; margin-bottom: 0.85rem; }
+.anat-dims { font-size: 0.74rem; color: var(--muted); line-height: 1.8; }
+.anat-dims b { color: var(--accent); font-family: var(--mono); }
+
+/* 狀態矩陣表 */
+.states { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 1rem; }
+.states th, .states td { border: 1px solid var(--border); padding: 0.55rem 0.75rem; text-align: left; vertical-align: top; }
+.states th { background: var(--surface-2); font-size: 0.74rem; color: var(--muted); font-weight: 700; }
+.states td:first-child { white-space: nowrap; font-weight: 600; }
+.states code { background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 0.05rem 0.35rem; font-size: 0.72rem; font-family: var(--mono); }
+
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.5rem 1.5rem; margin-top: 1rem; }
+.anno { display: flex; gap: 0.55rem; font-size: 0.8rem; color: var(--muted); align-items: flex-start; line-height: 1.55; }
+.anno .num { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-size: 0.7rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+.anno b { color: var(--text); }
+
+.note { font-size: 0.78rem; color: var(--muted); margin-top: 1rem; line-height: 1.7; background: var(--surface); border: 1px dashed var(--border); border-radius: 10px; padding: 0.6rem 0.9rem; }
+.note b { color: var(--accent); }
+
+/* Token 卡片 */
+.tokens { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+.tcard { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem 0.95rem; }
+.tcard .tk { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.4px; }
+.tcard .tv { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-top: 0.2rem; }
+.tcard .td { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; line-height: 1.5; }
+.tcard .tv.accent { color: var(--accent); }
+
+.footnote { margin-top: 2rem; font-size: 0.72rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 0.75rem; line-height: 1.7; }
+
+/* mobile 切換 */
+.frame.mobile-frame { display: none; }
+body.view-mobile .frame.mobile-frame { display: block; }
+body.view-mobile .frame.desktop-frame { display: none; }
+.mobile-frame .app-page { max-width: 390px; margin: 0 auto; }
+.mobile-frame .search-wrapper { width: 100%; }
+.mobile-frame .stock-view { padding: 1rem; }
+
+</style>
+</head>
+<body data-theme="light">
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <h1>🔍 Phase 5 前端進階 — 單股歷史 + 搜尋</h1>
+      <div class="sub">完整規格：搜尋欄、股票歷史頁面、歷史配息表格、返回按鈕、載入/錯誤/空狀態</div>
+    </div>
+    <div class="controls">
+      <div class="segmented" id="devSwitch">
+        <button data-dev="desktop" class="active">🖥 Desktop</button>
+        <button data-dev="mobile">📱 Mobile</button>
+      </div>
+      <button class="segmented" id="themeToggle" style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:3px;">🌙 切換深色</button>
+    </div>
+  </div>
+
+  <!-- ══════════ 1. 設計 Token ══════════ -->
+  <div class="frame">
+    <h2>1️⃣ 設計 Token</h2>
+    <p class="fsub">所有數值對應前端 CSS 變數，是各元件共用的基礎。</p>
+    <div class="tokens">
+      <div class="tcard"><div class="tk">控制高度</div><div class="tv accent">36 / 44px</div><div class="td">desktop 36px · mobile ≤767px 44px</div></div>
+      <div class="tcard"><div class="tk">字級</div><div class="tv">18 / 14 / 13px</div><div class="td">股票代號 / 內文 / 表格</div></div>
+      <div class="tcard"><div class="tk">圓角</div><div class="tv">6 / 8px</div><div class="td">按鈕 6px · 搜尋欄/下拉 8px</div></div>
+      <div class="tcard"><div class="tk">間距</div><div class="tv">8 / 16px</div><div class="td">群組內 8px · 區塊間 16px</div></div>
+      <div class="tcard"><div class="tk">動畫</div><div class="tv">150 / 200ms</div><div class="td">hover 150ms · 下拉 200ms</div></div>
+      <div class="tcard"><div class="tk">Focus</div><div class="tv">3px ring</div><div class="td">accent 光圈</div></div>
+    </div>
+    <div class="note"><b>CSS 變數對應：</b><code>--search-focus</code> = #1a73e8 · <code>--link-color</code> = #1a73e8 · <code>--amount-color</code> = #188038 · <code>--stock-max-w</code> = 672px</div>
+  </div>
+
+  <!-- ══════════ 2. 完整畫面（Desktop）- 股票歷史 ══════════ -->
+  <div class="frame desktop-frame">
+    <h2>2️⃣ 完整畫面 — 股票歷史頁面</h2>
+    <p class="fsub">從首頁點擊股票後導航至歷史頁面，顯示股票資訊與歷史配息表格。</p>
+    <div class="browser-bar">
+      <span class="bdot"></span><span class="bdot"></span><span class="bdot"></span>
+      <span class="browser-url">https://stockpayday.app/stock/2330 · 股票歷史</span>
+      <span class="elem-count">互動：<b>返回按鈕 · 搜尋欄 · 表格 hover</b></span>
+    </div>
+    <div class="app-page">
+      <!-- App Header -->
+      <div class="app-header">
+        <h1>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          StockPayDay++
+        </h1>
+        <div class="header-right">
+          <div class="search-wrapper">
+            <div class="search-bar">
+              <span class="search-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </span>
+              <input type="text" placeholder="搜尋股票代號或名稱..." aria-label="搜尋股票">
+            </div>
+          </div>
+          <button class="theme-toggle" aria-label="切換深色模式">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stock Detail -->
+      <div class="stock-view">
+        <div class="stock-header">
+          <button class="back-button" aria-label="返回首頁">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            返回
+          </button>
+          <div class="stock-title">
+            <span class="stock-code">2330</span>
+            <span class="stock-name">台積電</span>
+          </div>
+        </div>
+
+        <h3 class="section-title">配息歷史</h3>
+
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>年份</th>
+              <th>除權息日</th>
+              <th style="text-align:right;">配息金額</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2026</td>
+              <td>2026-07-25</td>
+              <td class="amount">$3.50</td>
+            </tr>
+            <tr>
+              <td>2025</td>
+              <td>2025-07-18</td>
+              <td class="amount">$3.20</td>
+            </tr>
+            <tr>
+              <td>2024</td>
+              <td>2024-06-12</td>
+              <td class="amount">$2.90</td>
+            </tr>
+            <tr>
+              <td>2023</td>
+              <td>2023-06-15</td>
+              <td class="amount">$2.75</td>
+            </tr>
+            <tr>
+              <td>2022</td>
+              <td>2022-06-23</td>
+              <td class="amount">$2.50</td>
+            </tr>
+            <tr>
+              <td>2021</td>
+              <td>2021-06-25</td>
+              <td class="amount">$2.30</td>
+            </tr>
+            <tr>
+              <td>2020</td>
+              <td>2020-06-19</td>
+              <td class="amount">$2.10</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="anno"><span class="num">1</span><span><b>返回按鈕</b> — 文字連結樣式，點擊返回首頁，aria-label 標示</span></div>
+      <div class="anno"><span class="num">2</span><span><b>股票標題</b> — 代號粗體 + 名稱灰色，清晰顯示</span></div>
+      <div class="anno"><span class="num">3</span><span><b>歷史表格</b> — 依年份降序排列，金額綠色粗體</span></div>
+      <div class="anno"><span class="num">4</span><span><b>搜尋欄</b> — 固定寬度 256px，即時搜尋，下拉結果</span></div>
+    </div>
+
+    <!-- 元件解剖 -->
+    <div class="anatomy">
+      <div class="anat-card">
+        <h4>SearchBar <span class="tag">搜尋</span></h4>
+        <div class="anat-stage">
+          <div style="position:relative;width:280px;">
+            <div class="search-bar has-value">
+              <span class="search-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </span>
+              <input type="text" value="2330" style="font-size:0.875rem;">
+              <button class="search-clear" aria-label="清除搜尋">✕</button>
+            </div>
+            <div class="search-results" style="position:relative;box-shadow:none;border:1px solid var(--border);margin-top:4px;">
+              <div class="search-result-item">
+                <span><span class="result-code">2330</span><span class="result-name">台積電</span></span>
+              </div>
+              <div class="search-result-item">
+                <span><span class="result-code">2303</span><span class="result-name">聯電</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="anat-dims">
+          最大寬度：<b>400px</b> · 高度：<b>36px</b> · 圓角：<b>8px</b><br>
+          focus ring：<b>3px var(--search-focus-ring)</b><br>
+          結果項高度：<b>44px</b> · z-index：<b>50</b>
+        </div>
+      </div>
+
+      <div class="anat-card">
+        <h4>BackButton <span class="tag">導航</span></h4>
+        <div class="anat-stage">
+          <button class="back-button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            返回
+          </button>
+        </div>
+        <div class="anat-dims">
+          字級：<b>14px</b> · 顏色：<b>var(--link-color)</b><br>
+          hover：下底線 + 顏色加深<br>
+          focus：outline 2px ring
+        </div>
+      </div>
+
+      <div class="anat-card">
+        <h4>HistoryTable <span class="tag">表格</span></h4>
+        <div class="anat-stage">
+          <table class="history-table" style="font-size:0.8rem;">
+            <thead>
+              <tr><th>年份</th><th>除權息日</th><th style="text-align:right;">配息金額</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>2026</td><td>2026-07-25</td><td class="amount">$3.50</td></tr>
+              <tr><td>2025</td><td>2025-07-18</td><td class="amount">$3.20</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="anat-dims">
+          標題字級：<b>12px</b> · 內容字級：<b>13px</b><br>
+          邊框：<b>var(--table-border)</b> · hover：<b>var(--table-hover)</b><br>
+          金額：<b>var(--amount-color)</b> 粗體右對齊
+        </div>
+      </div>
+
+      <div class="anat-card">
+        <h4>State Screens <span class="tag">狀態</span></h4>
+        <div class="anat-stage">
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <div class="loading-state" style="min-height:60px;padding:0.75rem;">
+              <div class="spinner" style="width:20px;height:20px;margin-bottom:0.4rem;border-width:2px;"></div>
+              <span style="font-size:0.7rem;color:var(--muted);">載入中</span>
+            </div>
+            <div class="error-state" style="min-height:60px;padding:0.75rem;">
+              <div class="state-icon" style="font-size:1.2rem;">⚠️</div>
+              <span style="font-size:0.7rem;color:var(--muted);">載入失敗</span>
+            </div>
+            <div class="empty-state" style="min-height:60px;padding:0.75rem;">
+              <div class="state-icon" style="font-size:1.2rem;">📋</div>
+              <span style="font-size:0.7rem;color:var(--muted);">暫無資料</span>
+            </div>
+          </div>
+        </div>
+        <div class="anat-dims">
+          Loading：spinner + 文字 · Error：icon + 訊息 + 返回按鈕<br>
+          Empty：icon + 引導文案 + 返回按鈕
+        </div>
+      </div>
+    </div>
+
+    <!-- 狀態矩陣 -->
+    <table class="states">
+      <tr><th style="width:140px;">狀態</th><th>視覺</th><th>互動</th></tr>
+      <tr><td>SearchBar idle</td><td>灰色邊框，placeholder</td><td>可點擊輸入</td></tr>
+      <tr><td>SearchBar focus</td><td>藍色邊框 + ring</td><td>準備輸入</td></tr>
+      <tr><td>SearchBar has-results</td><td>下拉列表顯示</td><td>可選擇結果</td></tr>
+      <tr><td>SearchBar no-results</td><td>「找不到符合的證券」</td><td>可修改關鍵字</td></tr>
+      <tr><td>BackButton idle</td><td>藍色文字 + 箭頭</td><td>hover 下底線</td></tr>
+      <tr><td>HistoryTable row hover</td><td>背景色加深</td><td>視覺回饋</td></tr>
+      <tr><td>HistoryTable .amount</td><td>綠色粗體，右對齊</td><td>視覺強調</td></tr>
+      <tr><td>loading</td><td>spinner + 「載入中...」</td><td>不可操作</td></tr>
+      <tr><td>error</td><td>錯誤訊息 + 返回按鈕</td><td>點擊返回</td></tr>
+      <tr><td>empty</td><td>「暫無歷史配息資料」</td><td>返回按鈕</td></tr>
+    </table>
+    <div class="note"><b>無障礙：</b>搜尋欄使用 <code>role="combobox"</code> + <code>aria-expanded</code>。返回按鈕使用 <code>aria-label="返回首頁"</code>。所有可互動元素有 focus ring。</div>
+  </div>
+
+  <!-- ══════════ 3. 完整畫面（Desktop）- 搜尋互動 ══════════ -->
+  <div class="frame desktop-frame">
+    <h2>3️⃣ 完整畫面 — 搜尋互動</h2>
+    <p class="fsub">搜尋欄互動：輸入即篩選、結果下拉、無結果提示。</p>
+    <div class="browser-bar">
+      <span class="bdot"></span><span class="bdot"></span><span class="bdot"></span>
+      <span class="browser-url">https://stockpayday.app/ · 搜尋互動</span>
+      <span class="elem-count">互動：<b>搜尋輸入 · 結果選擇 · 清除</b></span>
+    </div>
+    <div class="app-page">
+      <!-- App Header with Search -->
+      <div class="app-header">
+        <h1>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          StockPayDay++
+        </h1>
+        <div class="header-right">
+          <div class="search-wrapper">
+            <div class="search-bar has-value" style="border-color:var(--search-focus);box-shadow:0 0 0 3px var(--search-focus-ring);">
+              <span class="search-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </span>
+              <input type="text" value="元大" style="font-size:0.875rem;" aria-label="搜尋股票" aria-expanded="true">
+              <button class="search-clear" aria-label="清除搜尋">✕</button>
+            </div>
+            <div class="search-results">
+              <div class="search-result-item">
+                <span><span class="result-code">0050</span><span class="result-name">元大台灣50</span></span>
+              </div>
+              <div class="search-result-item">
+                <span><span class="result-code">0056</span><span class="result-name">元大高股息</span></span>
+              </div>
+              <div class="search-result-item">
+                <span><span class="result-code">00878</span><span class="result-name">國泰永續高股息</span></span>
+              </div>
+            </div>
+          </div>
+          <button class="theme-toggle" aria-label="切換深色模式">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Home content placeholder -->
+      <div style="padding:2rem 1rem;text-align:center;color:var(--muted);font-size:0.875rem;">
+        （首頁內容 — 行事曆或列表）
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="anno"><span class="num">1</span><span><b>搜尋輸入</b> — 即時篩選，代號與名稱模糊匹配</span></div>
+      <div class="anno"><span class="num">2</span><span><b>結果下拉</b> — 顯示代號+名稱，點擊導航至歷史頁面</span></div>
+      <div class="anno"><span class="num">3</span><span><b>清除按鈕</b> — 有輸入時顯示 ✕，點擊清除</span></div>
+      <div class="anno"><span class="num">4</span><span><b>結果限制</b> — 最多顯示 10 筆結果</span></div>
+    </div>
+
+    <!-- 元件解剖 - SearchBar 狀態 -->
+    <div class="anatomy">
+      <div class="anat-card">
+        <h4>SearchBar — 有結果 <span class="tag">狀態</span></h4>
+        <div class="anat-stage">
+          <div style="position:relative;width:280px;">
+            <div class="search-bar has-value" style="border-color:var(--search-focus);box-shadow:0 0 0 3px var(--search-focus-ring);">
+              <span class="search-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </span>
+              <input type="text" value="元大" style="font-size:0.875rem;">
+              <button class="search-clear">✕</button>
+            </div>
+            <div class="search-results" style="position:relative;box-shadow:none;border:1px solid var(--border);margin-top:4px;">
+              <div class="search-result-item"><span><span class="result-code">0050</span><span class="result-name">元大台灣50</span></span></div>
+              <div class="search-result-item"><span><span class="result-code">0056</span><span class="result-name">元大高股息</span></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="anat-dims">
+          focus：border <b>var(--search-focus)</b> + ring <b>3px</b><br>
+          下拉：max-height <b>240px</b> · overflow-y <b>auto</b>
+        </div>
+      </div>
+
+      <div class="anat-card">
+        <h4>SearchBar — 無結果 <span class="tag">狀態</span></h4>
+        <div class="anat-stage">
+          <div style="position:relative;width:280px;">
+            <div class="search-bar has-value" style="border-color:var(--search-focus);box-shadow:0 0 0 3px var(--search-focus-ring);">
+              <span class="search-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </span>
+              <input type="text" value="xyz999" style="font-size:0.875rem;">
+              <button class="search-clear">✕</button>
+            </div>
+            <div class="search-results" style="position:relative;box-shadow:none;border:1px solid var(--border);margin-top:4px;">
+              <div class="no-results">找不到符合的證券</div>
+            </div>
+          </div>
+        </div>
+        <div class="anat-dims">
+          無結果：顯示「找不到符合的證券」<br>
+          padding：<b>12px 16px</b> · color：<b>var(--muted)</b>
+        </div>
+      </div>
+    </div>
+
+    <!-- 狀態矩陣 - SearchBar -->
+    <table class="states">
+      <tr><th style="width:140px;">狀態</th><th>視覺</th><th>互動</th></tr>
+      <tr><td>idle</td><td>灰色邊框，placeholder</td><td>可點擊輸入</td></tr>
+      <tr><td>focus</td><td>藍色邊框 + 3px ring</td><td>準備輸入</td></tr>
+      <tr><td>has-value</td><td>顯示 clear 按鈕 (✕)</td><td>可清除輸入</td></tr>
+      <tr><td>has-results</td><td>下拉列表，≤10 筆</td><td>hover 變色，點擊導航</td></tr>
+      <tr><td>no-results</td><td>「找不到符合的證券」</td><td>可修改關鍵字</td></tr>
+      <tr><td>loading</td><td>spinner（可選）</td><td>等待結果</td></tr>
+    </table>
+  </div>
+
+  <!-- ══════════ 4. 完整畫面（Desktop）- 空/錯誤狀態 ══════════ -->
+  <div class="frame desktop-frame">
+    <h2>4️⃣ 完整畫面 — 空狀態 / 錯誤狀態</h2>
+    <p class="fsub">股票歷史頁面的異常處理：資料不存在、歷史為空。</p>
+    <div class="browser-bar">
+      <span class="bdot"></span><span class="bdot"></span><span class="bdot"></span>
+      <span class="browser-url">https://stockpayday.app/stock/9999 · 錯誤狀態</span>
+      <span class="elem-count">互動：<b>返回按鈕</b></span>
+    </div>
+    <div class="app-page">
+      <!-- App Header -->
+      <div class="app-header">
+        <h1>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+          StockPayDay++
+        </h1>
+        <div class="header-right">
+          <div class="search-wrapper">
+            <div class="search-bar">
+              <span class="search-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </span>
+              <input type="text" placeholder="搜尋股票代號或名稱..." aria-label="搜尋股票">
+            </div>
+          </div>
+          <button class="theme-toggle" aria-label="切換深色模式">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Error State -->
+      <div class="stock-view">
+        <div class="stock-header">
+          <button class="back-button" aria-label="返回首頁">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            返回
+          </button>
+        </div>
+
+        <div class="error-state" style="min-height:250px;">
+          <div class="state-icon">⚠️</div>
+          <div class="state-msg">找不到該證券資料</div>
+          <button class="back-button" style="margin-top:1rem;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            返回
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="anno"><span class="num">1</span><span><b>錯誤狀態</b> — 404 或網路錯誤時顯示</span></div>
+      <div class="anno"><span class="num">2</span><span><b>返回按鈕</b> — 兩處出現：Header + 內容區</span></div>
+      <div class="anno"><span class="num">3</span><span><b>空狀態</b> — 歷史資料為空時顯示「暫無歷史配息資料」</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 5. Mobile ══════════ -->
+  <div class="frame mobile-frame">
+    <h2>5️⃣ Mobile — 股票歷史 + 搜尋</h2>
+    <p class="fsub">手機版：搜尋欄全寬、表格隱藏除權息日欄、觸控目標 44px。</p>
+    <div class="app-page is-mobile">
+      <!-- App Header -->
+      <div class="app-header" style="flex-direction:column;gap:0.5rem;align-items:stretch;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <h1 style="font-size:0.9rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            StockPayDay++
+          </h1>
+          <button class="theme-toggle" aria-label="切換深色模式" style="font-size:1rem;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+          </button>
+        </div>
+        <div class="search-wrapper" style="width:100%;">
+          <div class="search-bar">
+            <span class="search-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+            <input type="text" placeholder="搜尋股票代號或名稱..." style="height:var(--h-mobile);font-size:0.875rem;" aria-label="搜尋股票">
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock Detail Mobile -->
+      <div class="stock-view" style="padding:1rem;">
+        <div class="stock-header">
+          <button class="back-button" aria-label="返回首頁" style="height:var(--h-mobile);">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            返回
+          </button>
+          <div class="stock-title">
+            <span class="stock-code">2330</span>
+            <span class="stock-name">台積電</span>
+          </div>
+        </div>
+
+        <h3 class="section-title">配息歷史</h3>
+
+        <table class="history-table" style="font-size:0.8rem;">
+          <thead>
+            <tr>
+              <th>年份</th>
+              <th style="text-align:right;">配息金額</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2026</td>
+              <td class="amount">$3.50</td>
+            </tr>
+            <tr>
+              <td>2025</td>
+              <td class="amount">$3.20</td>
+            </tr>
+            <tr>
+              <td>2024</td>
+              <td class="amount">$2.90</td>
+            </tr>
+            <tr>
+              <td>2023</td>
+              <td class="amount">$2.75</td>
+            </tr>
+            <tr>
+              <td>2022</td>
+              <td class="amount">$2.50</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="note"><b>Mobile 規範：</b>搜尋欄全寬、高度 <b>44px</b>。表格隱藏除權息日欄，僅顯示年份+金額。觸控目標 ≥ 44px（WCAG 2.5.5）。</div>
+  </div>
+
+  <!-- ══════════ 6. 規格摘要 ══════════ -->
+  <div class="frame">
+    <h2>6️⃣ 規格摘要 — CSS 變數對應</h2>
+    <p class="fsub">實作時直接套用下列變數與結構。</p>
+    <table class="states">
+      <tr><th style="width:200px;">項目</th><th>值</th><th>對應</th></tr>
+      <tr><td>搜尋欄 focus</td><td>藍色邊框 + ring</td><td><code>--search-focus</code> / <code>--search-focus-ring</code></td></tr>
+      <tr><td>返回連結</td><td>藍色文字</td><td><code>--link-color</code></td></tr>
+      <tr><td>表格邊框</td><td>灰色</td><td><code>--table-border</code></td></tr>
+      <tr><td>表格 hover</td><td>淺灰背景</td><td><code>--table-hover</code></td></tr>
+      <tr><td>金額文字</td><td>綠色粗體</td><td><code>--amount-color</code></td></tr>
+      <tr><td>錯誤訊息</td><td>紅色</td><td><code>--error-color</code></td></tr>
+      <tr><td>控制高度</td><td>36px / 44px</td><td><code>--h</code> / <code>--h-mobile</code></td></tr>
+      <tr><td>搜尋結果項</td><td>44px 高度</td><td>觸控目標 WCAG 2.5.5</td></tr>
+    </table>
+  </div>
+
+  <div class="footnote">
+    📄 設計文件：<b>docs/uiux/phase-5-前端進階.md</b> ・ 本文件：<b>docs/uiux/phase-5-前端進階.html</b><br>
+    實作範圍：<b>SearchBar.vue · StockDetail.vue · BackButton.vue · Stock.vue · useStock.ts · useSearch.ts</b>
+  </div>
+</div>
+
+<script>// ── 通用切換（模板內建，勿刪）──
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', () => {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '🌙 切換深色' : '☀️ 切換淺色';
+});
+const devSwitch = document.getElementById('devSwitch');
+devSwitch.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+  devSwitch.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  document.body.classList.toggle('view-mobile', b.dataset.dev === 'mobile');
+}));
+
+// ── Phase 5 互動 Demo ──
+// 搜尋欄 clear 按鈕
+document.querySelectorAll('.search-bar').forEach(bar => {
+  const input = bar.querySelector('input');
+  const clearBtn = bar.querySelector('.search-clear');
+  if (input && clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      input.value = '';
+      bar.classList.remove('has-value');
+      // 隱藏下拉
+      const results = bar.parentElement?.querySelector('.search-results');
+      if (results) results.style.display = 'none';
+    });
+    input.addEventListener('input', () => {
+      bar.classList.toggle('has-value', input.value.length > 0);
+    });
+  }
+});
+</script>
+</body>
+</html>

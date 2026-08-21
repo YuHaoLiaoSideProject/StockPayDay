@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>001 追蹤清單 — UI/UX Mockup</title>
+  <style>
+    /* ========== CSS Variables (Light Theme) ========== */
+    [data-theme="light"] {
+      --bg: #ffffff;
+      --surface: #f9fafb;
+      --surface-2: #f3f4f6;
+      --border: #e5e7eb;
+      --text: #111827;
+      --text-secondary: #4b5563;
+      --muted: #9ca3af;
+      --shadow: 0 1px 3px rgba(0,0,0,0.1);
+      --frame: #f3f4f6;
+      
+      --accent: #1a73e8;
+      --accent-hover: #1557b0;
+      --success: #188038;
+      --danger: #c5221f;
+      --warning: #e37400;
+      
+      --heart-default: #9ca3af;
+      --heart-active: #ef4444;
+      --heart-hover: #f87171;
+      --badge-bg: #1a73e8;
+      --badge-text: #ffffff;
+      --watched-dot: #ef4444;
+      --search-focus: #1a73e8;
+    }
+
+    /* ========== Dark Theme ========== */
+    [data-theme="dark"] {
+      --bg: #111827;
+      --surface: #1f2937;
+      --surface-2: #374151;
+      --border: #4b5563;
+      --text: #f9fafb;
+      --text-secondary: #d1d5db;
+      --muted: #6b7280;
+      --shadow: 0 1px 3px rgba(0,0,0,0.3);
+      --frame: #1f2937;
+      
+      --accent: #60a5fa;
+      --accent-hover: #3b82f6;
+      --success: #34d399;
+      --danger: #f87171;
+      --warning: #fbbf24;
+      
+      --heart-default: #6b7280;
+      --heart-active: #f87171;
+      --heart-hover: #fca5a5;
+      --badge-bg: #60a5fa;
+      --badge-text: #111827;
+      --watched-dot: #f87171;
+      --search-focus: #60a5fa;
+    }
+
+    /* ========== Reset & Base ========== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    /* ========== Layout ========== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* ========== Controls Bar ========== */
+    .controls-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .controls-left {
+      display: flex;
+      gap: 8px;
+    }
+
+    .controls-right {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .control-btn {
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.15s ease;
+    }
+
+    .control-btn:hover {
+      background: var(--surface-2);
+    }
+
+    .control-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* ========== App Page Frame ========== */
+    .app-page {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin-top: 24px;
+    }
+
+    .browser-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .traffic-lights {
+      display: flex;
+      gap: 6px;
+    }
+
+    .traffic-light {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .traffic-light.red { background: #ff5f57; }
+    .traffic-light.yellow { background: #febc2e; }
+    .traffic-light.green { background: #28c840; }
+
+    .url-bar {
+      flex: 1;
+      padding: 6px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .element-count {
+      padding: 4px 8px;
+      background: var(--accent);
+      color: white;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    /* ========== Header ========== */
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .app-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .app-nav {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .watchlist-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.15s ease;
+    }
+
+    .watchlist-link:hover {
+      background: var(--surface-2);
+    }
+
+    .watchlist-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      background: var(--badge-bg);
+      color: var(--badge-text);
+      border-radius: 9px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    /* ========== Search Bar ========== */
+    .search-bar {
+      position: relative;
+    }
+
+    .search-input {
+      width: 256px;
+      padding: 8px 12px 8px 36px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 14px;
+      transition: all 0.15s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--search-focus);
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+    }
+
+    .search-input::placeholder {
+      color: var(--muted);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+    }
+
+    .search-results {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 4px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      max-height: 240px;
+      overflow-y: auto;
+      z-index: 50;
+    }
+
+    .search-result-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: background-color 0.1s ease;
+    }
+
+    .search-result-item:hover {
+      background: var(--surface);
+    }
+
+    .search-result-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .search-result-code {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .search-result-name {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .search-no-results {
+      padding: 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* ========== Watchlist Button ========== */
+    .watchlist-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 50%;
+      transition: all 0.15s ease;
+    }
+
+    .watchlist-btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--search-focus);
+    }
+
+    .watchlist-btn:active {
+      transform: scale(0.95);
+    }
+
+    .watchlist-btn--sm {
+      width: 24px;
+      height: 24px;
+    }
+
+    .watchlist-btn--md {
+      width: 32px;
+      height: 32px;
+    }
+
+    .watchlist-btn--lg {
+      width: 40px;
+      height: 40px;
+    }
+
+    .watchlist-btn--sm svg { width: 14px; height: 14px; }
+    .watchlist-btn--md svg { width: 18px; height: 18px; }
+    .watchlist-btn--lg svg { width: 24px; height: 24px; }
+
+    .watchlist-btn:not(.watched) {
+      color: var(--heart-default);
+    }
+
+    .watchlist-btn:not(.watched):hover {
+      color: var(--heart-hover);
+    }
+
+    .watchlist-btn.watched {
+      color: var(--heart-active);
+    }
+
+    .watchlist-btn.watched:hover {
+      color: var(--heart-hover);
+    }
+
+    /* ========== Page Content ========== */
+    .page-content {
+      padding: 24px;
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    /* ========== Watchlist Search (in page) ========== */
+    .watchlist-search {
+      margin-bottom: 24px;
+    }
+
+    .watchlist-search .search-input {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    /* ========== View Switcher ========== */
+    .view-switcher {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .view-switcher-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.15s ease;
+    }
+
+    .view-switcher-btn:hover {
+      background: var(--surface-2);
+    }
+
+    .view-switcher-btn.active {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* ========== Calendar ========== */
+    .calendar {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .calendar-nav-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .calendar-nav-btn:hover {
+      background: var(--surface);
+    }
+
+    .calendar-month {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .calendar-weekday {
+      padding: 8px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+
+    .calendar-day {
+      position: relative;
+      min-height: 80px;
+      padding: 8px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background-color 0.1s ease;
+    }
+
+    .calendar-day:nth-child(7n) {
+      border-right: none;
+    }
+
+    .calendar-day:hover {
+      background: var(--surface);
+    }
+
+    .calendar-day.other-month {
+      opacity: 0.4;
+    }
+
+    .calendar-day.is-today {
+      background: var(--surface);
+    }
+
+    .calendar-day .day-number {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .calendar-day.is-today .day-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+    }
+
+    .dividend-dot {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+    }
+
+    .watched-dot {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      width: 8px;
+      height: 8px;
+      background: var(--watched-dot);
+      border-radius: 50%;
+    }
+
+    .dividend-label {
+      margin-top: 4px;
+      font-size: 10px;
+      color: var(--accent);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ========== List View ========== */
+    .list-view {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .list-header {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr 48px;
+      gap: 16px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .list-item {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr 48px;
+      gap: 16px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      cursor: pointer;
+      transition: background-color 0.1s ease;
+    }
+
+    .list-item:last-child {
+      border-bottom: none;
+    }
+
+    .list-item:hover {
+      background: var(--surface);
+    }
+
+    .list-item-code {
+      font-weight: 600;
+    }
+
+    .list-item-amount {
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    /* ========== Empty State ========== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 64px 24px;
+      text-align: center;
+    }
+
+    .empty-state-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .empty-state-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .empty-state-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      max-width: 320px;
+      margin-bottom: 24px;
+    }
+
+    .empty-state-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .empty-state-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .empty-state-btn.primary {
+      background: var(--accent);
+      color: white;
+      border: none;
+    }
+
+    .empty-state-btn.primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .empty-state-btn.secondary {
+      background: var(--surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .empty-state-btn.secondary:hover {
+      background: var(--surface-2);
+    }
+
+    /* ========== Watchlist Count ========== */
+    .watchlist-count {
+      text-align: center;
+      padding: 16px;
+      font-size: 13px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+    }
+
+    /* ========== Anatomy Card ========== */
+    .anatomy-section {
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 2px solid var(--border);
+    }
+
+    .anatomy-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .anatomy-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+
+    .anat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+
+    .anat-card h4 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .anat-card .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--accent);
+      color: white;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+
+    .anat-render {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--bg);
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .anat-dims {
+      font-size: 12px;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    /* ========== States Table ========== */
+    .states-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .states-table th,
+    .states-table td {
+      padding: 12px;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .states-table th {
+      background: var(--surface);
+      font-weight: 600;
+    }
+
+    .states-table td:first-child {
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* ========== Token Cards ========== */
+    .token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .token-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .token-card h5 {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .token-value {
+      font-size: 14px;
+      font-weight: 500;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .token-color {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    /* ========== Footnote ========== */
+    .footnote {
+      margin-top: 48px;
+      padding: 16px;
+      background: var(--surface);
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ========== Responsive ========== */
+    @media (max-width: 767px) {
+      .app-header {
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .app-nav {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .search-input {
+        width: 100%;
+      }
+
+      .calendar-day {
+        min-height: 60px;
+        padding: 4px;
+      }
+
+      .list-header,
+      .list-item {
+        grid-template-columns: 1fr 1fr 48px;
+      }
+
+      .list-header > *:nth-child(2),
+      .list-item > *:nth-child(2) {
+        display: none;
+      }
+
+      .controls-bar {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+    }
+
+    /* ========== Reduced Motion ========== */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Controls Bar -->
+  <div class="controls-bar">
+    <div class="controls-left">
+      <button class="control-btn active" onclick="setTheme('light')">☀️ Light</button>
+      <button class="control-btn" onclick="setTheme('dark')">🌙 Dark</button>
+    </div>
+    <div class="controls-right">
+      <button class="control-btn active" onclick="setView('desktop')">🖥 Desktop</button>
+      <button class="control-btn" onclick="setView('mobile')">📱 Mobile</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- App Page Frame -->
+    <div class="app-page" id="app-page">
+      <!-- Browser Bar -->
+      <div class="browser-bar">
+        <div class="traffic-lights">
+          <div class="traffic-light red"></div>
+          <div class="traffic-light yellow"></div>
+          <div class="traffic-light green"></div>
+        </div>
+        <div class="url-bar">stockpayday.example.com/watchlist</div>
+        <div class="element-count">24 elements</div>
+      </div>
+
+      <!-- App Header -->
+      <div class="app-header">
+        <div class="app-logo">
+          <span>📅</span>
+          <span>StockPayDay++</span>
+        </div>
+        <div class="app-nav">
+          <a href="#" class="watchlist-link">
+            <span>❤️</span>
+            <span>追蹤清單</span>
+            <span class="watchlist-badge" id="header-badge">3</span>
+          </a>
+          <div class="search-bar">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="text" class="search-input" placeholder="搜尋股票代號或名稱...">
+          </div>
+        </div>
+      </div>
+
+      <!-- Page Content -->
+      <div class="page-content">
+        <!-- Page Title -->
+        <h1 class="page-title">❤️ 我的追蹤清單</h1>
+        <p class="page-subtitle">追蹤感興趣的證券，掌握配息時程</p>
+
+        <!-- Watchlist Search -->
+        <div class="watchlist-search">
+          <div class="search-bar">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input type="text" class="search-input" id="watchlist-search" placeholder="搜尋股票代號或名稱加入追蹤..." oninput="handleSearch(this.value)">
+          </div>
+          <div class="search-results" id="search-results" style="display: none;">
+            <!-- Search results will be rendered here -->
+          </div>
+        </div>
+
+        <!-- View Switcher -->
+        <div class="view-switcher">
+          <button class="view-switcher-btn active" onclick="switchView('calendar')" id="btn-calendar">
+            <span>📅</span>
+            <span>行事曆</span>
+          </button>
+          <button class="view-switcher-btn" onclick="switchView('list')" id="btn-list">
+            <span>📋</span>
+            <span>列表</span>
+          </button>
+        </div>
+
+        <!-- Calendar View -->
+        <div id="calendar-view">
+          <div class="calendar">
+            <div class="calendar-header">
+              <button class="calendar-nav-btn">←</button>
+              <span class="calendar-month">2026 年 7 月</span>
+              <button class="calendar-nav-btn">→</button>
+            </div>
+            <div class="calendar-weekdays">
+              <div class="calendar-weekday">日</div>
+              <div class="calendar-weekday">一</div>
+              <div class="calendar-weekday">二</div>
+              <div class="calendar-weekday">三</div>
+              <div class="calendar-weekday">四</div>
+              <div class="calendar-weekday">五</div>
+              <div class="calendar-weekday">六</div>
+            </div>
+            <div class="calendar-days">
+              <!-- Week 1 -->
+              <div class="calendar-day other-month"><span class="day-number">28</span></div>
+              <div class="calendar-day other-month"><span class="day-number">29</span></div>
+              <div class="calendar-day other-month"><span class="day-number">30</span></div>
+              <div class="calendar-day"><span class="day-number">1</span></div>
+              <div class="calendar-day"><span class="day-number">2</span></div>
+              <div class="calendar-day"><span class="day-number">3</span></div>
+              <div class="calendar-day"><span class="day-number">4</span></div>
+              <!-- Week 2 -->
+              <div class="calendar-day"><span class="day-number">5</span></div>
+              <div class="calendar-day"><span class="day-number">6</span></div>
+              <div class="calendar-day"><span class="day-number">7</span></div>
+              <div class="calendar-day"><span class="day-number">8</span></div>
+              <div class="calendar-day"><span class="day-number">9</span></div>
+              <div class="calendar-day"><span class="day-number">10</span></div>
+              <div class="calendar-day"><span class="day-number">11</span></div>
+              <!-- Week 3 -->
+              <div class="calendar-day"><span class="day-number">12</span></div>
+              <div class="calendar-day"><span class="day-number">13</span></div>
+              <div class="calendar-day">
+                <span class="day-number">14</span>
+                <div class="dividend-dot"></div>
+                <div class="dividend-label">0056</div>
+              </div>
+              <div class="calendar-day"><span class="day-number">15</span></div>
+              <div class="calendar-day"><span class="day-number">16</span></div>
+              <div class="calendar-day">
+                <span class="day-number">17</span>
+                <div class="dividend-dot"></div>
+                <div class="dividend-label">0050</div>
+              </div>
+              <div class="calendar-day"><span class="day-number">18</span></div>
+              <!-- Week 4 -->
+              <div class="calendar-day"><span class="day-number">19</span></div>
+              <div class="calendar-day"><span class="day-number">20</span></div>
+              <div class="calendar-day is-today"><span class="day-number">21</span></div>
+              <div class="calendar-day"><span class="day-number">22</span></div>
+              <div class="calendar-day"><span class="day-number">23</span></div>
+              <div class="calendar-day">
+                <span class="day-number">24</span>
+                <div class="watched-dot"></div>
+                <div class="dividend-label" style="color: var(--watched-dot);">2330 ♥</div>
+              </div>
+              <div class="calendar-day">
+                <span class="day-number">25</span>
+                <div class="dividend-dot"></div>
+                <div class="dividend-label">2310</div>
+              </div>
+              <!-- Week 5 -->
+              <div class="calendar-day">
+                <span class="day-number">26</span>
+                <div class="watched-dot"></div>
+                <div class="dividend-label" style="color: var(--watched-dot);">0056 ♥</div>
+              </div>
+              <div class="calendar-day"><span class="day-number">27</span></div>
+              <div class="calendar-day"><span class="day-number">28</span></div>
+              <div class="calendar-day"><span class="day-number">29</span></div>
+              <div class="calendar-day">
+                <span class="day-number">30</span>
+                <div class="watched-dot"></div>
+                <div class="dividend-label" style="color: var(--watched-dot);">0050 ♥</div>
+              </div>
+              <div class="calendar-day"><span class="day-number">31</span></div>
+              <div class="calendar-day other-month"><span class="day-number">1</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- List View (hidden by default) -->
+        <div id="list-view" style="display: none;">
+          <div class="list-view">
+            <div class="list-header">
+              <div>日期</div>
+              <div>代號</div>
+              <div>名稱</div>
+              <div>金額</div>
+              <div>追蹤</div>
+            </div>
+            <div class="list-item" onclick="toggleWatch('2330', '台積電', this)">
+              <div>2026-07-24</div>
+              <div class="list-item-code">2330</div>
+              <div>台積電</div>
+              <div class="list-item-amount">$3.50</div>
+              <div>
+                <button class="watchlist-btn watchlist-btn--sm watched" onclick="event.stopPropagation(); toggleWatchBtn(this)" aria-label="移除追蹤" aria-pressed="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="list-item" onclick="toggleWatch('0056', '元大高股息', this)">
+              <div>2026-07-26</div>
+              <div class="list-item-code">0056</div>
+              <div>元大高股息</div>
+              <div class="list-item-amount">$2.10</div>
+              <div>
+                <button class="watchlist-btn watchlist-btn--sm watched" onclick="event.stopPropagation(); toggleWatchBtn(this)" aria-label="移除追蹤" aria-pressed="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
+                </button>
+              </div>
+            </div>
+            <div class="list-item" onclick="toggleWatch('0050', '元大台灣50', this)">
+              <div>2026-07-30</div>
+              <div class="list-item-code">0050</div>
+              <div>元大台灣50</div>
+              <div class="list-item-amount">$1.80</div>
+              <div>
+                <button class="watchlist-btn watchlist-btn--sm watched" onclick="event.stopPropagation(); toggleWatchBtn(this)" aria-label="移除追蹤" aria-pressed="true">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Watchlist Count -->
+        <div class="watchlist-count">
+          已追蹤 <span id="watchlist-count">3</span> 支證券
+        </div>
+      </div>
+    </div>
+
+    <!-- Anatomy Section -->
+    <div class="anatomy-section">
+      <h2 class="anatomy-title">元件解剖</h2>
+      <div class="anatomy-grid">
+        <!-- Watchlist Button - Small -->
+        <div class="anat-card">
+          <h4>追蹤按鈕 (Small) <span class="tag">24px</span></h4>
+          <div class="anat-render">
+            <button class="watchlist-btn watchlist-btn--sm" onclick="toggleWatchBtn(this)" aria-label="加入追蹤" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+            </button>
+            &nbsp;&nbsp;
+            <button class="watchlist-btn watchlist-btn--sm watched" onclick="toggleWatchBtn(this)" aria-label="移除追蹤" aria-pressed="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
+            </button>
+          </div>
+          <div class="anat-dims">w-6 h-6 (24px × 24px) · icon: 14px</div>
+        </div>
+
+        <!-- Watchlist Button - Medium -->
+        <div class="anat-card">
+          <h4>追蹤按鈕 (Medium) <span class="tag">32px</span></h4>
+          <div class="anat-render">
+            <button class="watchlist-btn watchlist-btn--md" onclick="toggleWatchBtn(this)" aria-label="加入追蹤" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+            </button>
+            &nbsp;&nbsp;
+            <button class="watchlist-btn watchlist-btn--md watched" onclick="toggleWatchBtn(this)" aria-label="移除追蹤" aria-pressed="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
+            </button>
+          </div>
+          <div class="anat-dims">w-8 h-8 (32px × 32px) · icon: 18px</div>
+        </div>
+
+        <!-- Watchlist Button - Large -->
+        <div class="anat-card">
+          <h4>追蹤按鈕 (Large) <span class="tag">40px</span></h4>
+          <div class="anat-render">
+            <button class="watchlist-btn watchlist-btn--lg" onclick="toggleWatchBtn(this)" aria-label="加入追蹤" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+            </button>
+            &nbsp;&nbsp;
+            <button class="watchlist-btn watchlist-btn--lg watched" onclick="toggleWatchBtn(this)" aria-label="移除追蹤" aria-pressed="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
+            </button>
+          </div>
+          <div class="anat-dims">w-10 h-10 (40px × 40px) · icon: 24px</div>
+        </div>
+
+        <!-- Badge -->
+        <div class="anat-card">
+          <h4>追蹤徽章 <span class="tag">Badge</span></h4>
+          <div class="anat-render">
+            <span class="watchlist-badge">3</span>
+            &nbsp;&nbsp;
+            <span class="watchlist-badge">12</span>
+            &nbsp;&nbsp;
+            <span class="watchlist-badge">99+</span>
+          </div>
+          <div class="anat-dims">min-w: 18px · h: 18px · font: 10px · rounded: 50%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- States Section -->
+    <div class="anatomy-section">
+      <h2 class="anatomy-title">狀態矩陣</h2>
+      <table class="states-table">
+        <thead>
+          <tr>
+            <th>狀態</th>
+            <th>視覺</th>
+            <th>互動</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>未追蹤 (idle)</td>
+            <td>
+              <button class="watchlist-btn watchlist-btn--md" style="pointer-events: none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+              </button>
+            </td>
+            <td>hover 變色，可點擊</td>
+          </tr>
+          <tr>
+            <td>已追蹤 (idle)</td>
+            <td>
+              <button class="watchlist-btn watchlist-btn--md watched" style="pointer-events: none;">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
+              </button>
+            </td>
+            <td>hover 變色，可點擊移除</td>
+          </tr>
+          <tr>
+            <td>hover</td>
+            <td>
+              <button class="watchlist-btn watchlist-btn--md" style="pointer-events: none; color: var(--heart-hover);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+              </button>
+            </td>
+            <td>顏色變為淺紅</td>
+          </tr>
+          <tr>
+            <td>focus</td>
+            <td>
+              <button class="watchlist-btn watchlist-btn--md" style="pointer-events: none; box-shadow: 0 0 0 3px var(--search-focus);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+              </button>
+            </td>
+            <td>藍色 ring 顯示</td>
+          </tr>
+          <tr>
+            <td>active</td>
+            <td>
+              <button class="watchlist-btn watchlist-btn--md" style="pointer-events: none; transform: scale(0.95);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+              </button>
+            </td>
+            <td>scale(0.95) 按下效果</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Token Section -->
+    <div class="anatomy-section">
+      <h2 class="anatomy-title">Design Token</h2>
+      <div class="token-grid">
+        <div class="token-card">
+          <h5>色彩</h5>
+          <div class="token-value">
+            <span class="token-color" style="background: var(--heart-default);"></span>
+            --heart-default
+          </div>
+          <div class="token-value">
+            <span class="token-color" style="background: var(--heart-active);"></span>
+            --heart-active
+          </div>
+          <div class="token-value">
+            <span class="token-color" style="background: var(--heart-hover);"></span>
+            --heart-hover
+          </div>
+        </div>
+        <div class="token-card">
+          <h5>尺寸</h5>
+          <div class="token-value">sm: 24px</div>
+          <div class="token-value">md: 32px</div>
+          <div class="token-value">lg: 40px</div>
+        </div>
+        <div class="token-card">
+          <h5>動畫</h5>
+          <div class="token-value">transition: 150ms ease</div>
+          <div class="token-value">scale: 0.95</div>
+        </div>
+        <div class="token-card">
+          <h5>圓角</h5>
+          <div class="token-value">btn: 6px</div>
+          <div class="token-value">badge: 50%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footnote -->
+    <div class="footnote">
+      <strong>相關文件：</strong><br>
+      • 互動流程：<code>docs/interaction-flows/phases/phase-5a-追蹤清單.md</code><br>
+      • 開發規格：<code>docs/development/phases/phase-5a-追蹤清單.md</code><br>
+      • 設計文件：<code>docs/uiux/phase-5a-追蹤清單.md</code>
+    </div>
+  </div>
+
+  <script>
+    // ========== Theme Toggle ==========
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+      document.querySelectorAll('.controls-left .control-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    // ========== View Toggle ==========
+    function setView(view) {
+      const appPage = document.getElementById('app-page');
+      if (view === 'mobile') {
+        appPage.style.maxWidth = '375px';
+        appPage.style.margin = '24px auto';
+      } else {
+        appPage.style.maxWidth = '100%';
+      }
+      document.querySelectorAll('.controls-right .control-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+    }
+
+    // ========== View Switcher ==========
+    function switchView(view) {
+      const calendarView = document.getElementById('calendar-view');
+      const listView = document.getElementById('list-view');
+      const btnCalendar = document.getElementById('btn-calendar');
+      const btnList = document.getElementById('btn-list');
+
+      if (view === 'calendar') {
+        calendarView.style.display = 'block';
+        listView.style.display = 'none';
+        btnCalendar.classList.add('active');
+        btnList.classList.remove('active');
+      } else {
+        calendarView.style.display = 'none';
+        listView.style.display = 'block';
+        btnCalendar.classList.remove('active');
+        btnList.classList.add('active');
+      }
+    }
+
+    // ========== Watchlist Button Toggle ==========
+    function toggleWatchBtn(btn) {
+      const isWatched = btn.classList.contains('watched');
+      
+      if (isWatched) {
+        btn.classList.remove('watched');
+        btn.setAttribute('aria-label', '加入追蹤');
+        btn.setAttribute('aria-pressed', 'false');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>';
+        updateBadge(-1);
+      } else {
+        btn.classList.add('watched');
+        btn.setAttribute('aria-label', '移除追蹤');
+        btn.setAttribute('aria-pressed', 'true');
+        btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>';
+        updateBadge(1);
+      }
+    }
+
+    // ========== Badge Update ==========
+    let watchCount = 3;
+    function updateBadge(delta) {
+      watchCount += delta;
+      if (watchCount < 0) watchCount = 0;
+      document.getElementById('header-badge').textContent = watchCount;
+      document.getElementById('watchlist-count').textContent = watchCount;
+      
+      if (watchCount === 0) {
+        document.getElementById('header-badge').style.display = 'none';
+      } else {
+        document.getElementById('header-badge').style.display = 'inline-flex';
+      }
+    }
+
+    // ========== Search ==========
+    const mockStocks = [
+      { code: '2330', name: '台積電' },
+      { code: '2317', name: '鴻海' },
+      { code: '2454', name: '聯發科' },
+      { code: '0050', name: '元大台灣50' },
+      { code: '0056', name: '元大高股息' },
+      { code: '00878', name: '國泰永續高股息' },
+      { code: '00929', name: '復華台灣科技優息' },
+      { code: '2881', name: '富邦金' },
+      { code: '2882', name: '國泰金' },
+      { code: '2891', name: '中信金' },
+    ];
+
+    function handleSearch(query) {
+      const resultsContainer = document.getElementById('search-results');
+      
+      if (!query.trim()) {
+        resultsContainer.style.display = 'none';
+        return;
+      }
+
+      const filtered = mockStocks.filter(s => 
+        s.code.includes(query) || s.name.includes(query)
+      ).slice(0, 10);
+
+      if (filtered.length === 0) {
+        resultsContainer.innerHTML = '<div class="search-no-results">找不到符合的證券</div>';
+        resultsContainer.style.display = 'block';
+        return;
+      }
+
+      resultsContainer.innerHTML = filtered.map(stock => `
+        <div class="search-result-item" onclick="addFromSearch('${stock.code}', '${stock.name}')">
+          <div class="search-result-info">
+            <span class="search-result-code">${stock.code}</span>
+            <span class="search-result-name">${stock.name}</span>
+          </div>
+          <button class="watchlist-btn watchlist-btn--sm" onclick="event.stopPropagation(); toggleWatchBtn(this)" aria-label="加入追蹤" aria-pressed="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+          </button>
+        </div>
+      `).join('');
+      
+      resultsContainer.style.display = 'block';
+    }
+
+    function addFromSearch(code, name) {
+      alert(`已將 ${code} ${name} 加入追蹤清單`);
+      document.getElementById('watchlist-search').value = '';
+      document.getElementById('search-results').style.display = 'none';
+      updateBadge(1);
+    }
+
+    // Close search results when clicking outside
+    document.addEventListener('click', function(e) {
+      const searchContainer = document.querySelector('.watchlist-search');
+      if (!searchContainer.contains(e.target)) {
+        document.getElementById('search-results').style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
