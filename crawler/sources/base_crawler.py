@@ -306,8 +306,8 @@ class BaseCrawler:
             "off": "1",
             "keyword4": "",
             "code1": "",
-            "ESSION": str(year),
-            "ession1": str(quarter),
+            "YEARN": str(year),
+            "SEASON": str(quarter),
         }
 
         resp = self._request_with_retry(
