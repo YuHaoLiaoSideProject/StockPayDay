@@ -48,6 +48,7 @@ jobs:
 
       # ─── Step 6: 部署至 GitHub Pages ───
       - name: Deploy to GitHub Pages
+        if: hashFiles('api/**') != ''
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
