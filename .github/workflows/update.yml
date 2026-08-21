@@ -4,7 +4,13 @@ name: Update Dividend Data
 on:
   schedule:
     - cron: '0 8 * * *'          # 每日 UTC 08:00（台北時間 16:00）
-  workflow_dispatch:              # 支援手動觸發
+  workflow_dispatch:
+    inputs:
+      run_crawler:
+        description: '是否執行爬蟲'
+        required: false
+        default: false
+        type: boolean
 
 # 防止同一 workflow 並發執行
 concurrency:
@@ -31,8 +37,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # ─── Step 4: 執行爬蟲 ───
+      # ─── Step 4: 執行爬蟲（僅 cron 或手動勾選時） ───
       - name: Run crawler
+        if: github.event_name == 'schedule' || inputs.run_crawler == true
         run: python crawler/fetch.py
 
       # ─── Step 5: 執行處理器 ───
