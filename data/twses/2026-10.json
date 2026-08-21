@@ -1,0 +1,29 @@
+{
+  "last_updated": "2026-08-21",
+  "records": [
+    {
+      "code": "9927",
+      "name": "泰銘",
+      "ex_date": "2026-10-01",
+      "type": "息",
+      "cash_dividend": 5.0,
+      "stock_dividend": 0.0
+    },
+    {
+      "code": "2614",
+      "name": "東森",
+      "ex_date": "2026-10-06",
+      "type": "權息",
+      "cash_dividend": 0.4,
+      "stock_dividend": 0.08
+    },
+    {
+      "code": "6108",
+      "name": "競國",
+      "ex_date": "2026-10-07",
+      "type": "息",
+      "cash_dividend": 1.0,
+      "stock_dividend": 0.0
+    }
+  ]
+}
