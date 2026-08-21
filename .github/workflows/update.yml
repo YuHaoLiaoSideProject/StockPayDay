@@ -68,7 +68,12 @@ jobs:
         run: |
           mkdir -p _site
           cp -r frontend/dist/* _site/
-          cp -r api _site/
+          # 只有 api/ 存在時才複製
+          if [ -d "api" ] && [ "$(ls -A api 2>/dev/null)" ]; then
+            cp -r api _site/
+          else
+            echo "⚠️ api/ 目錄不存在或為空，跳過複製"
+          fi
 
       # ─── Step 10: 部署至 GitHub Pages ───
       - name: Upload Pages artifact
