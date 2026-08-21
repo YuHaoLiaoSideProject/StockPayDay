@@ -725,10 +725,10 @@ defineEmits<{
 
 ### 1.12 CalendarDay.vue 整合
 
-在行事曆日期格子顯示追蹤標記。
+在行事曆日期格子顯示股票代號，追蹤優先，最多顯示 3 支。
 
 ```vue
-<!-- components/CalendarDay.vue（修改摘要） -->
+<!-- components/CalendarDay.vue -->
 
 <script setup lang="ts">
 import { computed } from 'vue'
@@ -738,11 +738,37 @@ import { useWatchlist } from '../composables/useWatchlist'
 const props = defineProps<{ day: CalendarDay }>()
 
 const { watchedCodes } = useWatchlist()
+const MAX_DISPLAY = 3
 
 // 該日是否有追蹤股票的配息
 const hasWatchedDividend = computed(() => {
   return props.day.dividends.some(d => watchedCodes.value.has(d.code))
 })
+
+// 排序後的配息資料：追蹤優先，再依代號排序
+const sortedDividends = computed(() => {
+  return [...props.day.dividends].sort((a, b) => {
+    const aWatched = watchedCodes.value.has(a.code) ? 0 : 1
+    const bWatched = watchedCodes.value.has(b.code) ? 0 : 1
+    if (aWatched !== bWatched) return aWatched - bWatched
+    return a.code.localeCompare(b.code)
+  })
+})
+
+// 顯示的配息項目（最多 3 支）
+const displayedDividends = computed(() => {
+  return sortedDividends.value.slice(0, MAX_DISPLAY)
+})
+
+// 超過 3 支的數量
+const overflowCount = computed(() => {
+  return Math.max(0, props.day.dividends.length - MAX_DISPLAY)
+})
+
+// 判斷是否為追蹤股票
+function isWatched(code: string): boolean {
+  return watchedCodes.value.has(code)
+}
 </script>
 
 <template>
@@ -757,20 +783,23 @@ const hasWatchedDividend = computed(() => {
     :data-date="day.date"
   >
     <span class="day-number">{{ new Date(day.date + 'T00:00:00').getDate() }}</span>
-
-    <!-- 配息圓點 -->
-    <span v-if="day.hasDividend" class="dividend-dot"></span>
-
-    <!-- 追蹤標記（紅色小圓點） -->
-    <span v-if="hasWatchedDividend" class="watched-dot"></span>
+    
+    <!-- 配息股票代號列表 -->
+    <div v-if="day.hasDividend" class="dividend-labels">
+      <span
+        v-for="item in displayedDividends"
+        :key="item.code"
+        class="dividend-label"
+        :class="{ 'dividend-label--watched': isWatched(item.code) }"
+      >
+        {{ item.code }}<span v-if="isWatched(item.code)" class="watched-heart">♥</span>
+      </span>
+      <span v-if="overflowCount > 0" class="dividend-more">
+        +{{ overflowCount }}
+      </span>
+    </div>
   </div>
 </template>
-
-<style scoped>
-.watched-dot {
-  @apply absolute bottom-1 right-1 w-2 h-2 bg-red-500 rounded-full;
-}
-</style>
 ```
 
 ---
@@ -834,8 +863,8 @@ const hasWatchedDividend = computed(() => {
                    ┌────────────────┴────────────────┐
                    ▼                                  ▼
         [CalendarDay]                        [WatchlistView]
-  hasWatchedDividend = true            顯示追蹤股票配息
-  顯示紅色圓點                          行事曆/列表模式
+  顯示股票代號列表                      顯示追蹤股票配息
+  追蹤優先 + ♥ 標記                     行事曆/列表模式
 ```
 
 ---
@@ -923,7 +952,10 @@ const hasWatchedDividend = computed(() => {
 - [ ] 列表正確顯示追蹤股票的配息資料
 
 ### 視覺標示
-- [ ] 行事曆格子顯示追蹤標記（紅色圓點）
+- [ ] 行事曆格子顯示股票代號（最多 3 支）
+- [ ] 追蹤股票顯示代號 + ♥（紅色加粗）
+- [ ] 非追蹤股票顯示代號（藍色）
+- [ ] 超過 3 支顯示 +N
 - [ ] 追蹤按鈕尺寸正確（sm/md/lg）
 - [ ] 深色模式下樣式正常
 
@@ -954,7 +986,7 @@ const hasWatchedDividend = computed(() => {
 | 追蹤清單為空 | WatchlistEmpty | §1.6 |
 | 追蹤清單行事曆模式 | WatchlistView + Calendar | §1.5 |
 | 追蹤清單列表模式 | WatchlistView + ListView | §1.5 |
-| 行事曆顯示追蹤標記 | CalendarDay + useWatchlist | §1.12 |
+| 行事曆顯示股票代號 | CalendarDay + useWatchlist | §1.12 |
 | 追蹤清單持久化 | useWatchlist + localStorage | §1.3, §2.1 |
 
 ---

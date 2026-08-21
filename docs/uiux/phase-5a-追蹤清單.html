@@ -533,33 +533,40 @@
       border-radius: 50%;
     }
 
-    .dividend-dot {
-      position: absolute;
-      bottom: 8px;
-      left: 8px;
-      width: 6px;
-      height: 6px;
-      background: var(--accent);
-      border-radius: 50%;
-    }
-
-    .watched-dot {
-      position: absolute;
-      bottom: 8px;
-      right: 8px;
-      width: 8px;
-      height: 8px;
-      background: var(--watched-dot);
-      border-radius: 50%;
+    /* Dividend labels on calendar */
+    .dividend-labels {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      margin-top: 4px;
+      width: 100%;
     }
 
     .dividend-label {
-      margin-top: 4px;
       font-size: 10px;
+      line-height: 1.2;
       color: var(--accent);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .dividend-label--watched {
+      color: var(--watched-dot);
+      font-weight: 600;
+    }
+
+    .watched-heart {
+      font-size: 8px;
+      margin-left: 1px;
+    }
+
+    .dividend-more {
+      font-size: 9px;
+      color: var(--muted);
+      font-weight: 500;
     }
 
     /* ========== List View ========== */
@@ -983,15 +990,18 @@
               <div class="calendar-day"><span class="day-number">13</span></div>
               <div class="calendar-day">
                 <span class="day-number">14</span>
-                <div class="dividend-dot"></div>
-                <div class="dividend-label">0056</div>
+                <div class="dividend-labels">
+                  <span class="dividend-label dividend-label--watched">0056♥</span>
+                </div>
               </div>
               <div class="calendar-day"><span class="day-number">15</span></div>
               <div class="calendar-day"><span class="day-number">16</span></div>
               <div class="calendar-day">
                 <span class="day-number">17</span>
-                <div class="dividend-dot"></div>
-                <div class="dividend-label">0050</div>
+                <div class="dividend-labels">
+                  <span class="dividend-label dividend-label--watched">0050♥</span>
+                  <span class="dividend-label">0052</span>
+                </div>
               </div>
               <div class="calendar-day"><span class="day-number">18</span></div>
               <!-- Week 4 -->
@@ -1002,27 +1012,35 @@
               <div class="calendar-day"><span class="day-number">23</span></div>
               <div class="calendar-day">
                 <span class="day-number">24</span>
-                <div class="watched-dot"></div>
-                <div class="dividend-label" style="color: var(--watched-dot);">2330 ♥</div>
+                <div class="dividend-labels">
+                  <span class="dividend-label dividend-label--watched">2330♥</span>
+                  <span class="dividend-label">2310</span>
+                  <span class="dividend-label">2303</span>
+                  <span class="dividend-more">+2</span>
+                </div>
               </div>
               <div class="calendar-day">
                 <span class="day-number">25</span>
-                <div class="dividend-dot"></div>
-                <div class="dividend-label">2310</div>
+                <div class="dividend-labels">
+                  <span class="dividend-label">2310</span>
+                </div>
               </div>
               <!-- Week 5 -->
               <div class="calendar-day">
                 <span class="day-number">26</span>
-                <div class="watched-dot"></div>
-                <div class="dividend-label" style="color: var(--watched-dot);">0056 ♥</div>
+                <div class="dividend-labels">
+                  <span class="dividend-label dividend-label--watched">0056♥</span>
+                  <span class="dividend-label">00878</span>
+                </div>
               </div>
               <div class="calendar-day"><span class="day-number">27</span></div>
               <div class="calendar-day"><span class="day-number">28</span></div>
               <div class="calendar-day"><span class="day-number">29</span></div>
               <div class="calendar-day">
                 <span class="day-number">30</span>
-                <div class="watched-dot"></div>
-                <div class="dividend-label" style="color: var(--watched-dot);">0050 ♥</div>
+                <div class="dividend-labels">
+                  <span class="dividend-label dividend-label--watched">0050♥</span>
+                </div>
               </div>
               <div class="calendar-day"><span class="day-number">31</span></div>
               <div class="calendar-day other-month"><span class="day-number">1</span></div>

@@ -117,7 +117,7 @@ flowchart TD
     
     DefaultView --> ToggleView{切換模式?}
     
-    ToggleView -->|行事曆| CalendarView[顯示行事曆<br/>標示追蹤股票配息日]
+    ToggleView -->|行事曆| CalendarView[顯示行事曆<br/>顯示股票代號<br/>追蹤優先+♥]
     ToggleView -->|列表| ListView[顯示列表<br/>依日期排序配息]
     
     CalendarView --> SelectDate{點擊日期?}
@@ -267,7 +267,9 @@ flowchart TD
 - [ ] 可切換行事曆/列表模式
 
 ### 追蹤清單內容
-- [ ] 行事曆模式正確標示追蹤股票的配息日期（紅色圓點）
+- [ ] 行事曆模式顯示股票代號（追蹤優先，最多 3 支）
+- [ ] 追蹤股票顯示代號 + ♥（紅色加粗）
+- [ ] 超過 3 支顯示 +N
 - [ ] 列表模式正確顯示追蹤股票的配息資料
 - [ ] 行事曆模式可點擊日期查看配息明細
 

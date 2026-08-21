@@ -212,12 +212,44 @@ body {
   background: var(--dividend-bg);
 }
 
-.dividend-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--dividend-dot);
+/* Dividend labels on calendar */
+.dividend-labels {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
   margin-top: 2px;
+  width: 100%;
+}
+
+.dividend-label {
+  font-size: 0.625rem;
+  line-height: 1.2;
+  color: var(--dividend-dot);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.dividend-label--watched {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.dark .dividend-label--watched {
+  color: #f87171;
+}
+
+.watched-heart {
+  font-size: 0.5rem;
+  margin-left: 1px;
+}
+
+.dividend-more {
+  font-size: 0.5625rem;
+  color: var(--text-muted);
+  font-weight: 500;
 }
 
 /* ViewSwitcher */
@@ -865,19 +897,6 @@ body {
 .watchlist-btn:focus-visible {
   outline: 2px solid var(--tab-active-bg);
   outline-offset: 2px;
-}
-
-/* Watched dot on calendar */
-.watched-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #ef4444;
-  margin-top: 1px;
-}
-
-.dark .watched-dot {
-  background: #f87171;
 }
 
 /* ============================================

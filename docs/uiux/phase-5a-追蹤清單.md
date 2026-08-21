@@ -31,7 +31,7 @@
 | 追蹤按鈕尺寸一致性 | 三種尺寸需保持視覺比例 | 使用 CSS 變數控制，統一 icon 尺寸 |
 | 搜尋結果下拉 z-index | 可能被其他元素遮擋 | 設定 z-index: 50 |
 | 追蹤清單空狀態 | 需引導使用者操作 | 提供搜尋欄 + 行動按鈕 |
-| 行事曆追蹤標記 | 不影響既有配息圓點 | 使用不同顏色（紅色）+ 位置（右下角） |
+| 行事曆配息標記 | 需顯示股票代號，追蹤優先 | 最多顯示 3 支代號，追蹤加 ♥，超過 +N |
 
 ---
 
@@ -100,7 +100,7 @@
 | `--heart-hover` | `#f87171` | `#fca5a5` | hover 狀態 |
 | `--badge-bg` | `#1a73e8` | `#60a5fa` | 徽章背景 |
 | `--badge-text` | `#ffffff` | `#ffffff` | 徽章文字 |
-| `--watched-dot` | `#ef4444` | `#f87171` | 行事曆追蹤圓點 |
+| `--watched-label` | `#ef4444` | `#f87171` | 行事曆追蹤代號（紅色） |
 | `--search-focus` | `#1a73e8` | `#60a5fa` | 搜尋欄 focus 邊框 |
 
 ### 3.6 動畫
@@ -173,14 +173,18 @@
 │  │     │     │     │     │     │     │     │           │
 │  ├─────┼─────┼─────┼─────┼─────┼─────┼─────┤           │
 │  │ 13  │ 14  │ 15  │ 16  │ 17  │ 18  │ 19  │           │
-│  │     │     │ ●   │     │     │ ●●  │     │  ● = 配息 │
-│  ├─────┼─────┼─────┼─────┼─────┼─────┼─────┤  ● = 追蹤 │
+│  │     │0056♥│     │0050♥│     │     │     │           │
+│  ├─────┼─────┼─────┼─────┼─────┼─────┼─────┤           │
 │  │ 20  │ 21  │ 22  │ 23  │ 24  │ 25  │ 26  │           │
-│  │     │     │     │ ●   │     │ ●   │     │           │
+│  │     │     │     │     │2330♥│     │0056♥│           │
 │  ├─────┼─────┼─────┼─────┼─────┼─────┼─────┤           │
 │  │ 27  │ 28  │ 29  │ 30  │ 31  │     │     │           │
-│  │     │     │     │     │     │     │     │           │
+│  │     │     │     │0050♥│     │     │     │           │
 │  └─────┴─────┴─────┴─────┴─────┴─────┴─────┘           │
+│                                                         │
+│  圖例：0056♥ = 追蹤股票（紅色+愛心）                     │
+│        2310  = 非追蹤股票（藍色）                        │
+│        +2    = 超過 3 支時顯示                          │
 │                                                         │
 │  已追蹤 3 支證券                                         │
 └─────────────────────────────────────────────────────────┘
@@ -364,10 +368,26 @@ WatchlistView.vue
          rounded-full min-w-[var(--badge-size)];
 }
 
-/* 行事曆追蹤圓點 */
-.calendar-day .watched-dot {
-  @apply absolute bottom-1 right-1 w-2 h-2
-         bg-[var(--watched-dot)] rounded-full;
+/* 行事曆配息代號 */
+.dividend-labels {
+  @apply flex flex-col items-center gap-0.5 mt-1 w-full;
+}
+
+.dividend-label {
+  @apply text-[0.625rem] leading-tight text-[var(--dividend-dot)]
+         whitespace-nowrap overflow-hidden text-ellipsis max-w-full;
+}
+
+.dividend-label--watched {
+  @apply text-[var(--watched-label)] font-semibold;
+}
+
+.watched-heart {
+  @apply text-[0.5rem] ml-px;
+}
+
+.dividend-more {
+  @apply text-[0.5625rem] text-text-muted font-medium;
 }
 ```
 
@@ -378,7 +398,7 @@ WatchlistView.vue
 | 追蹤按鈕切換 | `transform`, `color` | 150ms ease，scale(0.95) → scale(1) |
 | 徽章數字更新 | `opacity` | 300ms fade，數字淡出 → 新數字淡入 |
 | 搜尋結果下拉 | `opacity`, `transform` | 200ms ease，translateY(-8px) → translateY(0) |
-| 行事曆追蹤標記 | `opacity` | 150ms fade，新追蹤立即顯示 |
+| 行事曆配息代號 | `opacity` | 150ms fade，新配息立即顯示 |
 
 ### 8.4 `prefers-reduced-motion`
 
@@ -434,8 +454,10 @@ WatchlistView.vue
 - [ ] Escape 可關閉下拉
 
 ### 9.5 行事曆
-- [ ] 追蹤股票的配息日有紅色圓點
-- [ ] 不影響既有配息圓點
+- [ ] 配息日顯示股票代號（最多 3 支）
+- [ ] 追蹤股票顯示代號 + ♥（紅色加粗）
+- [ ] 非追蹤股票顯示代號（藍色）
+- [ ] 超過 3 支顯示 +N
 - [ ] 點擊日期可查看配息明細
 - [ ] 月份導航正常
 
