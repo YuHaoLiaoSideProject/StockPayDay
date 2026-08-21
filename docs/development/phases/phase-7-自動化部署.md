@@ -6,7 +6,7 @@
 > **操作流程**：`docs/interaction-flows/phases/phase-7-自動化部署.md`
 > **BDD**：`docs/bdds/stockpayday.feature`（「自動化部署」章節）
 > **測試計畫**：`docs/test-plans/phases/phase-7-自動化部署測試計畫.md`
-> **狀態**：設計完成，待開發
+> **狀態**：✅ 開發完成
 
 ---
 

@@ -1,0 +1,56 @@
+# StockPayDay++ 每日自動化：爬蟲 → 處理 → 通知 → 部署
+name: Update Dividend Data
+
+on:
+  schedule:
+    - cron: '0 8 * * *'          # 每日 UTC 08:00（台北時間 16:00）
+  workflow_dispatch:              # 支援手動觸發
+
+# 防止同一 workflow 並發執行
+concurrency:
+  group: update-dividend
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # ─── Step 1: Checkout 專案 ───
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ─── Step 2: 設定 Python 環境 ───
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # ─── Step 3: 安裝依賴 ───
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # ─── Step 4: 執行爬蟲 ───
+      - name: Run crawler
+        run: python crawler/fetch.py
+
+      # ─── Step 5: 執行處理器 ───
+      - name: Run processor
+        run: python processor/generate_api.py
+
+      # ─── Step 6: 執行通知 ───
+      - name: Notify
+        if: success()
+        run: python processor/notify.py
+        env:
+          LINE_NOTIFY_TOKEN: ${{ secrets.LINE_NOTIFY_TOKEN }}
+        continue-on-error: true  # 通知失敗不影響部署
+
+      # ─── Step 7: 部署至 GitHub Pages ───
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./api
+          clean_dir: true
