@@ -371,31 +371,32 @@ body {
 /* List view */
 .list-view {
   padding: 0.75rem 1rem;
+  max-width: 760px;
 }
 
 .list-header {
   display: grid;
-  grid-template-columns: 100px 70px 1fr 80px 36px;
-  gap: 8px;
-  padding: 0.5rem 0;
+  grid-template-columns: 76px 1fr 96px 44px;
+  gap: 10px;
+  padding: 0.45rem 0.35rem;
   border-bottom: 2px solid var(--border);
   font-size: 0.75rem;
   letter-spacing: 0.03em;
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .list-item {
   display: grid;
-  grid-template-columns: 100px 70px 1fr 80px 36px;
-  gap: 8px;
-  padding: 0.625rem 0;
+  grid-template-columns: 76px 1fr 96px 44px;
+  gap: 10px;
+  padding: 0.55rem 0.35rem;
   border-bottom: 1px solid var(--border);
   font-size: 0.875rem;
   min-height: 52px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
   align-items: center;
 }
 
@@ -403,11 +404,27 @@ body {
   background: var(--surface-2);
 }
 
+.list-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26,115,232,0.2);
+}
+
+.item-code {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .item-amount {
   color: var(--amount-color);
   font-weight: 600;
   text-align: right;
   font-variant-numeric: tabular-nums;
+  font-size: 0.875rem;
+}
+
+.item-amount.zero {
+  color: var(--text-muted);
+  font-weight: 400;
 }
 
 .list-date-group {
@@ -431,6 +448,29 @@ body {
   font-size: 0.72rem;
   color: var(--text-muted);
   font-weight: 600;
+}
+
+.list-more {
+  grid-column: 1 / -1;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.78rem;
+  color: var(--tab-active-bg);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background var(--transition-fast);
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.list-more:hover {
+  background: rgba(26, 115, 232, 0.08);
+}
+
+.list-more:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26,115,232,0.2);
 }
 
 /* Modal */

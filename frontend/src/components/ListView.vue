@@ -42,10 +42,10 @@ function formatDate(dateStr: string): string {
 <template>
   <div class="list-view">
     <div class="list-header">
-      <div>日期</div>
       <div>代號</div>
       <div>名稱</div>
       <div style="text-align: right;">金額</div>
+      <div></div>
     </div>
     <template v-for="(group, date) in groupedItems" :key="date">
       <div class="list-date-group">
@@ -56,7 +56,10 @@ function formatDate(dateStr: string): string {
         v-for="item in group"
         :key="`${item.code}-${item.ex_date}`"
         :dividend="item"
+        class="clickable"
+        tabindex="0"
         @click="emit('stock-click', item.code)"
+        @keydown.enter="emit('stock-click', item.code)"
       />
     </template>
     <EmptyState v-if="items.length === 0" message="目前沒有即將配息的證券" />
