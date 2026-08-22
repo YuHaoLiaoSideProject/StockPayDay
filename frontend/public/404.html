@@ -6,13 +6,14 @@
   <script>
     // GitHub Pages SPA fallback：將路徑轉換為 hash 傳給 index.html
     // 例如: /StockPayDay/app → /StockPayDay/#/app
+    // 使用 hash mode，直接 redirect 到帶 hash 的 URL
     var pathSegmentsToKeep = 1; // 保留 /StockPayDay/
     var l = window.location;
+    var path = l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/');
     l.replace(
       l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
-      l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
-      (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') +
+      '/#/' + path +
       l.hash
     );
   </script>
