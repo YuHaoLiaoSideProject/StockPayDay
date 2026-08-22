@@ -7,7 +7,7 @@
   <!-- GitHub Pages SPA redirect fallback -->
   <script type="text/javascript">
     // 從 404.html 的 query string 還原路徑
-    var pathToKeep = '/StockPayDay/';
+    // 例如: /StockPayDay/?/stock/2330 → /StockPayDay/stock/2330
     (function(l) {
       if (l.search[1] === '/') {
         var decoded = l.search.slice(1).split('&').map(function(s) {
