@@ -12,13 +12,13 @@ test.describe('StockPayDay++ E2E', () => {
       await expect(page.locator('.view-switcher')).toBeVisible()
     })
 
-    test('網址為根路徑（無 #）', async ({ page }) => {
+    test('根路徑使用 hash 路由（#/，GitHub Pages 相容）', async ({ page }) => {
       await page.goto('/')
       await page.waitForLoadState('networkidle')
       
-      // 確認 URL 沒有 #
-      expect(page.url()).not.toContain('#')
-      expect(page.url()).toMatch(/\/$/)
+      // router 使用 createWebHashHistory（GitHub Pages 靜態部署相容）
+      // 根路徑 URL 為 http://host/#/
+      expect(page.url()).toContain('#/')
     })
 
     test('Header 顯示 Logo 和功能按鈕', async ({ page }) => {

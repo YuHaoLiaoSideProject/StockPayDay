@@ -192,3 +192,75 @@ describe('useWatchlist', () => {
     })
   })
 })
+
+describe('useWatchlist — 功能 001（追蹤任意股票）', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    useWatchlist().reset()
+  })
+
+  it('連續 toggle 同一支股票（快速連點）最終狀態一致', () => {
+    const { toggle, isWatched } = useWatchlist()
+
+    toggle('2330', '台積電')
+    toggle('2330', '台積電')
+    toggle('2330', '台積電')
+
+    expect(isWatched('2330')).toBe(true)
+
+    toggle('2330', '台積電')
+    expect(isWatched('2330')).toBe(false)
+  })
+
+  it('追蹤第 101 支股票無數量上限', () => {
+    const { add, items } = useWatchlist()
+
+    for (let i = 1; i <= 101; i++) {
+      add(String(i).padStart(4, '0'), `股票${i}`)
+    }
+
+    expect(items.value.length).toBe(101)
+  })
+
+  it('localStorage.setItem 拋錯時追蹤操作仍成功（session 記憶、不 crash）', () => {
+    const original = Storage.prototype.setItem
+    Storage.prototype.setItem = () => {
+      throw new Error('quota exceeded')
+    }
+    try {
+      const { toggle, isWatched, items } = useWatchlist()
+
+      toggle('2330', '台積電')
+
+      expect(isWatched('2330')).toBe(true)
+      expect(items.value).toHaveLength(1)
+    } finally {
+      Storage.prototype.setItem = original
+    }
+  })
+
+  it('localStorage.getItem 拋錯時初始化回退空清單（不 crash）', () => {
+    const original = Storage.prototype.getItem
+    Storage.prototype.getItem = () => {
+      throw new Error('access denied')
+    }
+    try {
+      localStorage.clear()
+      useWatchlist().reset()
+      const { items } = useWatchlist()
+
+      expect(items.value).toEqual([])
+    } finally {
+      Storage.prototype.getItem = original
+    }
+  })
+
+  it('已下市股票保留於追蹤清單（不因無配息被過濾）', () => {
+    const { add, isWatched, items } = useWatchlist()
+
+    add('9999', '已下市測試股')
+
+    expect(isWatched('9999')).toBe(true)
+    expect(items.value.some(i => i.code === '9999')).toBe(true)
+  })
+})

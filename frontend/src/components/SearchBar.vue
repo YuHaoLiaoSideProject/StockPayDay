@@ -124,8 +124,12 @@ defineExpose({ toggleExpand })
         role="option"
         @mousedown.prevent="onSelect(result)"
       >
-        <span class="result-code">{{ result.code }}</span>
-        <span class="result-name">{{ result.name }}</span>
+        <div class="result-main">
+          <span class="result-code">{{ result.code }}</span>
+          <span class="result-name">{{ result.name }}</span>
+        </div>
+        <!-- 具名 slot：父層注入 ❤️ 等操作（SearchBar 與 watchlist 領域解耦） -->
+        <slot name="result-actions" :result="result" />
       </div>
     </div>
 

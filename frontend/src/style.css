@@ -785,6 +785,27 @@ body {
   background: var(--surface-2);
 }
 
+/* 結果列主區塊（代號 + 名稱），slot ❤️ 置右 */
+.result-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.result-main .result-code,
+.result-main .result-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-main .result-name {
+  flex: 1;
+  min-width: 0;
+}
+
 .result-code {
   font-weight: 600;
   color: var(--text);
@@ -793,6 +814,18 @@ body {
 .result-name {
   color: var(--text-muted);
   font-size: 0.8125rem;
+}
+
+/* ============================================
+   追蹤清單頁常駐搜尋欄（功能 001）
+   ============================================ */
+.watchlist-search {
+  margin-bottom: 1.25rem;
+}
+
+.watchlist-search .search-bar {
+  width: 100%;
+  max-width: 480px;
 }
 
 .no-results {
@@ -968,6 +1001,11 @@ body {
     margin-top: 4px;
     box-shadow: none;
     border: 1px solid var(--border);
+  }
+  /* 功能 001：搜尋結果列 ❤️ 觸控目標 ≥ 44×44px（Tech Decision 005） */
+  .search-result-item .watchlist-btn--sm {
+    width: 44px;
+    height: 44px;
   }
 }
 

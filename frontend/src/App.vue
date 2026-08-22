@@ -13,6 +13,7 @@ import { useSearch } from './composables/useSearch'
 import { useWatchlist } from './composables/useWatchlist'
 import { useDarkMode } from './composables/useDarkMode'
 import SearchBar from './components/SearchBar.vue'
+import WatchlistButton from './components/WatchlistButton.vue'
 
 const router = useRouter()
 const { query, results } = useSearch()
@@ -52,7 +53,16 @@ function goToWatchlist() {
             </svg>
             <span v-if="items.length > 0" class="watchlist-badge">{{ items.length }}</span>
           </button>
-          <SearchBar v-model="query" :results="results" @select="onStockSelect" />
+          <SearchBar v-model="query" :results="results" @select="onStockSelect">
+            <template #result-actions="{ result }">
+              <WatchlistButton
+                :code="result.code"
+                :name="result.name"
+                type="stock"
+                size="sm"
+              />
+            </template>
+          </SearchBar>
           <button class="theme-toggle" @click="toggleDark" :aria-label="isDark ? '切換為淺色模式' : '切換為深色模式'">
             <svg v-if="isDark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="5"/>

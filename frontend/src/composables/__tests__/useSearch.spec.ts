@@ -158,3 +158,40 @@ describe('useSearch', () => {
     expect(results.value.some(r => r.code === '2317')).toBe(true)
   })
 })
+
+describe('useSearch — 功能 001（追蹤任意股票）', () => {
+  beforeEach(() => {
+    vi.stubGlobal('fetch', mockFetch)
+    mockFetch.mockReset()
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(mockSecuritiesIndex),
+    })
+  })
+
+  it('以名稱「台積」搜尋命中 2330 台積電', async () => {
+    const { query, results } = useSearch()
+
+    await nextTick()
+    await new Promise(resolve => setTimeout(resolve, 10))
+
+    query.value = '台積'
+    await nextTick()
+
+    expect(results.value.some(r => r.code === '2330' && r.name === '台積電')).toBe(true)
+  })
+
+  it('每份實例的 query/results 各自獨立（導覽列與追蹤清單頁互不干擾）', async () => {
+    const navbar = useSearch()
+    await nextTick()
+    await new Promise(resolve => setTimeout(resolve, 10))
+
+    const watchlistPage = useSearch()
+    navbar.query.value = '2330'
+    await nextTick()
+
+    expect(navbar.results.value.some(r => r.code === '2330')).toBe(true)
+    expect(watchlistPage.query.value).toBe('')
+    expect(watchlistPage.results.value).toHaveLength(0)
+  })
+})

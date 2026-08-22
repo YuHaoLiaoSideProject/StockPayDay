@@ -34,6 +34,10 @@ function handleClick() {
   emit('toggle', props.code, !wasWatched)
 }
 
+// 事件防護（功能 001）：@click.stop 不冒泡列導航；
+// @mousedown.stop.prevent → .stop 攔截 mousedown 冒泡（不觸發結果列 @mousedown.prevent 導航），
+// .prevent 阻止 mousedown 預設搶焦（否則 input blur → setTimeout(150ms) 後下拉關閉；E2E 實測驗證）
+
 // 尺寸 class
 const sizeClass = computed(() => {
   switch (props.size) {
@@ -51,10 +55,12 @@ const sizeClass = computed(() => {
       sizeClass,
       { 'watched': watched }
     ]"
+    :data-testid="`heart-${props.code}`"
     :aria-label="watched ? '移除追蹤' : '加入追蹤'"
     :aria-pressed="watched"
     :title="watched ? '移除追蹤' : '加入追蹤'"
     @click.stop="handleClick"
+    @mousedown.stop.prevent
   >
     <!-- 已追蹤：實心愛心 -->
     <svg v-if="watched" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
