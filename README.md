@@ -38,6 +38,30 @@ npm install
 npm run dev
 ```
 
+## Git Hooks（commit 自動跑測試）
+
+Clone 後執行一次以下指令，之後每次 `git commit` 會自動依暫存內容執行對應測試：
+
+```bash
+git config core.hooksPath .githooks
+```
+
+- 暫存有 `.py` 檔 → 執行 `pytest`（processor/、crawler/）
+- 暫存有前端檔案 → 執行 `vitest run` + 專案建置（`vue-tsc` 型別檢查 + `vite build`）
+- 測試或建置失敗會中止 commit；緊急跳過可用 `git commit --no-verify`
+
+另設有 GitHub Actions CI（`.github/workflows/ci.yml`），push / PR 時於遠端自動驗證。
+
+## 自動部署 GitHub Pages
+
+Push 到 `master` 時，GitHub Actions（`.github/workflows/update.yml`）會自動：
+
+1. 以 repo 內 `data/` 重建 `api/`（不執行爬蟲）
+2. 建構前端並與 `api/` 組裝
+3. 部署至 GitHub Pages
+
+每日排程（UTC 08:00）或手動觸發時才會額外執行爬蟲抓取最新資料。
+
 ## 環境變數
 
 複製 `.env.example` 為 `.env` 並填入：

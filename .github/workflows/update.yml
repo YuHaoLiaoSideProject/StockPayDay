@@ -1,7 +1,19 @@
-# StockPayDay++ 每日自動化：爬蟲 → 處理 → 建構前端 → 部署
+# StockPayDay++ 自動化：爬蟲 → 處理 → 建構前端 → 部署 GitHub Pages
+# 觸發時機：push 到 master / 每日排程 / 手動
+#
+# 注意：push 觸發時「不執行爬蟲」，直接以 repo 內的 data/ 重建 api/ 後部署；
+#       只有每日排程或手動勾選 run_crawler 才會爬新資料。
 name: Update Dividend Data
 
 on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+      - '.githooks/**'
+      - '.github/workflows/ci.yml'
   schedule:
     - cron: '0 8 * * *'          # 每日 UTC 08:00（台北時間 16:00）
   workflow_dispatch:

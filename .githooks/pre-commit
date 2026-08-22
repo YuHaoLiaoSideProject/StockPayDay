@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────
+# Pre-commit hook：commit 前自動跑測試驗證
+#
+# - 有暫存的 Python 檔案 → 跑 pytest（processor/、crawler/）
+# - 有暫存的前端檔案   → 跑 vitest + 專案建置（vue-tsc 型別檢查 + vite build）
+# - 環境不存在時顯示警告並略過（不阻擋 commit）
+# - 緊急跳過方式：git commit --no-verify
+#
+# 啟用方式（clone 後執行一次）：
+#   git config core.hooksPath .githooks
+# ─────────────────────────────────────────────────────────────
+set -uo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT" || exit 1
+
+FAIL=0
+
+staged() {
+    # 判斷暫存區是否有符合 pattern 的變更
+    git diff --cached --name-only --diff-filter=ACMR | grep -E "$1" >/dev/null 2>&1
+}
+
+# ─── Python 測試 ───
+if staged '\.py$'; then
+    if [ -x "venv/bin/python" ]; then
+        echo "🐍 [pre-commit] 執行 Python 測試..."
+        if ! venv/bin/python -m pytest processor/ crawler/ -q; then
+            echo "❌ Python 測試失敗，commit 已中止"
+            FAIL=1
+        fi
+    else
+        echo "⚠️  [pre-commit] 找不到 venv/bin/python，略過 Python 測試"
+    fi
+fi
+
+# ─── 前端測試 + 專案建置 ───
+if staged '^frontend/(src|package\.json|package-lock\.json|vite\.config\.ts|tsconfig.*)'; then
+    if [ ! -d "frontend/node_modules" ]; then
+        echo "⚠️  [pre-commit] 找不到 frontend/node_modules，略過前端測試與建置（先執行 cd frontend && npm ci）"
+    else
+        echo "🟩 [pre-commit] 執行前端測試 (vitest)..."
+        if ! (cd frontend && npx vitest run); then
+            echo "❌ 前端測試失敗，commit 已中止"
+            FAIL=1
+        fi
+
+        # 建置驗證（含 vue-tsc 型別檢查）；測試已失敗時不再重複跑
+        if [ "$FAIL" -eq 0 ]; then
+            echo "🏗️  [pre-commit] 執行專案建置 (npm run build)..."
+            if ! (cd frontend && npm run build); then
+                echo "❌ 專案建置失敗，commit 已中止"
+                FAIL=1
+            fi
+        fi
+    fi
+fi
+
+if [ "$FAIL" -ne 0 ]; then
+    echo ""
+    echo "💡 如需緊急跳過測試：git commit --no-verify"
+    exit 1
+fi
+
+exit 0
