@@ -75,12 +75,15 @@ jobs:
         run: cd frontend && npm run build
 
       # ─── Step 9: 組裝部署目錄 ───
-      # 參考 AirTicketsPrice 模式：frontend/dist + api/ 合併到 _site/
       - name: Assemble Pages site
         run: |
           mkdir -p _site
-          cp -r frontend/dist/* _site/
-          # 只有 api/ 存在時才複製
+          # Landing page（README）放根目錄
+          cp index.html _site/
+          # Vue 前端放 /app/
+          mkdir -p _site/app
+          cp -r frontend/dist/* _site/app/
+          # API 放 /api/
           if [ -d "api" ] && [ "$(ls -A api 2>/dev/null)" ]; then
             cp -r api _site/
           else

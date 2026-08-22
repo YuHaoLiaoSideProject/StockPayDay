@@ -15,7 +15,7 @@ async function load(): Promise<void> {
   errorMessage.value = ''
 
   try {
-    const response = await fetch('./api/upcoming.json')
+    const response = await fetch('/api/upcoming.json')
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
     const data: UpcomingDividend[] = await response.json()
     upcoming.value = data
