@@ -427,8 +427,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # 驗證參數
-    if args.quarter is not None and args.year is None:
-        parser.error("指定季度時必須同時指定年份")
+    if (args.year is None) != (args.quarter is None):
+        parser.error("年份與季度必須同時指定")
 
     if args.quarter is not None and args.quarter not in (1, 2, 3, 4):
         parser.error("季度必須是 1-4")

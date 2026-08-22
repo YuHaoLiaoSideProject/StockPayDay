@@ -18,6 +18,8 @@ from processor.generate_api import (
     generate_securities_history,
     save_api_file,
     merge_twses_and_mops,
+    load_securities,
+    merge_securities_and_announcements,
 )
 
 
@@ -265,6 +267,109 @@ class TestGenerateSecuritiesHistory:
         with open(tmp_path / "1583.json") as f:
             data = json.load(f)
         assert data["history"][0]["stock_dividend"] == 0.09
+
+
+class TestLoadSecurities:
+    """測試基底證券歷史讀取（data/{stocks,etfs,preferred}）"""
+
+    def _write_security(self, data_dir, subdir, code, history):
+        sec_dir = data_dir / subdir
+        sec_dir.mkdir(parents=True, exist_ok=True)
+        (sec_dir / f"{code}.json").write_text(json.dumps({
+            "code": code, "name": f"證券{code}", "type": subdir[:-1],
+            "dividend_history": history,
+        }, ensure_ascii=False), encoding="utf-8")
+
+    def test_flattens_dividend_history(self, tmp_path, monkeypatch):
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", tmp_path)
+        self._write_security(tmp_path, "stocks", "2330", [
+            {"year": 2026, "ex_date": "2026-07-25",
+             "pay_date": "2026-08-15", "cash_dividend": 3.5,
+             "stock_dividend": 0},
+            {"year": 2025, "ex_date": "2025-07-18",
+             "pay_date": "2025-08-08", "cash_dividend": 3.2,
+             "stock_dividend": 0},
+        ])
+
+        records = load_securities()
+        assert len(records) == 2
+        assert records[0]["code"] == "2330"
+        assert records[0]["type"] == "stock"
+        assert records[0]["cash_dividend"] == 3.5
+
+    def test_reads_all_subdirs_and_skips_missing(self, tmp_path, monkeypatch):
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", tmp_path)
+        self._write_security(tmp_path, "stocks", "2330", [
+            {"year": 2026, "ex_date": "2026-07-25", "cash_dividend": 3.5}])
+        self._write_security(tmp_path, "etfs", "0056", [
+            {"year": 2026, "ex_date": "2026-07-20", "cash_dividend": 1.8}])
+        # preferred 目錄不存在，應跳過不中斷
+
+        records = load_securities()
+        assert len(records) == 2
+        types = {r["type"] for r in records}
+        assert types == {"stock", "etf"}
+
+    def test_skips_invalid_json(self, tmp_path, monkeypatch):
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", tmp_path)
+        stocks_dir = tmp_path / "stocks"
+        stocks_dir.mkdir(parents=True)
+        (stocks_dir / "bad.json").write_text("{not valid", encoding="utf-8")
+
+        assert load_securities() == []
+
+
+class TestMergeSecuritiesAndAnnouncements:
+    """測試基底歷史與最新公告合併"""
+
+    def test_base_history_preserved_with_type(self):
+        securities = [{
+            "code": "2330", "name": "台積電", "type": "stock",
+            "ex_date": "2025-07-18", "pay_date": "2025-08-08",
+            "cash_dividend": 3.2, "stock_dividend": 0,
+        }]
+
+        merged = merge_securities_and_announcements(securities, [])
+        assert len(merged) == 1
+        assert merged[0]["type"] == "stock"
+
+    def test_announcement_updates_pay_date_keeps_type(self):
+        securities = [{
+            "code": "2330", "name": "台積電", "type": "stock",
+            "ex_date": "2026-07-25", "pay_date": "",
+            "cash_dividend": 3.5, "stock_dividend": 0,
+        }]
+        announcements = [{
+            "code": "2330", "name": "台積電", "type": "息",
+            "ex_date": "2026-07-25", "pay_date": "2026-08-15",
+            "cash_dividend": 3.5, "stock_dividend": 0,
+        }]
+
+        merged = merge_securities_and_announcements(securities, announcements)
+        assert len(merged) == 1
+        assert merged[0]["pay_date"] == "2026-08-15"
+        # 基底 type（stock/etf/preferred）優先於公告的「息/權」標記
+        assert merged[0]["type"] == "stock"
+
+    def test_announcement_only_record_added(self):
+        announcements = [{
+            "code": "00940", "name": "復華台灣科技優息", "type": "etf",
+            "ex_date": "2099-01-01", "pay_date": "",
+            "cash_dividend": 0.05, "stock_dividend": 0,
+        }]
+
+        merged = merge_securities_and_announcements([], announcements)
+        assert len(merged) == 1
+        assert merged[0]["code"] == "00940"
+
+    def test_skips_empty_ex_date(self):
+        securities = [{"code": "2330", "name": "台積電", "type": "stock",
+                       "ex_date": "", "cash_dividend": 3.5}]
+        merged = merge_securities_and_announcements(securities, [])
+        assert merged == []
 
 
 class TestMergeTwsesAndMops:

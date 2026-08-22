@@ -17,7 +17,6 @@ import requests
 import re
 import time
 import logging
-from datetime import datetime
 from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)

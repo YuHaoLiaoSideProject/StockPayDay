@@ -236,7 +236,7 @@ class BaseCrawler:
         table = (
             soup.find("table", {"id": "table01"})
             or soup.find("table", class_="tableTF")
-            or soup.find("table", class_=" tabel498")
+            or soup.find("table", class_="tabel498")
         )
         if not table:
             logger.warning("找不到資料表格，嘗試掃描所有 <table>")

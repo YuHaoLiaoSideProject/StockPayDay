@@ -5,7 +5,8 @@
  * 顯示追蹤股票的行事曆/列表模式。
  * 從 useWatchlist 取得追蹤清單，結合 upcoming 資料顯示配息資訊。
  */
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useWatchlist } from '../composables/useWatchlist'
 import { useUpcoming } from '../composables/useUpcoming'
 import { useCalendar } from '../composables/useCalendar'
@@ -17,6 +18,7 @@ import type { ViewMode, UpcomingDividend } from '../types/stock'
 
 const { items, watchedCodes } = useWatchlist()
 const { upcoming, status, load } = useUpcoming()
+const router = useRouter()
 
 const currentView = ref<ViewMode>('calendar')
 
@@ -56,6 +58,11 @@ function handleViewChange(view: ViewMode) {
   currentView.value = view
 }
 
+/** 列表模式點擊證券 → 導航至單股頁（與首頁行為一致） */
+function handleStockClick(code: string) {
+  router.push(`/stock/${code}`)
+}
+
 // Watchlist calendar: clicking a date does nothing special (no modal),
 // but we handle the event to avoid a dead click target.
 function handleDateClick(_date: string) {
@@ -89,6 +96,7 @@ function handleDateClick(_date: string) {
       <ListView
         v-else
         :items="sortedUpcoming"
+        @stock-click="handleStockClick"
       />
 
       <!-- 追蹤股票數量提示 -->

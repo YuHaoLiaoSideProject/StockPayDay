@@ -89,6 +89,25 @@ describe('useCalendar', () => {
     expect(today?.date).toBe('2026-07-15')
   })
 
+  it('should fill trailing next-month days with correct consecutive dates', () => {
+    const dividendDates = ref(new Set<string>())
+    const upcoming = ref<UpcomingDividend[]>([])
+
+    const { days } = useCalendar(dividendDates, upcoming)
+
+    // 所有格子必須是連續日期（相鄰兩格相差一天），
+    // 且下月補齊的第一格必須是下月 1 日（2026-08-01）
+    const dates = days.value.map(d => d.date)
+    expect(dates).toContain('2026-08-01')
+
+    const toTime = (s: string) => new Date(`${s}T00:00:00`).getTime()
+    const dayMs = 24 * 60 * 60 * 1000
+    for (let i = 1; i < dates.length; i++) {
+      expect(toTime(dates[i]) - toTime(dates[i - 1])).toBe(dayMs)
+      expect(dates[i]).not.toBe(dates[i - 1])
+    }
+  })
+
   it('should update when dividendDates ref changes', async () => {
     const dividendDates = ref(new Set<string>())
     const upcoming = ref<UpcomingDividend[]>([])

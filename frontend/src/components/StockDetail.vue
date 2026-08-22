@@ -10,7 +10,7 @@ import { computed } from 'vue'
 interface DividendHistory {
   year: number
   ex_date: string
-  dividend: number
+  dividend?: number
   cash_dividend?: number
   stock_dividend?: number
 }
@@ -84,7 +84,7 @@ function getDividend(item: DividendHistory): number {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in sortedHistory" :key="item.year" class="history-row">
+        <tr v-for="item in sortedHistory" :key="`${item.year}-${item.ex_date}`" class="history-row">
           <td>{{ item.year }}</td>
           <td>{{ item.ex_date }}</td>
           <td class="amount">${{ getDividend(item).toFixed(2) }}</td>

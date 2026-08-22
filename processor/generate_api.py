@@ -2,11 +2,12 @@
 資料處理器 — 將 data/ 基底資料轉換為 api/ 前端用 JSON
 
 職責：
-1. 讀取 data/twses/*.json（TWT48U 除息預告）
-2. 讀取 data/mops/*.json（MOPS 配息日）
-3. 產生 api/upcoming.json（未來配息清單）
-4. 產生 api/securities-index.json（證券清單）
-5. 產生 api/securities/{code}.json（單股歷史）
+1. 讀取 data/{stocks,etfs,preferred}/*.json（各證券完整配息歷史）
+2. 讀取 data/twses/*.json（TWT48U 除息預告）
+3. 讀取 data/mops/*.json（MOPS 配息日）
+4. 產生 api/upcoming.json（未來配息清單）
+5. 產生 api/securities-index.json（證券清單）
+6. 產生 api/securities/{code}.json（單股歷史）
 
 使用方式：
     python processor/generate_api.py
@@ -23,6 +24,9 @@ logger = logging.getLogger(__name__)
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
 API_DIR = ROOT_DIR / "api"
+
+# 證券基底資料子目錄（phase-3 規格）
+DATA_SUBDIRS = ["stocks", "etfs", "preferred"]
 
 
 
@@ -144,6 +148,104 @@ def merge_twses_and_mops(twses: List[Dict], mops: List[Dict]) -> List[Dict]:
         key = (rec["code"], rec.get("ex_date", ""))
         if key in lookup:
             lookup[key]["pay_date"] = rec.get("pay_date", "")
+
+    return list(lookup.values())
+
+
+def load_securities() -> List[Dict]:
+    """
+    從 data/{stocks,etfs,preferred}/ 讀取證券基底資料，
+    並將每支證券的 dividend_history 攤平為紀錄列表。
+
+    檔案格式（crawler/fetch.py save_stock 寫入）：
+    {
+        "code": "2330",
+        "name": "台積電",
+        "type": "stock",
+        "dividend_history": [
+            {"year": 2026, "quarter": 2, "ex_date": "2026-07-25",
+             "pay_date": "2026-08-15", "cash_dividend": 3.5,
+             "stock_dividend": 0.0}
+        ]
+    }
+
+    Returns:
+        攤平後的紀錄列表（code, name, type, ex_date, pay_date,
+        cash_dividend, stock_dividend）
+    """
+    records: List[Dict] = []
+    for subdir in DATA_SUBDIRS:
+        dir_path = DATA_DIR / subdir
+        if not dir_path.exists():
+            continue
+
+        for json_file in sorted(dir_path.glob("*.json")):
+            try:
+                with open(json_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+            except (json.JSONDecodeError, OSError) as exc:
+                logger.warning("跳過無法讀取的檔案 %s: %s", json_file.name, exc)
+                continue
+
+            code = data.get("code", json_file.stem)
+            name = data.get("name", "")
+            sec_type = data.get("type", "stock")
+            for h in data.get("dividend_history", []):
+                records.append({
+                    "code": code,
+                    "name": name,
+                    "type": sec_type,
+                    "ex_date": h.get("ex_date", ""),
+                    "pay_date": h.get("pay_date", ""),
+                    "cash_dividend": h.get("cash_dividend", 0),
+                    "stock_dividend": h.get("stock_dividend", 0),
+                })
+
+    logger.info("基底證券共讀取 %d 筆紀錄", len(records))
+    return records
+
+
+def merge_securities_and_announcements(
+    securities: List[Dict], announcements: List[Dict],
+) -> List[Dict]:
+    """
+    合併基底證券歷史與最新公告（TWT48U + MOPS）紀錄。
+
+    以 (code, ex_date) 為 key 去重：
+    - 基底證券歷史為主體（保留 type 為 stock/etf/preferred）
+    - 公告紀錄補充/更新 pay_date 與配息金額
+    - 僅存在於公告的 (code, ex_date) 直接納入
+
+    Args:
+        securities: load_securities() 回傳的攤平紀錄
+        announcements: merge_twses_and_mops() 回傳的公告紀錄
+
+    Returns:
+        合併後的紀錄列表
+    """
+    lookup: Dict[tuple, Dict] = {}
+
+    for rec in securities:
+        ex_date = rec.get("ex_date", "")
+        if not ex_date:
+            continue
+        lookup[(rec["code"], ex_date)] = rec
+
+    for rec in announcements:
+        ex_date = rec.get("ex_date", "")
+        if not ex_date:
+            continue
+        key = (rec["code"], ex_date)
+        if key in lookup:
+            base = lookup[key]
+            if rec.get("pay_date"):
+                base["pay_date"] = rec["pay_date"]
+            base["cash_dividend"] = rec.get(
+                "cash_dividend", base.get("cash_dividend", 0))
+            base["stock_dividend"] = rec.get(
+                "stock_dividend", base.get("stock_dividend", 0))
+        else:
+            lookup[key] = rec
 
     return list(lookup.values())
 
@@ -323,28 +425,35 @@ def main():
     主執行流程
 
     流程：
-    1. 讀取 TWT48U 資料
-    2. 讀取 MOPS 資料
-    3. 合併資料
-    4. 產生 upcoming.json
-    5. 產生 securities-index.json
-    6. 產生 securities/*.json
-    7. 輸出統計資訊
+    1. 讀取基底證券歷史（data/{stocks,etfs,preferred}）
+    2. 讀取 TWT48U 資料
+    3. 讀取 MOPS 資料
+    4. 合併資料
+    5. 產生 upcoming.json
+    6. 產生 securities-index.json
+    7. 產生 securities/*.json
+    8. 輸出統計資訊
     """
     print("🔄 開始產生 API 資料...")
 
-    # 1. 讀取 TWT48U
+    # 1. 讀取基底證券歷史
+    print("📋 讀取基底證券歷史...")
+    securities = load_securities()
+    print(f"   基底證券: {len(securities)} 筆")
+
+    # 2. 讀取 TWT48U
     print("📋 讀取 TWT48U 除息預告...")
     twses = load_twses()
     print(f"   TWT48U: {len(twses)} 筆")
 
-    # 2. 讀取 MOPS
+    # 3. 讀取 MOPS
     print("📋 讀取 MOPS 配息日...")
     mops = load_mops()
     print(f"   MOPS: {len(mops)} 筆")
 
-    # 3. 合併
-    records = merge_twses_and_mops(twses, mops)
+    # 4. 合併（TWT48U 為主體 + MOPS 補充 pay_date，再併入基底歷史）
+    announcements = merge_twses_and_mops(twses, mops)
+    records = merge_securities_and_announcements(securities, announcements)
     if not records:
         print("❌ 找不到任何資料，請先執行爬蟲")
         return

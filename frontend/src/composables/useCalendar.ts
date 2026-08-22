@@ -62,7 +62,9 @@ export function useCalendar(
 
     // 補齊後月（確保至少 35 格 = 5 週）
     while (result.length < 35) {
-      const date = new Date(year, month, totalDays + result.length - startWeekday + 1)
+      // result.length 已含前月補齊（startWeekday 格）與當月天數，
+      // 減去後即為「下月第 N 天」（N 從 1 開始），交給 Date 自動進位到下個月
+      const date = new Date(year, month, result.length - startWeekday + 1)
       result.push(createDay(date, todayStr, year, month, currentDividendDates, currentUpcoming))
     }
 
