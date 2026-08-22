@@ -36,7 +36,7 @@ export function useStock(code: Ref<string>) {
     stock.value = null
 
     try {
-      const res = await fetch(`/api/securities/${code.value}.json`)
+      const res = await fetch(`../api/securities/${code.value}.json`)
       if (!res.ok) {
         throw new Error('找不到該證券資料')
       }

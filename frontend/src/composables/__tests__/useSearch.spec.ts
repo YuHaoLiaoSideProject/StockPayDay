@@ -34,7 +34,7 @@ describe('useSearch', () => {
     await nextTick()
     await new Promise(resolve => setTimeout(resolve, 10))
 
-    expect(mockFetch).toHaveBeenCalledWith('/api/securities-index.json')
+    expect(mockFetch).toHaveBeenCalledWith('../api/securities-index.json')
     expect(indexLoaded.value).toBe(true)
   })
 

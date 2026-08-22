@@ -24,7 +24,7 @@ export function useSearch() {
   async function loadIndex(): Promise<void> {
     if (indexLoaded.value) return
     try {
-      const res = await fetch('/api/securities-index.json')
+      const res = await fetch('../api/securities-index.json')
       if (res.ok) {
         securitiesIndex.value = await res.json()
         indexLoaded.value = true

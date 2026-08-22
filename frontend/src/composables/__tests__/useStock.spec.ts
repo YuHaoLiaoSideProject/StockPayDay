@@ -112,7 +112,7 @@ describe('useStock', () => {
     await nextTick()
     await new Promise(resolve => setTimeout(resolve, 10))
 
-    expect(mockFetch).toHaveBeenCalledWith('/api/securities/0050.json')
+    expect(mockFetch).toHaveBeenCalledWith('../api/securities/0050.json')
   })
 
   it('should reload when code changes', async () => {
