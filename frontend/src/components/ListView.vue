@@ -30,12 +30,13 @@ const groupedItems = computed(() => {
   return groups
 })
 
-/** 本地化日期格式 e.g. 8月21日 */
+/** 本地化日期格式 e.g. 8月25日（週二） */
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00')
   const m = d.getMonth() + 1
   const day = d.getDate()
-  return `${m}月${day}日`
+  const weekdays = ['日', '一', '二', '三', '四', '五', '六']
+  return `${m}月${day}日（週${weekdays[d.getDay()]}）`
 }
 </script>
 
