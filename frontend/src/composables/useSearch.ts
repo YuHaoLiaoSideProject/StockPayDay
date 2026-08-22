@@ -1,4 +1,4 @@
-import { ref, computed, watchEffect } from 'vue'
+import { ref, computed } from 'vue'
 
 /** 證券索引項目 */
 interface SecurityIndex {
@@ -18,8 +18,10 @@ export function useSearch() {
   const securitiesIndex = ref<SecurityIndex[]>([])
   const indexLoaded = ref(false)
 
-  // 載入證券索引（僅載入一次）
-  watchEffect(async () => {
+  // 載入證券索引（僅載入一次，同步啟動）
+  loadIndex()
+
+  async function loadIndex(): Promise<void> {
     if (indexLoaded.value) return
     try {
       const res = await fetch('./api/securities-index.json')
@@ -30,7 +32,13 @@ export function useSearch() {
     } catch {
       // 索引載入失敗，搜尋功能降級
     }
-  })
+  }
+
+  /** 重試載入證券索引（重置狀態後重新載入） */
+  async function retryLoadIndex(): Promise<void> {
+    indexLoaded.value = false
+    await loadIndex()
+  }
 
   /** 即時篩選結果（代號或名稱模糊匹配，忽略大小寫） */
   const results = computed(() => {
@@ -45,5 +53,5 @@ export function useSearch() {
       .slice(0, 10)
   })
 
-  return { query, results, indexLoaded }
+  return { query, results, indexLoaded, retryLoadIndex }
 }

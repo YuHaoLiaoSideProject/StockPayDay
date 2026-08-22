@@ -24,9 +24,7 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
 API_DIR = ROOT_DIR / "api"
 
-# 資料子目錄
-TWT48U_DIR = DATA_DIR / "twses"
-MOPS_DIR = DATA_DIR / "mops"
+
 
 
 # ------------------------------------------------------------------
@@ -56,11 +54,12 @@ def load_twses() -> List[Dict]:
         所有除息預告紀錄列表
     """
     records = []
-    if not TWT48U_DIR.exists():
-        logger.warning("TWT48U 資料目錄不存在: %s", TWT48U_DIR)
+    twses_dir = DATA_DIR / "twses"
+    if not twses_dir.exists():
+        logger.warning("TWT48U 資料目錄不存在: %s", twses_dir)
         return records
 
-    for json_file in sorted(TWT48U_DIR.glob("*.json")):
+    for json_file in sorted(twses_dir.glob("*.json")):
         try:
             with open(json_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -97,11 +96,12 @@ def load_mops() -> List[Dict]:
         所有配息日紀錄列表
     """
     records = []
-    if not MOPS_DIR.exists():
-        logger.warning("MOPS 資料目錄不存在: %s", MOPS_DIR)
+    mops_dir = DATA_DIR / "mops"
+    if not mops_dir.exists():
+        logger.warning("MOPS 資料目錄不存在: %s", mops_dir)
         return records
 
-    for json_file in sorted(MOPS_DIR.glob("*.json")):
+    for json_file in sorted(mops_dir.glob("*.json")):
         try:
             with open(json_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
@@ -179,6 +179,7 @@ def generate_upcoming(records: List[Dict], today: Optional[str] = None) -> List[
                 "name": rec["name"],
                 "type": rec.get("type", "息"),
                 "ex_date": ex_date,
+                "pay_date": rec.get("pay_date", ""),
                 "cash_dividend": rec.get("cash_dividend", 0),
                 "stock_dividend": rec.get("stock_dividend", 0),
             })
@@ -263,7 +264,10 @@ def generate_securities_history(
                 continue
 
             # 從 ex_date 提取年份
-            year = int(ex_date[:4])
+            try:
+                year = int(ex_date[:4])
+            except (ValueError, IndexError):
+                year = 0
 
             history.append({
                 "year": year,

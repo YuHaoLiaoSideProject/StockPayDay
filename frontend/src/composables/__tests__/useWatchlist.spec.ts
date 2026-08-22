@@ -4,6 +4,7 @@ import { useWatchlist } from '../useWatchlist'
 describe('useWatchlist', () => {
   beforeEach(() => {
     localStorage.clear()
+    useWatchlist().reset()
   })
 
   describe('add', () => {
@@ -167,6 +168,8 @@ describe('useWatchlist', () => {
       ]))
 
       const { items, isWatched } = useWatchlist()
+      // Singleton: re-init from localStorage
+      useWatchlist().reset()
 
       expect(items.value.length).toBe(1)
       expect(isWatched('2330')).toBe(true)

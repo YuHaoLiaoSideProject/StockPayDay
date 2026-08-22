@@ -10,42 +10,40 @@ from pathlib import Path
 from processor.generate_api import main as run_processor
 
 
+def _write_twses(data_dir: Path, records: list) -> None:
+    """輔助：寫入 TWT48U 格式的測試資料"""
+    twses_dir = data_dir / "twses"
+    twses_dir.mkdir(parents=True, exist_ok=True)
+    (twses_dir / "test.json").write_text(
+        json.dumps({"records": records}, ensure_ascii=False)
+    )
+
+
 class TestProcessorIntegration:
     """處理器整合測試"""
 
     def test_full_process(self, tmp_path, monkeypatch):
         """完整處理流程：api/ 產出所有檔案"""
-        # 準備 data/ 目錄結構
         data_dir = tmp_path / "data"
-        for subdir in ["stocks", "etfs", "preferred"]:
-            (data_dir / subdir).mkdir(parents=True)
+        _write_twses(data_dir, [
+            {
+                "code": "2330", "name": "台積電",
+                "ex_date": "2099-01-01", "type": "息",
+                "cash_dividend": 3.5, "stock_dividend": 0,
+            },
+            {
+                "code": "0050", "name": "元大台灣50",
+                "ex_date": "2099-06-15", "type": "息",
+                "cash_dividend": 1.8, "stock_dividend": 0,
+            },
+        ])
 
-        # 寫入測試資料
-        test_stock = {
-            "code": "2330", "name": "台積電", "type": "stock",
-            "dividend_history": [
-                {"year": 2026, "ex_date": "2099-01-01", "cash_dividend": 3.5},
-            ],
-        }
-        (data_dir / "stocks" / "2330.json").write_text(json.dumps(test_stock))
-
-        test_etf = {
-            "code": "0050", "name": "元大台灣50", "type": "etf",
-            "dividend_history": [
-                {"year": 2026, "ex_date": "2099-06-15", "cash_dividend": 1.8},
-            ],
-        }
-        (data_dir / "etfs" / "0050.json").write_text(json.dumps(test_etf))
-
-        # monkeypatch 路徑
         import processor.generate_api as mod
         monkeypatch.setattr(mod, "DATA_DIR", data_dir)
         monkeypatch.setattr(mod, "API_DIR", tmp_path / "api")
 
-        # 執行處理器
         run_processor()
 
-        # 驗證 api/ 檔案
         api_dir = tmp_path / "api"
         assert (api_dir / "upcoming.json").exists()
         assert (api_dir / "securities-index.json").exists()
@@ -56,16 +54,13 @@ class TestProcessorIntegration:
     def test_json_format_valid(self, tmp_path, monkeypatch):
         """所有產出的 JSON 檔案格式正確"""
         data_dir = tmp_path / "data"
-        stocks_dir = data_dir / "stocks"
-        stocks_dir.mkdir(parents=True)
-
-        test_data = {
-            "code": "0050", "name": "元大台灣50", "type": "etf",
-            "dividend_history": [
-                {"year": 2026, "ex_date": "2099-01-01", "cash_dividend": 1.8},
-            ],
-        }
-        (stocks_dir / "0050.json").write_text(json.dumps(test_data))
+        _write_twses(data_dir, [
+            {
+                "code": "0050", "name": "元大台灣50",
+                "ex_date": "2099-01-01", "type": "息",
+                "cash_dividend": 1.8, "stock_dividend": 0,
+            },
+        ])
 
         import processor.generate_api as mod
         monkeypatch.setattr(mod, "DATA_DIR", data_dir)
@@ -73,7 +68,6 @@ class TestProcessorIntegration:
 
         run_processor()
 
-        # 驗證每個 JSON 都可解析
         api_dir = tmp_path / "api"
         for json_file in api_dir.rglob("*.json"):
             with open(json_file) as f:
@@ -90,7 +84,8 @@ class TestProcessorIntegration:
         assert "type" in item
         assert "ex_date" in item
         assert "pay_date" in item
-        assert "dividend" in item
+        assert "cash_dividend" in item
+        assert "stock_dividend" in item
 
         # 驗證 securities-index.json 結構
         with open(api_dir / "securities-index.json") as f:
@@ -110,19 +105,20 @@ class TestProcessorIntegration:
     def test_processing_time(self, tmp_path, monkeypatch):
         """處理時間 < 30 秒"""
         data_dir = tmp_path / "data"
-        stocks_dir = data_dir / "stocks"
-        stocks_dir.mkdir(parents=True)
+        twses_dir = data_dir / "twses"
+        twses_dir.mkdir(parents=True)
 
         # 產生 100 支測試證券
+        records = []
         for i in range(100):
-            test_data = {
-                "code": f"{i:04d}",
-                "name": f"測試證券{i}",
-                "dividend_history": [
-                    {"year": 2026, "ex_date": "2099-01-01", "cash_dividend": 1.0 + i * 0.1},
-                ],
-            }
-            (stocks_dir / f"{i:04d}.json").write_text(json.dumps(test_data))
+            records.append({
+                "code": f"{i:04d}", "name": f"測試證券{i}",
+                "ex_date": "2099-01-01", "type": "息",
+                "cash_dividend": round(1.0 + i * 0.1, 1), "stock_dividend": 0,
+            })
+        (twses_dir / "test.json").write_text(
+            json.dumps({"records": records}, ensure_ascii=False)
+        )
 
         import processor.generate_api as mod
         monkeypatch.setattr(mod, "DATA_DIR", data_dir)
@@ -137,8 +133,7 @@ class TestProcessorIntegration:
     def test_empty_data_no_crash(self, tmp_path, monkeypatch):
         """data/ 目錄為空時不崩潰"""
         data_dir = tmp_path / "data"
-        for subdir in ["stocks", "etfs", "preferred"]:
-            (data_dir / subdir).mkdir(parents=True)
+        data_dir.mkdir(parents=True)
 
         import processor.generate_api as mod
         monkeypatch.setattr(mod, "DATA_DIR", data_dir)
@@ -150,16 +145,14 @@ class TestProcessorIntegration:
     def test_missing_subdir_no_crash(self, tmp_path, monkeypatch):
         """部分子目錄不存在時不崩潰"""
         data_dir = tmp_path / "data"
-        # 只建立 stocks，不建立 etfs 和 preferred
-        (data_dir / "stocks").mkdir(parents=True)
-
-        test_data = {
-            "code": "1234", "name": "測試股", "type": "stock",
-            "dividend_history": [
-                {"year": 2026, "ex_date": "2099-01-01", "cash_dividend": 2.0},
-            ],
-        }
-        (data_dir / "stocks" / "1234.json").write_text(json.dumps(test_data))
+        # 只建立 twses，不建立 mops
+        _write_twses(data_dir, [
+            {
+                "code": "1234", "name": "測試股",
+                "ex_date": "2099-01-01", "type": "息",
+                "cash_dividend": 2.0, "stock_dividend": 0,
+            },
+        ])
 
         import processor.generate_api as mod
         monkeypatch.setattr(mod, "DATA_DIR", data_dir)
@@ -167,6 +160,40 @@ class TestProcessorIntegration:
 
         run_processor()
 
-        # 應正常產出
         api_dir = tmp_path / "api"
         assert (api_dir / "upcoming.json").exists()
+
+    def test_mops_merge_populates_pay_date(self, tmp_path, monkeypatch):
+        """MOPS 資料補充 pay_date 至 upcoming"""
+        data_dir = tmp_path / "data"
+        twses_dir = data_dir / "twses"
+        mops_dir = data_dir / "mops"
+        twses_dir.mkdir(parents=True)
+        mops_dir.mkdir(parents=True)
+
+        (twses_dir / "test.json").write_text(json.dumps({"records": [
+            {
+                "code": "2330", "name": "台積電",
+                "ex_date": "2099-07-25", "type": "息",
+                "cash_dividend": 3.5, "stock_dividend": 0,
+            },
+        ]}, ensure_ascii=False))
+
+        (mops_dir / "test.json").write_text(json.dumps({"records": [
+            {
+                "code": "2330", "name": "台積電",
+                "ex_date": "2099-07-25", "pay_date": "2099-08-15",
+                "cash_dividend": 3.5,
+            },
+        ]}, ensure_ascii=False))
+
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", data_dir)
+        monkeypatch.setattr(mod, "API_DIR", tmp_path / "api")
+
+        run_processor()
+
+        with open(tmp_path / "api" / "upcoming.json") as f:
+            upcoming = json.load(f)
+        assert len(upcoming) == 1
+        assert upcoming[0]["pay_date"] == "2099-08-15"

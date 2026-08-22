@@ -4,6 +4,7 @@
  *
  * 顯示某日所有配息股票，點擊可導航至單股歷史（Phase 5）。
  */
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import type { UpcomingDividend } from '../types/stock'
 
 defineProps<{
@@ -15,11 +16,31 @@ const emit = defineEmits<{
   close: []
   'stock-click': [code: string]
 }>()
+
+// Focus trap & Escape key handling
+const modalContent = ref<HTMLElement | null>(null)
+
+function handleKeydown(e: KeyboardEvent) {
+  if (e.key === 'Escape') {
+    emit('close')
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('keydown', handleKeydown)
+  nextTick(() => {
+    modalContent.value?.focus()
+  })
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
+})
 </script>
 
 <template>
   <div class="modal-overlay" @click.self="emit('close')">
-    <div class="modal-content">
+    <div ref="modalContent" class="modal-content" tabindex="-1">
       <div class="modal-header">
         <h3>{{ date }} 配息股票</h3>
         <button class="modal-close" aria-label="關閉" @click="emit('close')">✕</button>

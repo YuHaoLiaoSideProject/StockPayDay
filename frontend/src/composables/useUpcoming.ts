@@ -1,6 +1,34 @@
 import { ref, computed } from 'vue'
 import type { UpcomingDividend, LoadingStatus } from '../types/stock'
 
+// --- Module-level singleton state ---
+const upcoming = ref<UpcomingDividend[]>([])
+const status = ref<LoadingStatus>('loading')
+const errorMessage = ref<string>('')
+
+/**
+ * 載入 upcoming.json
+ * 失敗時設定 status = 'error'
+ */
+async function load(): Promise<void> {
+  status.value = 'loading'
+  errorMessage.value = ''
+
+  try {
+    const response = await fetch('api/upcoming.json')
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    const data: UpcomingDividend[] = await response.json()
+    upcoming.value = data
+    status.value = data.length === 0 ? 'empty' : 'success'
+  } catch (e) {
+    status.value = 'error'
+    errorMessage.value = '資料載入失敗，請稍後再試'
+  }
+}
+
+// Fire-and-forget: load once at module import time
+load()
+
 /**
  * 配息資料管理 composable
  *
@@ -8,29 +36,6 @@ import type { UpcomingDividend, LoadingStatus } from '../types/stock'
  * 靜態站部署，fetch 相對路徑即可。
  */
 export function useUpcoming() {
-  const upcoming = ref<UpcomingDividend[]>([])
-  const status = ref<LoadingStatus>('loading')
-  const errorMessage = ref<string>('')
-
-  /**
-   * 載入 upcoming.json
-   * 失敗時設定 status = 'error'
-   */
-  async function load(): Promise<void> {
-    status.value = 'loading'
-    errorMessage.value = ''
-
-    try {
-      const response = await fetch('api/upcoming.json')
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data: UpcomingDividend[] = await response.json()
-      upcoming.value = data
-      status.value = data.length === 0 ? 'empty' : 'success'
-    } catch (e) {
-      status.value = 'error'
-      errorMessage.value = '資料載入失敗，請稍後再試'
-    }
-  }
 
   /**
    * 重新載入（重試）

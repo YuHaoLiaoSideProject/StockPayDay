@@ -5,7 +5,7 @@
  * 顯示追蹤股票的行事曆/列表模式。
  * 從 useWatchlist 取得追蹤清單，結合 upcoming 資料顯示配息資訊。
  */
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useWatchlist } from '../composables/useWatchlist'
 import { useUpcoming } from '../composables/useUpcoming'
 import { useCalendar } from '../composables/useCalendar'
@@ -55,6 +55,12 @@ const sortedUpcoming = computed(() => {
 function handleViewChange(view: ViewMode) {
   currentView.value = view
 }
+
+// Watchlist calendar: clicking a date does nothing special (no modal),
+// but we handle the event to avoid a dead click target.
+function handleDateClick(_date: string) {
+  // intentionally empty — watchlist mode shows data on calendar, no day detail modal
+}
 </script>
 
 <template>
@@ -76,6 +82,7 @@ function handleViewChange(view: ViewMode) {
         :days="days"
         @prev-month="prevMonth"
         @next-month="nextMonth"
+        @date-click="handleDateClick"
       />
 
       <!-- 列表模式 -->

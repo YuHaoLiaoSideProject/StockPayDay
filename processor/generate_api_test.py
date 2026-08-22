@@ -121,6 +121,28 @@ class TestGenerateUpcoming:
         assert len(upcoming) == 1
         assert upcoming[0]["stock_dividend"] == 0.09
 
+    def test_includes_pay_date(self):
+        """包含 pay_date 欄位（來自 MOPS 合併）"""
+        records = [
+            {"code": "2330", "name": "台積電", "ex_date": "2099-07-25",
+             "type": "息", "cash_dividend": 3.5, "stock_dividend": 0,
+             "pay_date": "2099-08-15"},
+        ]
+
+        upcoming = generate_upcoming(records, today="2026-07-21")
+        assert len(upcoming) == 1
+        assert upcoming[0]["pay_date"] == "2099-08-15"
+
+    def test_pay_date_defaults_to_empty(self):
+        """無 pay_date 時使用空字串"""
+        records = [
+            {"code": "2330", "name": "台積電", "ex_date": "2099-01-01",
+             "type": "息", "cash_dividend": 3.5, "stock_dividend": 0},
+        ]
+
+        upcoming = generate_upcoming(records, today="2026-07-21")
+        assert upcoming[0]["pay_date"] == ""
+
 
 class TestGenerateSecuritiesIndex:
     """測試 securities-index.json 產生"""

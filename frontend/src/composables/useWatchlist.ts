@@ -3,6 +3,37 @@ import type { WatchlistItem, WatchlistSortBy } from '../types/watchlist'
 
 const STORAGE_KEY = 'stockpayday-watchlist'
 
+// --- Module-level singleton state ---
+const items = ref<WatchlistItem[]>([])
+const sortBy = ref<WatchlistSortBy>('addedAt')
+
+// 初始化：從 localStorage 讀取（必須在 watchEffect 之前）
+function init(): void {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      if (Array.isArray(parsed)) {
+        items.value = parsed
+      }
+    }
+  } catch {
+    // localStorage 讀取失敗，使用空列表
+  }
+}
+
+// 先初始化，再設定自動儲存（避免 watchEffect 覆蓋已載入的資料）
+init()
+
+// 監聽變化，自動儲存
+watchEffect(() => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items.value))
+  } catch {
+    // localStorage 寫入失敗（可能已滿）
+  }
+})
+
 /**
  * 追蹤清單管理 composable
  *
@@ -13,35 +44,6 @@ const STORAGE_KEY = 'stockpayday-watchlist'
  * - localStorage 持久化
  */
 export function useWatchlist() {
-  const items = ref<WatchlistItem[]>([])
-  const sortBy = ref<WatchlistSortBy>('addedAt')
-
-  // 初始化：從 localStorage 讀取（必須在 watchEffect 之前）
-  function init(): void {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        if (Array.isArray(parsed)) {
-          items.value = parsed
-        }
-      }
-    } catch {
-      // localStorage 讀取失敗，使用空列表
-    }
-  }
-
-  // 先初始化，再設定自動儲存（避免 watchEffect 覆蓋已載入的資料）
-  init()
-
-  // 監聽變化，自動儲存
-  watchEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items.value))
-    } catch {
-      // localStorage 寫入失敗（可能已滿）
-    }
-  })
 
   /**
    * 新增追蹤
@@ -126,5 +128,11 @@ export function useWatchlist() {
     toggle,
     isWatched,
     clear,
+    /** Reset singleton state (for testing) */
+    reset(): void {
+      items.value = []
+      sortBy.value = 'addedAt'
+      init()
+    },
   }
 }

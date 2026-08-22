@@ -59,7 +59,7 @@ function isWatched(code: string): boolean {
     }"
     :data-date="day.date"
   >
-    <span class="day-number">{{ new Date(day.date + 'T00:00:00').getDate() }}</span>
+    <span class="day-number">{{ parseInt(day.date.split('-')[2], 10) }}</span>
     
     <!-- 配息股票代號列表 -->
     <div v-if="day.hasDividend" class="dividend-labels">

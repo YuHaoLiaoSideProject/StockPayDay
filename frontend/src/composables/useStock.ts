@@ -1,4 +1,4 @@
-import { ref, watchEffect, type Ref } from 'vue'
+import { ref, watch, type Ref } from 'vue'
 
 /** 單筆歷史配息紀錄 */
 interface DividendHistory {
@@ -25,7 +25,10 @@ export function useStock(code: Ref<string>) {
   const loading = ref(true)
   const error = ref<string | null>(null)
 
-  watchEffect(async () => {
+  // 監聽 code 變化，重新載入資料
+  watch(code, () => fetchStock(), { immediate: true })
+
+  async function fetchStock(): Promise<void> {
     if (!code.value) return
     loading.value = true
     error.value = null
@@ -42,7 +45,7 @@ export function useStock(code: Ref<string>) {
     } finally {
       loading.value = false
     }
-  })
+  }
 
   return { stock, loading, error }
 }

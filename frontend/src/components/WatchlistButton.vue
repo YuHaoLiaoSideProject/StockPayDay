@@ -29,8 +29,9 @@ const { isWatched, toggle: toggleWatchlist } = useWatchlist()
 const watched = computed(() => isWatched(props.code))
 
 function handleClick() {
+  const wasWatched = watched.value
   toggleWatchlist(props.code, props.name, props.type)
-  emit('toggle', props.code, !watched.value)
+  emit('toggle', props.code, !wasWatched)
 }
 
 // 尺寸 class
