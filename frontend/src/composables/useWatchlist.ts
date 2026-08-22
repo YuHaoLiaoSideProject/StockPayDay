@@ -1,5 +1,6 @@
 import { ref, computed, watchEffect } from 'vue'
 import type { WatchlistItem, WatchlistSortBy } from '../types/watchlist'
+import { useUpcoming } from './useUpcoming'
 
 const STORAGE_KEY = 'stockpayday-watchlist'
 
@@ -104,8 +105,24 @@ export function useWatchlist() {
         return sorted.sort((a, b) => a.code.localeCompare(b.code))
       case 'name':
         return sorted.sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'))
-      case 'nextDividend':
-        return sorted
+      case 'nextDividend': {
+        const { upcoming } = useUpcoming()
+        const upcomingByCode = new Map<string, string>()
+        for (const item of upcoming.value) {
+          if (!upcomingByCode.has(item.code)) {
+            upcomingByCode.set(item.code, item.ex_date)
+          }
+        }
+        return sorted.sort((a, b) => {
+          const aDate = upcomingByCode.get(a.code) ?? ''
+          const bDate = upcomingByCode.get(b.code) ?? ''
+          // Items with upcoming dividends first, sorted by nearest date
+          if (aDate && bDate) return aDate.localeCompare(bDate)
+          if (aDate) return -1
+          if (bDate) return 1
+          return 0
+        })
+      }
       default:
         return sorted
     }

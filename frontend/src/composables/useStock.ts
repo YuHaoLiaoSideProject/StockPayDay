@@ -4,7 +4,8 @@ import { ref, watch, type Ref } from 'vue'
 interface DividendHistory {
   year: number
   ex_date: string
-  dividend: number
+  cash_dividend?: number
+  stock_dividend?: number
 }
 
 /** 證券歷史配息資料 */

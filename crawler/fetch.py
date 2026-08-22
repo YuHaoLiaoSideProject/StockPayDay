@@ -130,7 +130,7 @@ def save_stock(stock_data: dict, subfolder: str = "stocks") -> Path:
 # TWT48U 資料儲存
 # ------------------------------------------------------------------
 
-def save_twt48u(records: List[Dict]) -> Dict[str, Path]:
+def save_twt48u(records: List[Dict]) -> dict[str, Path]:
     """
     儲存 TWT48U 資料到月分檔案
 
@@ -268,6 +268,61 @@ def fetch_twt48u() -> None:
 # MOPS 主流程（個股/ETF/特別股）
 # ------------------------------------------------------------------
 
+def save_mops_aggregated(stocks: List[Dict], year: int, quarter: int) -> Path:
+    """
+    將 MOPS 資料寫入 data/mops/{year}Q{quarter}.json（供 processor 讀取）。
+
+    輸出格式：
+    {
+        "year": 114,
+        "quarter": 2,
+        "records": [
+            {
+                "code": "2330",
+                "name": "台積電",
+                "ex_date": "2025-07-25",
+                "pay_date": "2025-08-15",
+                "cash_dividend": 3.5,
+                "stock_dividend": 0.0
+            }
+        ]
+    }
+
+    Args:
+        stocks: 由 _group_raw_records 產出的分組資料列表
+        year: 民國年
+        quarter: 季度
+
+    Returns:
+        儲存路徑
+    """
+    records: List[Dict] = []
+    for stock in stocks:
+        for entry in stock.get("dividend_history", []):
+            # 只保留與本次 fetch 年季相符的紀錄
+            if entry.get("year") == year and entry.get("quarter") == quarter:
+                records.append({
+                    "code": stock["code"],
+                    "name": stock["name"],
+                    "ex_date": entry.get("ex_date", ""),
+                    "pay_date": entry.get("pay_date", ""),
+                    "cash_dividend": entry.get("cash_dividend", 0),
+                    "stock_dividend": entry.get("stock_dividend", 0),
+                })
+
+    filepath = DATA_MOPS_DIR / f"{year}Q{quarter}.json"
+    output = {
+        "year": year,
+        "quarter": quarter,
+        "records": records,
+    }
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+
+    logger.info("MOPS 聚合資料已儲存: %s (%d 筆)", filepath, len(records))
+    return filepath
+
+
 def fetch_mops(year: int, quarter: int) -> None:
     """
     執行 MOPS 爬蟲（個股/ETF/特別股）並儲存資料
@@ -295,7 +350,7 @@ def fetch_mops(year: int, quarter: int) -> None:
     raw_filename = f"twse_dividend_{year}Q{quarter}"
     save_raw(raw_data, raw_filename)
 
-    # 儲存個股基底資料
+    # 儲存個股基底資料（data/stocks/{code}.json）
     saved_count = 0
     for stock in stocks:
         try:
@@ -303,6 +358,12 @@ def fetch_mops(year: int, quarter: int) -> None:
             saved_count += 1
         except Exception as exc:
             logger.error("儲存個股 %s 失敗: %s", stock.get("code", "?"), exc)
+
+    # 儲存聚合資料供 processor 使用（data/mops/{year}Q{quarter}.json）
+    try:
+        save_mops_aggregated(stocks, year, quarter)
+    except Exception as exc:
+        logger.error("儲存 MOPS 聚合資料失敗: %s", exc)
 
     logger.info(
         "✅ 個股完成：共儲存 %d 支（原始 %d 筆）",
