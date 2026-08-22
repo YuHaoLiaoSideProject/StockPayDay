@@ -27,6 +27,10 @@ function onStockSelect(result: { code: string; name: string }) {
 function goToWatchlist() {
   router.push('/watchlist')
 }
+
+function goToLanding() {
+  router.push('/')
+}
 </script>
 
 <template>
@@ -34,7 +38,7 @@ function goToWatchlist() {
     <!-- Header -->
     <header class="app-header">
       <div class="header-left">
-        <router-link to="/" class="app-logo">
+        <a href="javascript:void(0)" @click="goToLanding" class="app-logo">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
             <line x1="16" y1="2" x2="16" y2="6"/>
@@ -42,7 +46,7 @@ function goToWatchlist() {
             <line x1="3" y1="10" x2="21" y2="10"/>
           </svg>
           <span class="logo-text">StockPayDay++</span>
-        </router-link>
+        </a>
       </div>
       <div class="header-right">
         <div class="header-icon-group">

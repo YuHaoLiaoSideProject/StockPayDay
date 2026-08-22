@@ -62,7 +62,7 @@ npm run dev</code></pre>
 
 <style scoped>
 .landing {
-  min-height: 100vh;
+  min-height: calc(100vh - 60px);
   background: var(--color-bg, #0d1117);
   color: var(--color-text, #e6edf3);
 }
