@@ -12,15 +12,17 @@ import { useUpcoming } from '../composables/useUpcoming'
 import { useCalendar } from '../composables/useCalendar'
 import Calendar from './Calendar.vue'
 import ListView from './ListView.vue'
+import DayDetail from './DayDetail.vue'
 import WatchlistEmpty from './WatchlistEmpty.vue'
 import ViewSwitcher from './ViewSwitcher.vue'
 import type { ViewMode, UpcomingDividend } from '../types/stock'
 
 const { items, watchedCodes } = useWatchlist()
-const { upcoming, status, load } = useUpcoming()
+const { upcoming, status, load, getByDate } = useUpcoming()
 const router = useRouter()
 
 const currentView = ref<ViewMode>('calendar')
+const selectedDate = ref<string | null>(null)
 
 onMounted(() => {
   if (status.value === 'loading') {
@@ -63,11 +65,19 @@ function handleStockClick(code: string) {
   router.push(`/stock/${code}`)
 }
 
-// Watchlist calendar: clicking a date does nothing special (no modal),
-// but we handle the event to avoid a dead click target.
-function handleDateClick(_date: string) {
-  // intentionally empty — watchlist mode shows data on calendar, no day detail modal
+function handleDateClick(date: string) {
+  selectedDate.value = date
 }
+
+function handleCloseDetail() {
+  selectedDate.value = null
+}
+
+// 計算選中日期的配息資料（僅追蹤清單內的）
+const selectedDividends = computed(() => {
+  if (!selectedDate.value) return []
+  return getByDate(selectedDate.value).filter(d => watchedCodes.value.has(d.code))
+})
 </script>
 
 <template>
@@ -103,6 +113,14 @@ function handleDateClick(_date: string) {
       <div class="watchlist-count">
         已追蹤 {{ items.length }} 支證券
       </div>
+      <!-- 日期明細 Modal -->
+      <DayDetail
+        v-if="selectedDate"
+        :date="selectedDate"
+        :dividends="selectedDividends"
+        @close="handleCloseDetail"
+        @stock-click="handleStockClick"
+      />
     </template>
   </div>
 </template>

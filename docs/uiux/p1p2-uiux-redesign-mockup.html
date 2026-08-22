@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI/UX 優化比較稿 — Header／行事曆／列表／Modal（P1+P2 修復建議）</title>
+<style>
+
+/* ════════════════════════════════════════════════════════════
+   設計 Token（對應前端 style.css 變數）
+   ════════════════════════════════════════════════════════════ */
+:root {
+  --accent: #1a73e8; --accent-light: rgba(26,115,232,0.12);
+  --success: #188038; --success-light: #e6f4ea; --success-border: #a8dab5;
+  --danger: #c5221f; --danger-light: #fce8e6;
+  --warning: #e37400;
+  --radius-sm: 6px; --transition: 0.2s ease;
+  --h: 36px; --h-mobile: 44px; --fs: 0.875rem;
+}
+[data-theme="light"] {
+  --bg: #ffffff; --surface: #ffffff; --surface-2: #f6f7f9; --surface-3: #eef0f3;
+  --border: #e3e6ea; --text: #374151; --muted-old: #9ca3af; --muted: #6b7280;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08); --frame: #eef0f3;
+}
+[data-theme="dark"] {
+  --bg: #11191f; --surface: #181e25; --surface-2: #1e2530; --surface-3: #232c38;
+  --border: #262e38; --text: #c7c9ce; --muted-old: #7d8590; --muted: #9aa3ad;
+  --shadow: 0 2px 16px rgba(0,0,0,0.45); --frame: #0d1318;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background: var(--bg); color: var(--text);
+  padding: 2rem 1.25rem 4rem; transition: background var(--transition), color var(--transition);
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+.topbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+h1 { font-size: 1.35rem; margin: 0; }
+.sub { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+.controls { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.segmented { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 2px; }
+.segmented button { border: none; background: none; color: var(--muted); font-size: 0.85rem; padding: 0.45rem 0.9rem; border-radius: 7px; cursor: pointer; transition: all var(--transition); font-weight: 500; }
+.segmented button:hover { color: var(--text); }
+.segmented button.active { background: var(--surface); color: var(--accent); box-shadow: var(--shadow); }
+
+.frame { background: var(--frame); border: 1px solid var(--border); border-radius: 14px; padding: 1.6rem 1.5rem 1.8rem; margin-bottom: 1.5rem; }
+.frame h2 { margin: 0 0 0.25rem; font-size: 1.1rem; }
+.frame .fsub { color: var(--muted); font-size: 0.82rem; margin: 0 0 1rem; line-height: 1.6; }
+.issue-badge { display:inline-block; font-size: 0.68rem; font-weight:700; border-radius:20px; padding:0.15rem 0.6rem; vertical-align: middle; margin-left:0.4rem; }
+.issue-badge.p1 { background: rgba(197,34,31,0.12); color: var(--danger); }
+.issue-badge.p2 { background: rgba(227,116,0,0.14); color: var(--warning); }
+.issue-badge.p3 { background: var(--accent-light); color: var(--accent); }
+
+/* 比較排版：上下堆疊（避免半寬並排造成 wrap 失真） */
+.cmp { display: flex; flex-direction: column; gap: 1rem; }
+.cmp-label { font-size: 0.78rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; }
+.cmp-label.before { color: var(--danger); }
+.cmp-label.after { color: var(--success); }
+.cmp-label .cdot { width: 9px; height: 9px; border-radius: 50%; }
+.cmp-label.before .cdot { background: var(--danger); }
+.cmp-label.after .cdot { background: var(--success); }
+
+.app-page { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; transition: background var(--transition); }
+.w-mobile { max-width: 390px; }
+.w-desktop { max-width: 672px; }
+body.view-mobile .w-desktop { max-width: 390px; }
+.w-cal { max-width: 800px; }
+body.view-mobile .w-cal { max-width: 390px; }
+.w-list { max-width: 760px; }
+body.view-mobile .w-list { max-width: 390px; }
+.w-before { max-width: 480px; }
+body.view-mobile .w-before { max-width: 390px; }
+.dim-cap { display:flex; align-items:center; gap:0.4rem; font-size:0.72rem; color:var(--muted); margin-top:0.35rem; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+.dim-cap::before { content:""; flex:none; width:100%; height:0; border-top:1px dashed var(--accent); }
+.dim-cap span { white-space:nowrap; background:var(--surface); border:1px solid var(--border); border-radius:20px; padding:0.05rem 0.55rem; }
+.dim-cap b { color:var(--accent); }
+
+/* ── BEFORE：重現現況（重疊 header）── */
+.hdr-before { position: relative; height: 61px; border-bottom: 1px solid var(--border); }
+.hdr-before .logo { position:absolute; left:16px; top:18px; width:144px; height:24px; font-weight:600; font-size:1rem; white-space:nowrap; overflow:hidden; z-index:1; }
+.hdr-before .watchlink { position:absolute; left:172px; top:13px; height:34px; width:94px; border:1px solid var(--border); background:var(--surface-2); border-radius:8px; font-size:0.8125rem; display:flex; align-items:center; justify-content:center; gap:0.25rem; z-index:3; }
+.hdr-before .searchbox { position:absolute; left:120px; top:12px; width:200px; height:36px; border:1px solid var(--border); background:var(--surface); border-radius:8px; font-size:0.8rem; color:var(--muted-old); display:flex; align-items:center; padding:0 0.7rem; z-index:2; }
+.overlap-hl { position:absolute; border:2px dashed var(--danger); border-radius:6px; pointer-events:none; }
+.ovl1 { left:118px; top:10px; width:44px; height:40px; }
+.ovl2 { left:170px; top:11px; width:98px; height:38px; }
+
+/* ── AFTER：修復後 header ── */
+.hdr-after { border-bottom: 1px solid var(--border); }
+.hdr-after .row1 { display:flex; align-items:center; justify-content:space-between; height:56px; padding:0 0.75rem; gap:0.5rem; }
+.brand { display:flex; align-items:center; gap:0.4rem; font-weight:700; font-size:0.95rem; white-space:nowrap; overflow:hidden; }
+.icon-btn { width:var(--h-mobile); height:var(--h-mobile); border:none; background:none; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); cursor:pointer; position:relative; transition:background var(--transition); flex-shrink:0; }
+.icon-btn:hover, .icon-btn:focus-visible { background:var(--surface-2); outline:none; }
+.icon-btn:focus-visible { box-shadow:0 0 0 3px var(--accent-light); }
+.icon-btn .badge { position:absolute; top:4px; right:2px; min-width:16px; height:16px; border-radius:20px; background:var(--accent); color:#fff; font-size:0.6rem; font-weight:700; display:flex; align-items:center; justify-content:center; padding:0 4px; }
+.hdr-after .row2 { overflow:hidden; max-height:0; transition:max-height var(--transition); border-top:1px solid transparent; }
+.hdr-after.expanded .row2 { max-height:60px; border-top-color:var(--border); }
+.hdr-after .row2-inner { display:flex; align-items:center; gap:0.5rem; padding:0.5rem 0.75rem; }
+.hdr-after .row2 input { flex:1; height:36px; border:1px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); color:var(--text); font-size:0.875rem; padding:0 0.75rem; }
+.hdr-after .row2 input:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-light); }
+.expand-note { font-size:0.72rem; color:var(--muted); padding:0.45rem 0.8rem; }
+
+/* ── 行事曆 ── */
+.cal { padding:0.75rem; }
+.cal-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:0.5rem; }
+.cal-head .m { font-weight:700; font-size:0.95rem; }
+.cal-nav { width:36px; height:36px; border:none; background:none; border-radius:50%; font-size:1.2rem; color:var(--text); cursor:pointer; }
+.cal-nav:hover { background:var(--surface-2); }
+.cal-weekdays, .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cal-weekdays div { text-align:center; font-size:0.72rem; color:var(--muted); padding:0.35rem 0; }
+.day { border-radius:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:0.25rem 0.15rem; font-size:0.8rem; }
+.day.today { border:2px solid var(--accent); font-weight:700; }
+.day.div-bg { background:rgba(26,115,232,0.08); }
+.day .lbls { display:flex; flex-direction:column; align-items:center; gap:1px; margin-top:2px; width:100%; min-width:0; }
+.day .lbl { font-size:0.6875rem; line-height:1.25; color:var(--accent); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+.day .lbl.watched { color:#dc2626; font-weight:600; }
+.day .more { font-size:0.65rem; color:var(--muted); }
+/* BEFORE：列高不均 */
+.grid-before .day { min-height:48px; }
+.grid-before .day.tall { min-height:100px; }
+.grid-before .day .lbl { font-size:0.625rem; }
+.grid-before .day .more { font-size:0.5625rem; }
+/* AFTER：統一高度＋可鍵盤操作 */
+.grid-after .day { height:56px; }
+.grid-after .day.focusable:focus-visible, .grid-after .day.focusable:hover { outline:none; box-shadow:0 0 0 3px var(--accent-light); cursor:pointer; }
+.hl-box { outline:2px dashed var(--danger); outline-offset:-2px; border-radius:8px; }
+
+/* Google Calendar 風格行事曆 */
+.cal-g { padding:0.5rem 0; }
+.cal-g .cal-weekdays div { padding:0.4rem 0; border-bottom:1px solid var(--border); }
+.cal-g-row { display:grid; grid-template-columns:repeat(7,1fr); min-height:80px; border-bottom:1px solid var(--border); }
+.cal-g-day { padding:0.25rem 0.3rem; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; border-radius:8px; transition:background var(--transition); position:relative; }
+.cal-g-day:hover { background:var(--surface-2); }
+.cal-g-day.focusable:focus-visible { outline:none; box-shadow:inset 0 0 0 3px var(--accent-light); }
+.cal-g-day.other-month { opacity:0.35; }
+.day-num { width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:0.82rem; border-radius:50%; color:var(--text); flex-shrink:0; }
+.cal-g-day.today .day-num { background:var(--accent); color:#fff; font-weight:700; }
+.cal-g-day.has-div .day-num { font-weight:600; }
+.chips { display:flex; flex-direction:column; gap:2px; width:100%; min-width:0; }
+.chip { height:18px; border-radius:4px; padding:0 6px; font-size:0.68rem; font-weight:500; display:flex; align-items:center; gap:3px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; cursor:pointer; transition:opacity var(--transition); }
+.chip:hover { opacity:0.85; }
+.chip-blue { background:rgba(26,115,232,0.12); color:#1a73e8; }
+.dark .chip-blue { background:rgba(96,165,250,0.18); color:#60a5fa; }
+.chip-red { background:rgba(220,38,38,0.1); color:#dc2626; font-weight:600; }
+.dark .chip-red { background:rgba(248,113,113,0.18); color:#f87171; }
+.chip .dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+.chip-blue .dot { background:#1a73e8; }
+.chip-red .dot { background:#dc2626; }
+.more-link { font-size:0.68rem; color:var(--accent); cursor:pointer; padding:0 4px; font-weight:500; }
+.more-link:hover { text-decoration:underline; }
+.lv { padding: 0.85rem 1.1rem; }
+.lv-head, .lv-item { display:grid; grid-template-columns: 100px 76px 1fr 96px 44px; gap:10px; align-items:center; }
+.lv-head { padding: 0.45rem 0.35rem; border-bottom:2px solid var(--border); font-size:0.75rem; letter-spacing:0.03em; color:var(--muted); font-weight:700; }
+.lv-item { min-height:52px; padding:0.55rem 0.35rem; border-bottom:1px solid var(--border); font-size:0.875rem; line-height:1.45; border-radius:8px; transition:background var(--transition), box-shadow var(--transition); }
+.lv-item.clickable { cursor:pointer; }
+.lv-item.clickable:hover { background:var(--surface-2); }
+.lv-item:focus-visible { outline:none; box-shadow:0 0 0 3px var(--accent-light); }
+.lv-item .code { font-weight:600; font-variant-numeric:tabular-nums; }
+.lv-item .amt { color:#188038; font-weight:600; font-size:0.875rem; text-align:right; font-variant-numeric:tabular-nums; }
+.lv-item .zero { color:var(--muted); font-weight:400; }
+.lv-group { position:sticky; top:0; background:var(--surface-2); font-size:0.78rem; font-weight:700; color:var(--text); padding:0.4rem 0.5rem; border-radius:6px; margin-top:0.5rem; backdrop-filter:blur(4px); display:flex; justify-content:space-between; align-items:center; }
+.lv-group .gcount { font-size:0.72rem; color:var(--muted); font-weight:600; }
+.hrt { width:40px; height:40px; border:none; background:none; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:var(--muted); cursor:pointer; transition:background var(--transition), color var(--transition); }
+.hrt:hover { background:var(--surface-2); color:#ef4444; }
+.hrt:focus-visible { outline:none; box-shadow:0 0 0 3px var(--accent-light); }
+.hrt svg { width:18px; height:18px; }
+.lv-item:first-of-type { border-top:none; }
+.zero-hl { outline:2px dashed var(--danger); outline-offset:2px; border-radius:4px; }
+
+/* ── 單股頁 ── */
+.sv { padding:1rem; }
+.back-btn { display:inline-flex; align-items:center; gap:0.3rem; height:36px; padding:0 0.6rem; border:none; background:none; color:var(--accent); font-size:0.875rem; cursor:pointer; border-radius:6px; }
+.back-btn:hover { background:var(--surface-2); }
+.dbl-back { display:flex; flex-direction:column; gap:0.5rem; margin-bottom:0.75rem; align-items:flex-start; }
+.sv-title { font-weight:700; font-size:1.05rem; }
+.sv-title small { color:var(--muted); font-weight:400; font-size:0.85rem; margin-left:0.4rem; }
+.sv-table { width:100%; border-collapse:collapse; font-size:0.8rem; margin-top:0.6rem; }
+.sv-table th { text-align:left; font-size:0.72rem; color:var(--muted); padding:0.4rem 0.5rem; border-bottom:1px solid var(--border); }
+.sv-table td { padding:0.5rem; border-bottom:1px solid var(--border); }
+.sv-table .amt { color:#188038; font-weight:600; text-align:right; }
+.top-bar-right { margin-left:auto; }
+.sv-row { display:flex; align-items:center; gap:0.5rem; }
+
+/* ── Modal ── */
+.modal-demo-stage { padding:1.25rem; background:
+  linear-gradient(var(--bg), var(--bg)) padding-box; position:relative; min-height:230px; }
+.overlay { position:absolute; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; border-radius:12px; }
+.modal { background:var(--surface); border-radius:12px; padding:1.1rem 1.2rem; width:min(340px, 86%); box-shadow:0 12px 32px rgba(0,0,0,0.25); }
+.modal h4 { margin:0 0 0.7rem; font-size:0.95rem; display:flex; justify-content:space-between; align-items:center; }
+.modal .x { border:none; background:none; color:var(--muted); font-size:1rem; cursor:pointer; width:32px; height:32px; border-radius:50%; }
+.modal .x:hover { background:var(--surface-2); }
+.modal ul { list-style:none; margin:0; padding:0; }
+.modal li { display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid var(--border); font-size:0.82rem; }
+.modal li:last-child { border:none; }
+.modal .code { font-weight:600; }
+.modal .nm { color:var(--muted); margin-left:0.4rem; font-size:0.75rem; }
+.modal .amt { color:#188038; font-weight:600; }
+.raw-date { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; background:rgba(197,34,31,0.08); color:var(--danger); border-radius:4px; padding:0 0.3rem; }
+.friendly-date { font-weight:700; }
+.open-demo-btn { margin-top:0.75rem; }
+
+/* ── 對比 swatch ── */
+.swatches { display:flex; gap:1rem; flex-wrap:wrap; margin-top:0.75rem; }
+.sw { display:flex; align-items:center; gap:0.5rem; font-size:0.8rem; }
+.sw .chip { width:44px; height:28px; border-radius:6px; border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:0.8rem; }
+.sw .meta { font-size:0.72rem; color:var(--muted); line-height:1.4; }
+.sw.fail .chip { color:#9ca3af; background:#fff; }
+.sw.pass .chip { color:#6b7280; background:#fff; }
+.tag-ok { color:var(--success); font-weight:700; }
+.tag-fail { color:var(--danger); font-weight:700; }
+body[data-theme="dark"] .sw.fail .chip, body[data-theme="dark"] .sw.pass .chip { background:#181e25; }
+
+/* ── 觸控目標比較 ── */
+.touch-cmp { display:flex; gap:1.5rem; flex-wrap:wrap; align-items:center; margin-top:0.75rem; }
+.t-target { display:flex; flex-direction:column; align-items:center; gap:0.3rem; font-size:0.72rem; color:var(--muted); }
+.t-btn { border:1px solid var(--border); background:var(--surface-2); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.t-btn.small { width:31px; height:31px; }
+.t-btn.tiny { width:24px; height:24px; }
+.t-btn.ok { width:44px; height:44px; }
+.t-btn span { font-size:0.9rem; }
+.dim-tag { font-family:ui-monospace,Menlo,monospace; font-size:0.68rem; }
+.dim-tag.bad { color:var(--danger); }
+.dim-tag.good { color:var(--success); }
+
+/* 狀態矩陣表 */
+.states { width:100%; border-collapse:collapse; font-size:0.8rem; margin-top:1rem; }
+.states th, .states td { border:1px solid var(--border); padding:0.55rem 0.75rem; text-align:left; vertical-align:top; }
+.states th { background:var(--surface-2); font-size:0.74rem; color:var(--muted); font-weight:700; }
+.states td:first-child { white-space:nowrap; font-weight:600; }
+.states code { background:var(--surface-2); border:1px solid var(--border); border-radius:4px; padding:0.05rem 0.35rem; font-size:0.72rem; font-family:ui-monospace,Menlo,monospace; }
+
+.legend { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:0.5rem 1.5rem; margin-top:1rem; }
+.anno { display:flex; gap:0.55rem; font-size:0.8rem; color:var(--muted); align-items:flex-start; line-height:1.55; }
+.anno .num { flex-shrink:0; width:20px; height:20px; border-radius:50%; background:var(--accent-light); color:var(--accent); font-size:0.7rem; font-weight:700; display:inline-flex; align-items:center; justify-content:center; margin-top:1px; }
+.anno b { color:var(--text); }
+
+.tokens { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:0.75rem; margin-top:1rem; }
+.tcard { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:0.8rem 0.95rem; }
+.tcard .tk { font-size:0.68rem; color:var(--muted); letter-spacing:0.4px; }
+.tcard .tv { font-size:1.05rem; font-weight:700; color:var(--text); margin-top:0.2rem; }
+.tcard .tv.accent { color:var(--accent); }
+.tcard .td { font-size:0.72rem; color:var(--muted); margin-top:0.2rem; line-height:1.5; }
+
+.note { font-size:0.78rem; color:var(--muted); margin-top:1rem; line-height:1.7; background:var(--surface); border:1px dashed var(--border); border-radius:10px; padding:0.6rem 0.9rem; }
+.note b { color:var(--accent); }
+
+.footnote { margin-top:2rem; font-size:0.72rem; color:var(--muted); border-top:1px dashed var(--border); padding-top:0.75rem; line-height:1.7; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition:none !important; animation:none !important; }
+}
+</style>
+</head>
+<body data-theme="light">
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <h1>🔧 StockPayDay++ UI 優化比較稿</h1>
+      <div class="sub">依據《現況UIUX審計與優化建議.md》P1/P2 發現之 BEFORE / AFTER 對照・互動原型</div>
+    </div>
+    <div class="controls">
+      <div class="segmented" id="devSwitch">
+        <button data-dev="desktop" class="active">🖥 Desktop</button>
+        <button data-dev="mobile">📱 Mobile</button>
+      </div>
+      <button class="segmented" id="themeToggle">🌙 深色</button>
+    </div>
+  </div>
+
+  <!-- ════ 0. Design Token ════ -->
+  <div class="frame">
+    <h2>0️⃣ 設計 Token（對應 style.css）</h2>
+    <div class="tokens">
+      <div class="tcard"><div class="tk">控制高度</div><div class="tv accent">36 / 44px</div><div class="td">desktop 36 · mobile 44（WCAG 2.5.5）</div></div>
+      <div class="tcard"><div class="tk">--text-muted（修）</div><div class="tv">#6b7280</div><div class="td">對白底 4.7:1 ✅（原 #9ca3af 僅 2.5:1 ❌）</div></div>
+      <div class="tcard"><div class="tk">行事曆格高</div><div class="tv">56px 統一</div><div class="td">label ≥11px · 最多顯示 2 支＋「＋N」</div></div>
+      <div class="tcard"><div class="tk">圖示</div><div class="tv">inline SVG</div><div class="td">移除全部 emoji-as-icon</div></div>
+      <div class="tcard"><div class="tk">Modal</div><div class="tv">role=dialog</div><div class="td">aria-modal · focus trap · 日期本地化</div></div>
+      <div class="tcard"><div class="tk">動畫</div><div class="tv">150–200ms</div><div class="td">reduced-motion 全停用（含 spinner）</div></div>
+    </div>
+  </div>
+
+  <!-- ════ 1. Header 重疊（P1-1、P1-4） ════ -->
+  <div class="frame">
+    <h2>1️⃣ Header RWD<span class="issue-badge p1">P1 · 審計#1/#4</span></h2>
+    <p class="fsub">375px 下 logo、追蹤按鈕與搜尋框互相覆蓋（實測座標：logo 16–160、search 120–320、watchlink 172–266）。AFTER：第一列僅保留 icon（皆 44px），搜尋改為點擊展開第二列。</p>
+    <div class="cmp">
+      <div>
+        <span class="cmp-label before"><span class="cdot"></span>BEFORE — 元件重疊</span>
+        <div class="app-page w-mobile" style="margin-top:0.4rem;">
+          <div class="hdr-before">
+            <div class="logo">📅 StockPayD…</div>
+            <div class="watchlink">❤️ 追蹤清單</div>
+            <div class="searchbox">🔍 搜尋股票代號或名稱…</div>
+            <div class="overlap-hl ovl1"></div>
+            <div class="overlap-hl ovl2"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <span class="cmp-label after"><span class="cdot"></span>AFTER — 兩列式 header，全目標 44px</span>
+        <div class="app-page w-mobile" style="margin-top:0.4rem;">
+          <div class="hdr-after" id="hdrAfter">
+            <div class="row1">
+              <div class="brand">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                StockPayDay++
+              </div>
+              <div style="display:flex;gap:0.25rem;">
+                <button class="icon-btn" id="searchExpandBtn" aria-label="展開搜尋" aria-expanded="false" title="搜尋">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                </button>
+                <button class="icon-btn" aria-label="追蹤清單（3 支）" title="追蹤清單">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-8-4.9-10-9.5C.6 8 2.5 4.5 6 4.5c2.1 0 3.8 1.1 4.8 2.7L12 9l1.2-1.8c1-1.6 2.7-2.7 4.8-2.7 3.5 0 5.4 3.5 4 7-2 4.6-10 9.5-10 9.5z" transform="scale(0.85) translate(2,2)"/></svg>
+                  <span class="badge">3</span>
+                </button>
+              </div>
+            </div>
+            <div class="row2">
+              <div class="row2-inner">
+                <input type="text" id="expandInput" placeholder="搜尋股票代號或名稱…" aria-label="搜尋股票">
+                <button class="icon-btn" aria-label="關閉搜尋" onclick="toggleSearch(false)">✕</button>
+              </div>
+            </div>
+          </div>
+          <div class="expand-note">👆 點右上角放大鏡 → 展開第二列搜尋（150ms 動畫）；再點 ✕ 收合。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ 2. 行事曆格（P2-6、7、鍵盤#2） ════ -->
+  <div class="frame">
+    <h2>2️⃣ 行事曆格<span class="issue-badge p2">P2 · 審計#2/#6/#7</span></h2>
+    <p class="fsub">BEFORE：有配息日格高長到 ~100px（label 最多 4 行、字級 9–10px）、無配息日僅 48px，列高不均且格子不可鍵盤操作。AFTER：參考 <b>Google 行事曆風格</b>——配息以彩色藥丸（chip）呈現、今日藍色圓形 badge、每列固定高度 <b>80px</b>、最多顯示 2 支 chip＋「＋N」；桌面版加寬至 <b>800px</b>，RWD 流式縮放。</p>
+    <div class="cmp">
+      <div>
+        <span class="cmp-label before"><span class="cdot"></span>BEFORE — 列高不均、10px label、div 不可聚焦</span>
+        <div class="app-page w-before" style="margin-top:0.4rem;">
+          <div class="cal">
+            <div class="cal-head"><button class="cal-nav" tabindex="-1">‹</button><div class="m">2026 年 8 月</div><button class="cal-nav" tabindex="-1">›</button></div>
+            <div class="cal-weekdays"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
+            <div class="cal-grid grid-before">
+              <div class="day"><span>16</span></div>
+              <div class="day"><span>17</span></div>
+              <div class="day"><span>18</span></div>
+              <div class="day"><span>19</span></div>
+              <div class="day"><span>20</span></div>
+              <div class="day tall div-bg hl-box"><span>21</span>
+                <div class="lbls"><span class="lbl">00771</span><span class="lbl">00850</span><span class="lbl">2458</span><span class="more">+5</span></div>
+              </div>
+              <div class="day today"><span>22</span></div>
+              <div class="day"><span>23</span></div>
+              <div class="day tall div-bg"><span>24</span>
+                <div class="lbls"><span class="lbl watched">1454♥</span><span class="lbl">1737</span><span class="lbl">2413</span><span class="more">+5</span></div>
+              </div>
+              <div class="day"><span>25</span></div>
+              <div class="day"><span>26</span></div>
+              <div class="day"><span>27</span></div>
+              <div class="day"><span>28</span></div>
+              <div class="day"><span>29</span></div>
+              <div class="day"><span>30</span></div>
+              <div class="day tall div-bg"><span>31</span>
+                <div class="lbls"><span class="lbl">1531</span><span class="lbl">1795</span><span class="lbl">2905</span><span class="more">+3</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="note">紅色虛線格：格高 <b>~100px</b>（其他列 48px）→ 格線凌亂；label <b>10px</b>；<b>&lt;div&gt;</b> 無法用 Tab 操作（審計#2）。</div>
+        <div class="dim-cap"><span>桌面寬度：<b>480px</b>（現況）</span></div>
+      </div>
+      <div>
+        <span class="cmp-label after"><span class="cdot"></span>AFTER — 統一 56px、≥11px、可聚焦（試 Tab）</span>
+        <div class="app-page w-cal" style="margin-top:0.4rem;">
+          <div class="cal cal-g">
+            <div class="cal-head"><button class="cal-nav" tabindex="-1">‹</button><div class="m">2026 年 8 月</div><button class="cal-nav" tabindex="-1">›</button></div>
+            <div class="cal-weekdays"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div>
+            <div class="cal-g-row">
+              <div class="cal-g-day other-month"><span class="day-num">26</span></div>
+              <div class="cal-g-day other-month"><span class="day-num">27</span></div>
+              <div class="cal-g-day other-month"><span class="day-num">28</span></div>
+              <div class="cal-g-day other-month"><span class="day-num">29</span></div>
+              <div class="cal-g-day other-month"><span class="day-num">30</span></div>
+              <div class="cal-g-day other-month"><span class="day-num">31</span></div>
+              <div class="cal-g-day has-div"><span class="day-num">1</span><div class="chips"><div class="chip chip-blue"><span class="dot"></span>1737</div></div></div>
+            </div>
+            <div class="cal-g-row">
+              <div class="cal-g-day"><span class="day-num">2</span></div>
+              <div class="cal-g-day"><span class="day-num">3</span></div>
+              <div class="cal-g-day"><span class="day-num">4</span></div>
+              <div class="cal-g-day"><span class="day-num">5</span></div>
+              <div class="cal-g-day"><span class="day-num">6</span></div>
+              <div class="cal-g-day"><span class="day-num">7</span></div>
+              <div class="cal-g-day"><span class="day-num">8</span></div>
+            </div>
+            <div class="cal-g-row">
+              <div class="cal-g-day"><span class="day-num">9</span></div>
+              <div class="cal-g-day"><span class="day-num">10</span></div>
+              <div class="cal-g-day"><span class="day-num">11</span></div>
+              <div class="cal-g-day"><span class="day-num">12</span></div>
+              <div class="cal-g-day"><span class="day-num">13</span></div>
+              <div class="cal-g-day"><span class="day-num">14</span></div>
+              <div class="cal-g-day"><span class="day-num">15</span></div>
+            </div>
+            <div class="cal-g-row">
+              <div class="cal-g-day"><span class="day-num">16</span></div>
+              <div class="cal-g-day"><span class="day-num">17</span></div>
+              <div class="cal-g-day"><span class="day-num">18</span></div>
+              <div class="cal-g-day"><span class="day-num">19</span></div>
+              <div class="cal-g-day"><span class="day-num">20</span></div>
+              <div class="cal-g-day has-div"><span class="day-num">21</span>
+                <div class="chips">
+                  <div class="chip chip-blue"><span class="dot"></span>00771</div>
+                  <div class="chip chip-blue"><span class="dot"></span>00850</div>
+                  <span class="more-link">＋7</span>
+                </div>
+              </div>
+              <div class="cal-g-day today"><span class="day-num">22</span></div>
+            </div>
+            <div class="cal-g-row">
+              <div class="cal-g-day"><span class="day-num">23</span></div>
+              <div class="cal-g-day has-div"><span class="day-num">24</span>
+                <div class="chips">
+                  <div class="chip chip-red"><span class="dot"></span>1454</div>
+                  <div class="chip chip-blue"><span class="dot"></span>1737</div>
+                  <span class="more-link">＋9</span>
+                </div>
+              </div>
+              <div class="cal-g-day has-div"><span class="day-num">25</span>
+                <div class="chips">
+                  <div class="chip chip-blue"><span class="dot"></span>00907</div>
+                  <div class="chip chip-red"><span class="dot"></span>1722</div>
+                  <span class="more-link">＋5</span>
+                </div>
+              </div>
+              <div class="cal-g-day has-div"><span class="day-num">26</span>
+                <div class="chips">
+                  <div class="chip chip-blue"><span class="dot"></span>1583</div>
+                  <div class="chip chip-blue"><span class="dot"></span>2227</div>
+                  <span class="more-link">＋7</span>
+                </div>
+              </div>
+              <div class="cal-g-day has-div"><span class="day-num">27</span>
+                <div class="chips">
+                  <div class="chip chip-blue"><span class="dot"></span>1315</div>
+                  <div class="chip chip-blue"><span class="dot"></span>1339</div>
+                  <span class="more-link">＋14</span>
+                </div>
+              </div>
+              <div class="cal-g-day has-div"><span class="day-num">28</span>
+                <div class="chips">
+                  <div class="chip chip-blue"><span class="dot"></span>1453</div>
+                  <div class="chip chip-blue"><span class="dot"></span>1709</div>
+                  <span class="more-link">＋8</span>
+                </div>
+              </div>
+              <div class="cal-g-day"><span class="day-num">29</span></div>
+            </div>
+            <div class="cal-g-row">
+              <div class="cal-g-day"><span class="day-num">30</span></div>
+              <div class="cal-g-day has-div"><span class="day-num">31</span>
+                <div class="chips">
+                  <div class="chip chip-blue"><span class="dot"></span>1531</div>
+                  <div class="chip chip-blue"><span class="dot"></span>1795</div>
+                  <span class="more-link">＋5</span>
+                </div>
+              </div>
+              <div class="cal-g-day other-month"><span class="day-num">1</span></div>
+              <div class="cal-g-day other-month"><span class="day-num">2</span></div>
+              <div class="cal-g-day other-month"><span class="day-num">3</span></div>
+              <div class="cal-g-day other-month"><span class="day-num">4</span></div>
+              <div class="cal-g-day other-month"><span class="day-num">5</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="note">Google 行事曆風格：列高 <b>80px</b>；配息以 <b>chip（藥丸）</b>呈現，最多 2 支＋「＋N」；今日用藍色圓形 badge；格線用底線（border-bottom）取代全框；hover 底色＋Tab focus 光圈。</div>
+        <div class="dim-cap"><span>桌面寬度：<b>800px</b>（建議＋<b>67%</b>）</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ 3. List view（P2-8） ════ -->
+  <div class="frame">
+    <h2>3️⃣ 列表模式<span class="issue-badge p2">P2 · 審計#8</span></h2>
+    <p class="fsub">BEFORE：200+ 筆平鋪、日期每行重複、$0.00 直接裸顯。AFTER：依日期分組＋sticky 群組標題、金額 0 顯示「—」；桌面版加寬至 <b>760px</b>、字級提升至 <b>14px／12px</b>、金額 tabular-nums 右對齊、列高 ≥52px、hover/focus 狀態（資深 UIUX 標準）；RWD 流式縮放。</p>
+    <div class="cmp">
+      <div>
+        <span class="cmp-label before"><span class="cdot"></span>BEFORE — 平鋪、重複日期、$0.00</span>
+        <div class="app-page w-list" style="margin-top:0.4rem;">
+          <div class="lv">
+            <div class="lv-head"><div>日期</div><div>代號</div><div>名稱</div><div style="text-align:right;">金額</div><div></div></div>
+            <div class="lv-item"><div>2026-08-25</div><div>1454</div><div>康和-KY</div><div class="amt">$0.00</div><div>♡</div></div>
+            <div class="lv-item"><div>2026-08-25</div><div>1737</div><div>和桐</div><div class="amt">$0.80</div><div>♡</div></div>
+            <div class="lv-item"><div>2026-08-25</div><div>2413</div><div>亞翔</div><div class="amt">$0.00</div><div>♡</div></div>
+            <div class="lv-item"><div>2026-08-25</div><div>4924</div><div>F-亞太</div><div class="amt">$1.20</div><div>♡</div></div>
+            <div class="lv-item"><div>2026-08-25</div><div>6147</div><div>康聯-</div><div class="amt">$0.30</div><div>♡</div></div>
+            <div class="lv-item"><div>2026-08-26</div><div>00771</div><div>環宇-KY</div><div class="amt">$0.00</div><div>♡</div></div>
+            <div class="lv-item"><div>2026-08-26</div><div>1722</div><div>榮剛</div><div class="amt">$2.10</div><div>♡</div></div>
+            <div class="lv-item"><div>2026-08-26</div><div>2012</div><div>信邦-KY</div><div class="amt zero">$0.00</div><div>♡</div></div>
+            <div style="font-size:0.75rem;color:var(--muted);padding:0.6rem 0.2rem;">⋯（共 214 筆，全部同格式平鋪）</div>
+          </div>
+        </div>
+        <div class="note">紅框：<b>$0.00</b> 裸顯（應隱藏或顯示「—」）；日期欄每行重複，掃讀困難；無分組。</div>
+      </div>
+      <div>
+        <span class="cmp-label after"><span class="cdot"></span>AFTER — 分組＋sticky header・760px・14px</span>
+        <div class="app-page w-list" style="margin-top:0.4rem;">
+          <div class="lv">
+            <div class="lv-head"><div>時間</div><div>代號</div><div>名稱</div><div style="text-align:right;">金額</div><div></div></div>
+            <div class="lv-group">8月25日（週二）<span class="gcount">5 支</span></div>
+            <div class="lv-item clickable" tabindex="0"><div></div><div class="code">1454</div><div>康和-KY</div><div class="amt zero">—</div><button class="hrt" aria-label="加入追蹤" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg></button></div>
+            <div class="lv-item clickable" tabindex="0"><div></div><div class="code">1737</div><div>和桐</div><div class="amt">$0.80</div><button class="hrt" style="color:#ef4444;" aria-label="移除追蹤" aria-pressed="true"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0z"/></svg></button></div>
+            <div class="lv-item clickable" tabindex="0"><div></div><div class="code">2413</div><div>亞翔</div><div class="amt zero">—</div><button class="hrt" aria-label="加入追蹤" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg></button></div>
+            <div class="lv-group">8月26日（週三）<span class="gcount">3 支</span></div>
+            <div class="lv-item clickable" tabindex="0"><div></div><div class="code">00771</div><div>環宇-KY</div><div class="amt">$1.50</div><button class="hrt" aria-label="加入追蹤" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg></button></div>
+            <div class="lv-item clickable" tabindex="0"><div></div><div class="code">1722</div><div>榮剛</div><div class="amt">$2.10</div><button class="hrt" aria-label="加入追蹤" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg></button></div>
+            <div style="font-size:0.78rem;color:var(--muted);padding:0.6rem 0.2rem;">⋯（sticky 群組標題隨捲動固定於頂部・虛擬捲動渲染長列表）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ 4. 單股頁雙返回（P1-3） ════ -->
+  <div class="frame">
+    <h2>4️⃣ 單股頁返回鈕<span class="issue-badge p1">P1 · 審計#3</span></h2>
+    <p class="fsub">BEFORE：StockView 頂列與 StockDetail 各有一個「← 返回」。AFTER：僅保留頂列一個，並統一使用 BackButton.vue（審計#13）。</p>
+    <div class="cmp">
+      <div>
+        <span class="cmp-label before"><span class="cdot"></span>BEFORE — 兩個返回鈕</span>
+        <div class="app-page w-desktop" style="margin-top:0.4rem;">
+          <div class="sv">
+            <div class="dbl-back">
+              <button class="back-btn" tabindex="-1">← 返回</button>
+              <button class="back-btn" tabindex="-1">← 返回</button>
+            </div>
+            <div class="sv-title">2201<small>裕隆</small></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <span class="cmp-label after"><span class="cdot"></span>AFTER — 單一返回鈕（頂列）＋右側追蹤</span>
+        <div class="app-page w-desktop" style="margin-top:0.4rem;">
+          <div class="sv">
+            <div class="sv-row" style="margin-bottom:0.75rem;">
+              <button class="back-btn">← 返回</button>
+              <button class="icon-btn" style="width:44px;height:44px;color:#ef4444;" aria-label="移除追蹤" aria-pressed="true" title="移除追蹤">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 21s-8-4.9-10-9.5C.6 8 2.5 4.5 6 4.5c2.1 0 3.8 1.1 4.8 2.7L12 9l1.2-1.8c1-1.6 2.7-2.7 4.8-2.7 3.5 0 5.4 3.5 4 7-2 4.6-10 9.5-10 9.5z"/></svg>
+              </button>
+            </div>
+            <div class="sv-title">2201<small>裕隆</small></div>
+            <table class="sv-table">
+              <tr><th>年份</th><th>除權息日</th><th style="text-align:right;">配息金額</th></tr>
+              <tr><td>2026</td><td>2026-08-25</td><td class="amt">$0.56</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ 5. Modal（P2-10） ════ -->
+  <div class="frame">
+    <h2>5️⃣ 日期明細 Modal<span class="issue-badge p2">P2 · 審計#2/#10</span></h2>
+    <p class="fsub">AFTER：加 role="dialog"、aria-modal、focus trap、背景鎖定捲動；日期本地化「8月21日（五）」。</p>
+    <div class="cmp">
+      <div>
+        <span class="cmp-label before"><span class="cdot"></span>BEFORE — raw ISO 日期、無 ARIA</span>
+        <div class="app-page w-mobile" style="margin-top:0.4rem;">
+          <div class="modal-demo-stage">
+            <div class="overlay">
+              <div class="modal" role="presentation">
+                <h4><span><span class="raw-date">2026-08-21</span> 配息股票</span><button class="x" tabindex="-1" aria-hidden="true">✕</button></h4>
+                <ul>
+                  <li><span><span class="code">00771</span><span class="nm">環宇-KY</span></span><span class="amt">$0.56</span></li>
+                  <li><span><span class="code">00850</span><span class="nm">華固</span></span><span class="amt">$1.20</span></li>
+                  <li><span><span class="code">2458</span><span class="nm">晶采</span></span><span class="amt">$0.30</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="note">標題顯示 raw ISO <b>「2026-08-21」</b>；無 <b>role="dialog"</b>／focus trap（Tab 可跑到背景）；背景可捲動。</div>
+      </div>
+      <div>
+        <span class="cmp-label after"><span class="cdot"></span>AFTER — 本地化日期＋完整 ARIA（可互動）</span>
+        <div class="app-page w-mobile" style="margin-top:0.4rem;">
+          <div class="modal-demo-stage" id="modalStage2" style="min-height:auto;padding-bottom:0;">
+            <div style="display:flex;justify-content:center;padding:1rem 0;">
+              <button class="btn-like" id="openModalBtn" style="height:44px;padding:0 1.2rem;border:1px solid var(--accent);background:var(--accent-light);color:var(--accent);border-radius:6px;font-size:0.875rem;font-weight:600;cursor:pointer;">📅 點我打開明細 Modal</button>
+            </div>
+            <div class="overlay" id="demoOverlay" style="display:none;border-radius:0 0 12px 12px;">
+              <div class="modal" role="dialog" aria-modal="true" aria-labelledby="dlgTitle" id="demoModal">
+                <h4><span class="friendly-date" id="dlgTitle">8月21日（五）配息股票・3 支</span><button class="x" id="closeModalBtn" aria-label="關閉">✕</button></h4>
+                <ul>
+                  <li><span><span class="code">00771</span><span class="nm">環宇-KY</span></span><span class="amt">$0.56</span></li>
+                  <li><span><span class="code">00850</span><span class="nm">華固</span></span><span class="amt">$1.20</span></li>
+                  <li><span><span class="code">2458</span><span class="nm">晶采</span></span><span class="amt">$0.30</span></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="note">互動：開啟後 <b>Esc</b>/✕/點背景關閉；<b>Tab 循環</b>於 modal 內（focus trap）；開啟時背景捲動鎖定。<br>無障礙：<code>role="dialog"</code>、<code>aria-modal="true"</code>、<code>aria-labelledby</code>（WCAG 4.1.2）。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ 6. 觸控目標＋對比（P2-5/P2-11） ════ -->
+  <div class="frame">
+    <h2>6️⃣ 觸控目標與文字對比<span class="issue-badge p2">P2 · 審計#5/#11</span></h2>
+    <p class="fsub">左（現況）→ 右（建議）：一律 ≥44px；muted 文字由 #9ca3af（2.5:1）改 #6b7280（4.7:1）。</p>
+    <div class="touch-cmp">
+      <div class="t-target">
+        <div class="t-btn small"><span>🌙</span></div>
+        <div class="dim-tag bad">31×31（theme-toggle）❌</div>
+      </div>
+      <div class="t-target">
+        <div class="t-btn tiny"><span>♡</span></div>
+        <div class="dim-tag bad">24×24（watchlist sm）❌</div>
+      </div>
+      <div class="t-target">
+        <div class="t-btn ok"><span>🌙</span></div>
+        <div class="dim-tag good">44×44 ✅</div>
+      </div>
+      <div class="t-target">
+        <div class="t-btn ok"><span>♡</span></div>
+        <div class="dim-tag good">44×44 ✅</div>
+      </div>
+    </div>
+    <div class="swatches">
+      <div class="sw fail"><div class="chip">Aa</div><div class="meta">#9ca3af on #fff<br><span class="tag-fail">2.5:1 ❌</span>（現況 --text-muted）</div></div>
+      <div class="sw pass"><div class="chip">Aa</div><div class="meta">#6b7280 on #fff<br><span class="tag-ok">4.7:1 ✅</span>（建議）</div></div>
+    </div>
+  </div>
+
+  <!-- ════ 7. 狀態矩陣 ════ -->
+  <div class="frame">
+    <h2>7️⃣ 關鍵狀態矩陣</h2>
+    <table class="states">
+      <tr><th style="width:130px;">元件／狀態</th><th>視覺</th><th>互動</th></tr>
+      <tr><td>Header 搜尋（mobile）</td><td>收合：icon 44px；展開：第二列全寬輸入框＋focus 光圈</td><td>點 icon 展開；✕／Esc 收合並還原焦點</td></tr>
+      <tr><td>行事曆格子</td><td>idle 56px；hover/focus 光圈；today 藍框；has-dividend 淡藍底＋≤2 label＋「＋N」</td><td>Tab 聚焦、Enter 開啟明細；disabled（非當月）opacity .4</td></tr>
+      <tr><td>列表群組</td><td>sticky 日期頭（surface-2 底）；金額 0 →「—」；字級 14px／header 12px；金額 tabular-nums 右對齊；列高 ≥52px</td><td>捲動時群組頭吸附；列 hover surface-2＋Tab focus 光圈；追蹤鈕 40px 獨立熱區</td></tr>
+      <tr><td>Modal</td><td>overlay 45% 黑；卡片 radius 12；本地化日期標題</td><td>Esc／✕／背景點擊關閉；focus trap；背景 scroll lock</td></tr>
+      <tr><td>Loading</td><td>spinner 32px（accent 弧）</td><td><code>prefers-reduced-motion</code> 時停止旋轉、改靜態「載入中…」</td></tr>
+      <tr><td>Error／空結果</td><td>muted 文字（#6b7280）＋SVG 圖示；重試鈕 44px</td><td>重試可鍵盤觸發；空狀態提供引導動作（搜尋／回首頁）</td></tr>
+    </table>
+  </div>
+
+  <!-- ════ 8. 圖註對照 ════ -->
+  <div class="frame">
+    <h2>8️⃣ 圖註 — 對應審計項目</h2>
+    <div class="legend">
+      <div class="anno"><span class="num">1</span><span><b>Header 重疊（P1-1）</b>：實測 logo/search/watchlink 三段 bounding box 互相覆蓋 → 改兩列式。</span></div>
+      <div class="anno"><span class="num">2</span><span><b>鍵盤存取（P1-2）</b>：calendar/list/modal 項目改 &lt;button&gt;/role=button＋Enter/Space（WCAG 2.1.1）。</span></div>
+      <div class="anno"><span class="num">3</span><span><b>雙返回（P1-3）</b>：StockView 移除自寫鈕，統一 BackButton.vue。</span></div>
+      <div class="anno"><span class="num">4</span><span><b>Emoji → SVG（P3-14）</b>：❤️📅📋🔍 全換 inline SVG，跨平台一致。</span></div>
+      <div class="anno"><span class="num">5</span><span><b>觸控 44px（P2-5）</b>：31/34/24px 全數加大至 ≥44px（WCAG 2.5.5）。</span></div>
+      <div class="anno"><span class="num">6</span><span><b>行事曆等高（P2-6/7）</b>：56px 統一、label ≥11px、上限 2 支＋「＋N」。</span></div>
+      <div class="anno"><span class="num">7</span><span><b>List 分組（P2-8）</b>：sticky 日期頭＋虛擬捲動；$0.00 →「—」。</span></div>
+      <div class="anno"><span class="num">8</span><span><b>Watchlist 死區（P2-9）</b>：點日期開啟 DayDetail，與首頁行為一致。</span></div>
+      <div class="anno"><span class="num">9</span><span><b>Modal ARIA（P2-10）</b>：role=dialog／aria-modal／trap／scroll lock／本地化日期。</span></div>
+      <div class="anno"><span class="num">10</span><span><b>對比（P2-11）</b>：muted 改 #6b7280（4.7:1 ≥ AA）。</span></div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    📄 審計文件：<b>docs/uiux/現況UIUX審計與優化建議.md</b> ・ 本文件：<b>docs/uiux/p1p2-uiux-redesign-mockup.html</b><br>
+    實作範圍：App.vue（header RWD）、style.css（token/對比/spinner/reduced-motion）、CalendarDay.vue、ListView.vue、DayDetail.vue、StockView.vue、ViewSwitcher.vue、WatchlistEmpty.vue<br>
+    驗證：headless（console error＝0、互動正常、標籤平衡）
+  </div>
+</div>
+
+<script>
+// ── 主題切換 ──
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', () => {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '🌙 深色' : '☀️ 淺色';
+});
+
+// ── 裝置切換 ──
+const devSwitch = document.getElementById('devSwitch');
+devSwitch.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+  devSwitch.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  document.body.classList.toggle('view-mobile', b.dataset.dev === 'mobile');
+}));
+
+// ── Header 搜尋展開 Demo ──
+const hdrAfter = document.getElementById('hdrAfter');
+const searchExpandBtn = document.getElementById('searchExpandBtn');
+function toggleSearch(open) {
+  hdrAfter.classList.toggle('expanded', open);
+  searchExpandBtn.setAttribute('aria-expanded', String(open));
+  if (open) setTimeout(() => document.getElementById('expandInput').focus(), 180);
+  else searchExpandBtn.focus();
+}
+searchExpandBtn.addEventListener('click', () => toggleSearch(!hdrAfter.classList.contains('expanded')));
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && hdrAfter.classList.contains('expanded') &&
+      document.getElementById('demoOverlay').style.display !== 'flex') {
+    toggleSearch(false);
+  }
+});
+
+// ── Modal Demo（focus trap + Esc + 背景/✕關閉 + scroll lock）──
+const openBtn = document.getElementById('openModalBtn');
+const overlay = document.getElementById('demoOverlay');
+const modal = document.getElementById('demoModal');
+const closeBtn = document.getElementById('closeModalBtn');
+let lastFocus = null;
+function openModal() {
+  lastFocus = document.activeElement;
+  overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  closeBtn.focus();
+}
+function closeModal() {
+  overlay.style.display = 'none';
+  document.body.style.overflow = '';
+  if (lastFocus) lastFocus.focus();
+}
+openBtn.addEventListener('click', openModal);
+closeBtn.addEventListener('click', closeModal);
+overlay.addEventListener('mousedown', e => { if (e.target === overlay) closeModal(); });
+document.addEventListener('keydown', e => {
+  if (!overlay || overlay.style.display !== 'flex') return;
+  if (e.key === 'Escape') { closeModal(); return; }
+  if (e.key === 'Tab') {
+    const f = modal.querySelectorAll('button, [href], input');
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+</script>
+</body>
+</html>

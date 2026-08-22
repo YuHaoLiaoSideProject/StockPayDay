@@ -25,6 +25,18 @@ const emit = defineEmits<{
 
 const showDropdown = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
+const isExpanded = ref(false)
+
+/** Mobile: 展開搜尋列 */
+function toggleExpand() {
+  isExpanded.value = !isExpanded.value
+  if (isExpanded.value) {
+    setTimeout(() => inputRef.value?.focus(), 100)
+  } else {
+    emit('update:modelValue', '')
+    showDropdown.value = false
+  }
+}
 
 /** 輸入時更新 query 並顯示下拉 */
 function onInput(e: Event) {
@@ -64,10 +76,12 @@ function onKeydown(e: KeyboardEvent) {
     inputRef.value?.blur()
   }
 }
+
+defineExpose({ toggleExpand })
 </script>
 
 <template>
-  <div class="search-bar">
+  <div class="search-bar" :class="{ expanded: isExpanded }">
     <div class="search-input-wrapper">
       <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="11" cy="11" r="8"/>

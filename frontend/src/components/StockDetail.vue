@@ -66,7 +66,6 @@ function getDividend(item: DividendHistory): number {
   <!-- Stock Detail -->
   <div v-else-if="stock" class="stock-detail">
     <div class="stock-header">
-      <button class="back-button" @click="emit('back-click')">← 返回</button>
       <div class="stock-title">
         <span class="stock-code">{{ stock.code }}</span>
         <span class="stock-name">{{ stock.name }}</span>
