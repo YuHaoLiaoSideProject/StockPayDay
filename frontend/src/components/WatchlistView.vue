@@ -11,9 +11,9 @@ import { useWatchlist } from '../composables/useWatchlist'
 import { useUpcoming } from '../composables/useUpcoming'
 import { useCalendar } from '../composables/useCalendar'
 import Calendar from './Calendar.vue'
-import ListView from './ListView.vue'
 import DayDetail from './DayDetail.vue'
 import WatchlistEmpty from './WatchlistEmpty.vue'
+import WatchlistItemRow from './WatchlistItemRow.vue'
 import ViewSwitcher from './ViewSwitcher.vue'
 import type { ViewMode, UpcomingDividend } from '../types/stock'
 
@@ -30,9 +30,23 @@ onMounted(() => {
   }
 })
 
-// 追蹤股票的配息資料
+// 所有追蹤項目（含配息資訊作為附加屬性）
+const allWatchedItems = computed(() => {
+  return items.value.map(item => {
+    const dividend = upcoming.value.find(u => u.code === item.code)
+    return {
+      ...item,
+      dividend,
+      hasUpcomingDividend: !!dividend,
+    }
+  })
+})
+
+// 追蹤股票中有未來配息的（用於行事曆標記）
 const watchlistUpcoming = computed<UpcomingDividend[]>(() => {
-  return upcoming.value.filter(item => watchedCodes.value.has(item.code))
+  return allWatchedItems.value
+    .filter(item => item.hasUpcomingDividend)
+    .map(item => item.dividend!)
 })
 
 // 追蹤股票的配息日期集合
@@ -49,10 +63,10 @@ const { monthLabel, days, prevMonth, nextMonth } = useCalendar(
   watchlistUpcoming
 )
 
-// 依日期排序的列表
-const sortedUpcoming = computed(() => {
-  return [...watchlistUpcoming.value].sort(
-    (a, b) => a.ex_date.localeCompare(b.ex_date)
+// 所有追蹤項目（依加入時間排序）
+const sortedAllItems = computed(() => {
+  return [...allWatchedItems.value].sort(
+    (a, b) => b.addedAt - a.addedAt
   )
 })
 
@@ -93,21 +107,44 @@ const selectedDividends = computed(() => {
       </div>
 
       <!-- 行事曆模式 -->
-      <Calendar
-        v-if="currentView === 'calendar'"
-        :month-label="monthLabel"
-        :days="days"
-        @prev-month="prevMonth"
-        @next-month="nextMonth"
-        @date-click="handleDateClick"
-      />
+      <template v-if="currentView === 'calendar'">
+        <Calendar
+          :month-label="monthLabel"
+          :days="days"
+          @prev-month="prevMonth"
+          @next-month="nextMonth"
+          @date-click="handleDateClick"
+        />
+        <!-- 行事曆下方：所有追蹤項目概覽 -->
+        <div class="watchlist-all-items">
+          <h3 class="watchlist-all-title">所有追蹤（{{ items.length }} 支）</h3>
+          <WatchlistItemRow
+            v-for="item in sortedAllItems"
+            :key="item.code"
+            :code="item.code"
+            :name="item.name"
+            :type="item.type"
+            :dividend="item.dividend"
+            @stock-click="handleStockClick"
+          />
+        </div>
+      </template>
 
-      <!-- 列表模式 -->
-      <ListView
-        v-else
-        :items="sortedUpcoming"
-        @stock-click="handleStockClick"
-      />
+      <!-- 列表模式：顯示所有追蹤項目 -->
+      <div v-else class="watchlist-all-items">
+        <WatchlistItemRow
+          v-for="item in sortedAllItems"
+          :key="item.code"
+          :code="item.code"
+          :name="item.name"
+          :type="item.type"
+          :dividend="item.dividend"
+          @stock-click="handleStockClick"
+        />
+        <div v-if="sortedAllItems.length === 0" class="watchlist-no-items">
+          目前沒有追蹤的證券
+        </div>
+      </div>
 
       <!-- 追蹤股票數量提示 -->
       <div class="watchlist-count">

@@ -291,18 +291,63 @@ def generate_upcoming(records: List[Dict], today: Optional[str] = None) -> List[
     return upcoming
 
 
-def generate_securities_index(records: List[Dict]) -> List[Dict]:
+def load_listings() -> List[Dict]:
+    """
+    從 data/listings/ 讀取證券完整清單
+
+    檔案格式：
+    {
+        "last_updated": "2026-08-22",
+        "source": "TWSE",
+        "records": [
+            {"code": "1101", "name": "台泥", "market": "TWSE"},
+            ...
+        ]
+    }
+
+    Returns:
+        所有證券清單紀錄列表
+    """
+    listings = []
+    listings_dir = DATA_DIR / "listings"
+    if not listings_dir.exists():
+        logger.warning("證券清單目錄不存在: %s", listings_dir)
+        return listings
+
+    for json_file in sorted(listings_dir.glob("*.json")):
+        try:
+            with open(json_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            file_records = data.get("records", [])
+            listings.extend(file_records)
+            logger.debug("讀取 %s: %d 筆", json_file.name, len(file_records))
+        except (json.JSONDecodeError, OSError) as exc:
+            logger.warning("跳過無法讀取的檔案 %s: %s", json_file.name, exc)
+
+    logger.info("證券清單共讀取 %d 筆", len(listings))
+    return listings
+
+
+def generate_securities_index(
+    records: List[Dict],
+    listings: Optional[List[Dict]] = None,
+) -> List[Dict]:
     """
     產生證券清單索引（去重）
 
-    每筆包含 code, name，供前端搜尋功能使用。
+    合併邏輯：
+    1. 從配息紀錄建立索引（以此為主，名稱可能更準確）
+    2. 從 listings 補充尚未在索引中的股票
+    3. 去重後輸出
 
     Args:
         records: 合併後的紀錄列表
+        listings: 證券清單（可選）
 
     Returns:
         證券索引列表（已去重）
     """
+    # 從配息紀錄建立索引（以此為主）
     seen = set()
     index = []
     for rec in records:
@@ -313,6 +358,20 @@ def generate_securities_index(records: List[Dict]) -> List[Dict]:
                 "code": code,
                 "name": rec["name"],
             })
+
+    # 從 listings 補充尚未在索引中的股票
+    if listings:
+        for rec in listings:
+            code = rec.get("code", "")
+            if code and code not in seen:
+                seen.add(code)
+                index.append({
+                    "code": code,
+                    "name": rec.get("name", ""),
+                })
+
+    # 排序（依代號）
+    index.sort(key=lambda x: x["code"])
     return index
 
 
@@ -468,7 +527,9 @@ def main():
 
     # 5. 產生 securities-index.json
     print("📋 產生證券清單...")
-    index = generate_securities_index(records)
+    listings = load_listings()
+    print(f"   證券清單: {len(listings)} 筆")
+    index = generate_securities_index(records, listings)
     save_api_file(index, "securities-index.json")
     print(f"   ✅ securities-index.json: {len(index)} 支證券")
 

@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 DATA_DIR = ROOT_DIR / "data"
 DATA_TWT48U_DIR = ROOT_DIR / "data" / "twses"
 DATA_MOPS_DIR = ROOT_DIR / "data" / "mops"
+DATA_LISTINGS_DIR = ROOT_DIR / "data" / "listings"
 
 
 # ------------------------------------------------------------------
@@ -45,6 +46,7 @@ def ensure_dirs() -> None:
     (DATA_DIR / "preferred").mkdir(parents=True, exist_ok=True)
     DATA_TWT48U_DIR.mkdir(parents=True, exist_ok=True)
     DATA_MOPS_DIR.mkdir(parents=True, exist_ok=True)
+    DATA_LISTINGS_DIR.mkdir(parents=True, exist_ok=True)
     logger.info("資料目錄已確認: %s", DATA_DIR)
 
 
@@ -371,33 +373,81 @@ def fetch_mops(year: int, quarter: int) -> None:
     )
 
 
+def fetch_listing() -> None:
+    """
+    執行 TWSE 上市清單爬蟲並儲存資料
+
+    從 TWSE 抓取完整上市股票清單，儲存到 data/listings/{YYYY-MM}.json
+    """
+    from crawler.sources.twse_listing import TWSEListingCrawler
+
+    logger.info("\n📋 抓取 TWSE 上市證券清單...")
+
+    crawler = TWSEListingCrawler(max_retries=3, delay=2.0)
+
+    try:
+        records = crawler.fetch()
+    except Exception as exc:
+        logger.error("❌ TWSE 清單爬蟲失敗: %s", exc)
+        return
+
+    if not records:
+        logger.warning("TWSE 清單無資料")
+        return
+
+    # 儲存資料
+    month_str = datetime.now().strftime("%Y-%m")
+    filepath = DATA_LISTINGS_DIR / f"{month_str}.json"
+    output = {
+        "last_updated": datetime.now().strftime("%Y-%m-%d"),
+        "source": "TWSE",
+        "records": records,
+    }
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+
+    logger.info(
+        "✅ TWSE 清單完成：%d 筆，儲存至 %s",
+        len(records), filepath,
+    )
+
+
 # ------------------------------------------------------------------
 # 主執行流程
 # ------------------------------------------------------------------
 
 def main(year: int | None = None, quarter: int | None = None,
-         twt48u_only: bool = False, mops_only: bool = False) -> None:
+         twt48u_only: bool = False, mops_only: bool = False,
+         listing_only: bool = False) -> None:
     """
     主執行流程：
     1. TWT48U — 抓取未來除息預告
     2. MOPS — 抓取配息日資料（個股）
+    3. Listing — 抓取上市證券清單
 
     Args:
         year: 民國年（None 則自動取得當前年）
         quarter: 季度 1-4（None 則自動取得當前季度）
         twt48u_only: 僅執行 TWT48U
         mops_only: 僅執行 MOPS
+        listing_only: 僅執行 Listing
     """
     # 確保目錄存在
     ensure_dirs()
 
     # 根據參數決定執行哪些爬蟲
-    if not mops_only:
+    if listing_only:
+        # 僅執行 Listing
+        fetch_listing()
+    elif not mops_only:
         # 1. TWT48U — 除息預告
         fetch_twt48u()
 
-    if not twt48u_only:
-        # 2. MOPS — 配息日（個股）
+        # 2. Listing — 上市證券清單
+        fetch_listing()
+
+    if not twt48u_only and not listing_only:
+        # 3. MOPS — 配息日（個股）
         if year is None or quarter is None:
             year, quarter = get_current_year_quarter()
             logger.info("自動偵測: 民國 %d 年第 %d 季", year, quarter)
@@ -423,6 +473,8 @@ if __name__ == "__main__":
                         help="僅執行 TWT48U 爬蟲")
     parser.add_argument("--mops", action="store_true",
                         help="僅執行 MOPS 爬蟲")
+    parser.add_argument("--listing", action="store_true",
+                        help="僅執行 Listing 爬蟲")
 
     args = parser.parse_args()
 
@@ -438,4 +490,5 @@ if __name__ == "__main__":
         quarter=args.quarter,
         twt48u_only=args.twt48u,
         mops_only=args.mops,
+        listing_only=args.listing,
     )

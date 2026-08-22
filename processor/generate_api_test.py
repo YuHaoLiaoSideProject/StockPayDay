@@ -19,6 +19,7 @@ from processor.generate_api import (
     save_api_file,
     merge_twses_and_mops,
     load_securities,
+    load_listings,
     merge_securities_and_announcements,
 )
 
@@ -185,6 +186,46 @@ class TestGenerateSecuritiesIndex:
         index = generate_securities_index(records)
         assert len(index) == 1
         assert index[0]["code"] == "2330"
+
+    def test_merges_listings(self):
+        """listings 中尚未在索引中的股票會被補充"""
+        records = [
+            {"code": "2330", "name": "台積電"},
+        ]
+        listings = [
+            {"code": "2330", "name": "台積電"},  # 已存在，不重複
+            {"code": "2317", "name": "鴻海"},    # 新增
+            {"code": "0050", "name": "元大台灣50"},  # 新增
+        ]
+
+        index = generate_securities_index(records, listings)
+        assert len(index) == 3
+        codes = {i["code"] for i in index}
+        assert codes == {"2330", "2317", "0050"}
+
+    def test_listings_only(self):
+        """無配息紀錄時，索引完全來自 listings"""
+        listings = [
+            {"code": "2330", "name": "台積電"},
+            {"code": "2317", "name": "鴻海"},
+        ]
+
+        index = generate_securities_index([], listings)
+        assert len(index) == 2
+        codes = {i["code"] for i in index}
+        assert codes == {"2330", "2317"}
+
+    def test_sorted_by_code(self):
+        """索引依代號排序"""
+        records = [
+            {"code": "9999", "name": "測試"},
+            {"code": "0050", "name": "元大台灣50"},
+            {"code": "2330", "name": "台積電"},
+        ]
+
+        index = generate_securities_index(records)
+        codes = [i["code"] for i in index]
+        assert codes == sorted(codes)
 
 
 class TestGenerateSecuritiesHistory:
@@ -405,6 +446,50 @@ class TestMergeTwsesAndMops:
         """兩邊都空時回傳空列表"""
         merged = merge_twses_and_mops([], [])
         assert merged == []
+
+
+class TestLoadListings:
+    """測試證券清單讀取（data/listings/）"""
+
+    def test_reads_listings_files(self, tmp_path, monkeypatch):
+        """讀取 listings 目錄下的所有 JSON 檔案"""
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", tmp_path)
+
+        listings_dir = tmp_path / "listings"
+        listings_dir.mkdir(parents=True)
+        (listings_dir / "2026-08.json").write_text(json.dumps({
+            "last_updated": "2026-08-22",
+            "source": "TWSE",
+            "records": [
+                {"code": "2330", "name": "台積電", "market": "TWSE"},
+                {"code": "2317", "name": "鴻海", "market": "TWSE"},
+            ],
+        }, ensure_ascii=False), encoding="utf-8")
+
+        listings = load_listings()
+        assert len(listings) == 2
+        assert listings[0]["code"] == "2330"
+
+    def test_empty_when_no_listings_dir(self, tmp_path, monkeypatch):
+        """listings 目錄不存在時回傳空列表"""
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", tmp_path)
+
+        listings = load_listings()
+        assert listings == []
+
+    def test_skips_invalid_json(self, tmp_path, monkeypatch):
+        """跳過無法解析的 JSON 檔案"""
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", tmp_path)
+
+        listings_dir = tmp_path / "listings"
+        listings_dir.mkdir(parents=True)
+        (listings_dir / "bad.json").write_text("{not valid", encoding="utf-8")
+
+        listings = load_listings()
+        assert listings == []
 
 
 class TestSaveApiFile:
