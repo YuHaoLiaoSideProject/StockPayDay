@@ -378,6 +378,7 @@ def generate_securities_index(
 def generate_securities_history(
     records: List[Dict],
     output_dir: Optional[Path] = None,
+    listings: Optional[List[Dict]] = None,
 ) -> int:
     """
     產出每支證券的歷史配息檔案
@@ -395,9 +396,13 @@ def generate_securities_history(
         ]
     }
 
+    僅存在於 listings（證券清單）而無配息紀錄的證券，
+    也會產出 history 為空陣列的檔案，避免前端詳情頁 404。
+
     Args:
         records: 合併後的紀錄列表
         output_dir: 輸出目錄，預設為 api/securities/
+        listings: 證券清單（可選，用於補上無配息歷史的證券）
 
     Returns:
         產出的檔案數量
@@ -412,10 +417,25 @@ def generate_securities_history(
         code = rec["code"]
         by_code.setdefault(code, []).append(rec)
 
+    # 從 listings 補上無配息歷史的證券（history 空陣列）
+    listing_names: Dict[str, str] = {}
+    if listings:
+        for listing in listings:
+            code = listing.get("code", "")
+            if not code:
+                continue
+            listing_names[code] = listing.get("name", "")
+            if code not in by_code:
+                by_code[code] = []
+
     # 產出每個檔案
     for code, code_records in by_code.items():
-        # 取得 name（用第一筆的）
-        name = code_records[0]["name"] if code_records else ""
+        # 取得 name（用第一筆的；無紀錄時用清單名稱）
+        name = (
+            code_records[0]["name"]
+            if code_records
+            else listing_names.get(code, "")
+        )
 
         # 建立 history（跳過沒有 ex_date 的紀錄）
         history = []
@@ -535,7 +555,7 @@ def main():
 
     # 6. 產生 securities/*.json
     print("📁 產生單股歷史...")
-    sec_count = generate_securities_history(records)
+    sec_count = generate_securities_history(records, listings=listings)
     print(f"   ✅ securities/: {sec_count} 個檔案")
 
     # 7. 統計

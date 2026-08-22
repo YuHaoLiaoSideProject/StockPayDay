@@ -309,6 +309,35 @@ class TestGenerateSecuritiesHistory:
             data = json.load(f)
         assert data["history"][0]["stock_dividend"] == 0.09
 
+    def test_creates_empty_history_for_listing_only(self, tmp_path):
+        """僅在 listings 的證券也產出檔案（history 為空陣列）"""
+        records = [
+            {"code": "2330", "name": "台積電", "ex_date": "2099-01-01",
+             "cash_dividend": 3.5, "stock_dividend": 0},
+        ]
+        listings = [
+            {"code": "2330", "name": "台積電"},   # 已有紀錄，不重複產空檔
+            {"code": "4126", "name": "太醫"},      # 僅在清單 → 空歷史
+        ]
+
+        count = generate_securities_history(
+            records, output_dir=tmp_path, listings=listings)
+        assert count == 2
+        assert (tmp_path / "2330.json").exists()
+
+        with open(tmp_path / "4126.json") as f:
+            data = json.load(f)
+        assert data["code"] == "4126"
+        assert data["name"] == "太醫"
+        assert data["history"] == []
+
+    def test_no_listings_backward_compatible(self, tmp_path):
+        """未傳 listings 時行為不變（不產出清單-only 檔案）"""
+        records = []
+
+        count = generate_securities_history(records, output_dir=tmp_path)
+        assert count == 0
+
 
 class TestLoadSecurities:
     """測試基底證券歷史讀取（data/{stocks,etfs,preferred}）"""

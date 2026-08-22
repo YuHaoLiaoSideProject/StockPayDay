@@ -295,24 +295,27 @@ upcoming (useUpcoming) ─┘
 
 ### 5.2 問題 2：搜尋範圍擴充
 
-#### 策略：新增 TWSE 證券清單爬蟲
+#### 策略：新增上市（TWSE）+ 上櫃（TPEx）證券清單爬蟲
 
-**TWSE 上市證券清單 API**：
+**TWSE 上市證券清單 API**（已實作於 `twse_listing.py`）：
 ```
-URL: https://www.twse.com.tw/rwd/zh/afterTrading/OTCStockList
+URL: https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX
 方法: GET
-參數: response=json
-回傳: {
-  "stat": "OK",
-  "title": "...",
-  "data": [
-    ["1101", "台泥", "水泥工業", "上市", ...],
-    ...
-  ]
-}
+參數: response=json&date=YYYYMMDD&type=ALLBUT0999
+回傳: tables[] 中「每日收盤行情（不含權證…）」表格含全部上市證券
 ```
 
-> 注意：TWSE 官方端點可能有變動，需定期驗證。若 TWSE 不可用，可用公開資訊觀測站替代。
+**TPEx 上櫃證券清單 API**（新增於 `tpex_listing.py`）：
+```
+URL: https://www.tpex.org.tw/web/stock/aftertrading/otc_quotes_no1430/stk_wn1430_result.php
+方法: GET
+參數: l=zh-tw&d=民國日期(115/08/21)&se=AL(所有證券)&s=i0
+Header 需含 X-Requested-With: XMLHttpRequest（TPEx 有 WAF）
+回傳: tables[0].data 含全部上櫃證券（股票/ETF/特別股/權證）
+處理: 排除 7 開頭 6 位純數字的權證（如 739986）
+```
+
+> 注意：官方端點可能有變動，需定期驗證（`.github/workflows/update.yml` 每日排程會重跑）。
 
 #### 新增爬蟲模組
 
@@ -422,9 +425,11 @@ def generate_securities_index(
 
 | 檔案 | 改動類型 | 改動說明 |
 |------|---------|---------|
-| `crawler/sources/twse_listing.py` | 新增 | TWSE 上市上櫃清單爬蟲 |
+| `crawler/sources/twse_listing.py` | 新增 | TWSE 上市清單爬蟲 |
+| `crawler/sources/tpex_listing.py` | 新增 | TPEx 上櫃清單爬蟲（排除上櫃權證） |
+| `crawler/fetch.py` | 修改 | `fetch_listing()` 同時抓上市+上櫃，分檔寫入 `data/listings/` |
 | `data/listings/` | 新增目錄 | 存放證券清單資料 |
-| `processor/generate_api.py` | 修改 | 新增 `load_listings()`，修改 `generate_securities_index()` 合併清單 |
+| `processor/generate_api.py` | 修改 | 新增 `load_listings()`、`generate_securities_index()` 合併清單；`generate_securities_history()` 為清單-only 證券產出空歷史檔（避免詳情頁 404） |
 | `.github/workflows/update.yml` | 修改 | 加入爬蟲步驟 |
 | `frontend/src/composables/useSearch.ts` | 不改 | 自動使用擴充後的 index |
 

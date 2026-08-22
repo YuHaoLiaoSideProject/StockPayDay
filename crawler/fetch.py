@@ -375,41 +375,70 @@ def fetch_mops(year: int, quarter: int) -> None:
 
 def fetch_listing() -> None:
     """
-    執行 TWSE 上市清單爬蟲並儲存資料
+    執行上市（TWSE）+ 上櫃（TPEx）證券清單爬蟲並儲存資料
 
-    從 TWSE 抓取完整上市股票清單，儲存到 data/listings/{YYYY-MM}.json
+    - TWSE 上市清單 → data/listings/{YYYY-MM}.json
+    - TPEx 上櫃清單 → data/listings/{YYYY-MM}-tpex.json
+
+    兩者分開寫檔，任一爬蟲失敗不會覆蓋另一份既有資料。
     """
     from crawler.sources.twse_listing import TWSEListingCrawler
+    from crawler.sources.tpex_listing import TPExListingCrawler
 
-    logger.info("\n📋 抓取 TWSE 上市證券清單...")
+    logger.info("\n📋 抓取上市（TWSE）+ 上櫃（TPEx）證券清單...")
 
-    crawler = TWSEListingCrawler(max_retries=3, delay=2.0)
+    month_str = datetime.now().strftime("%Y-%m")
+    last_updated = datetime.now().strftime("%Y-%m-%d")
 
+    # 1. TWSE 上市清單
+    twse_records = []
     try:
-        records = crawler.fetch()
+        twse_crawler = TWSEListingCrawler(max_retries=3, delay=2.0)
+        twse_records = twse_crawler.fetch()
     except Exception as exc:
         logger.error("❌ TWSE 清單爬蟲失敗: %s", exc)
-        return
 
-    if not records:
-        logger.warning("TWSE 清單無資料")
-        return
+    if twse_records:
+        filepath = DATA_LISTINGS_DIR / f"{month_str}.json"
+        output = {
+            "last_updated": last_updated,
+            "source": "TWSE",
+            "records": twse_records,
+        }
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(output, f, ensure_ascii=False, indent=2)
 
-    # 儲存資料
-    month_str = datetime.now().strftime("%Y-%m")
-    filepath = DATA_LISTINGS_DIR / f"{month_str}.json"
-    output = {
-        "last_updated": datetime.now().strftime("%Y-%m-%d"),
-        "source": "TWSE",
-        "records": records,
-    }
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(output, f, ensure_ascii=False, indent=2)
+        logger.info(
+            "✅ TWSE 清單完成：%d 筆，儲存至 %s",
+            len(twse_records), filepath,
+        )
+    else:
+        logger.warning("TWSE 清單無資料（保留既有檔案）")
 
-    logger.info(
-        "✅ TWSE 清單完成：%d 筆，儲存至 %s",
-        len(records), filepath,
-    )
+    # 2. TPEx 上櫃清單
+    tpex_records = []
+    try:
+        tpex_crawler = TPExListingCrawler(max_retries=3, delay=2.0)
+        tpex_records = tpex_crawler.fetch()
+    except Exception as exc:
+        logger.error("❌ TPEx 清單爬蟲失敗: %s", exc)
+
+    if tpex_records:
+        filepath = DATA_LISTINGS_DIR / f"{month_str}-tpex.json"
+        output = {
+            "last_updated": last_updated,
+            "source": "TPEx",
+            "records": tpex_records,
+        }
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(output, f, ensure_ascii=False, indent=2)
+
+        logger.info(
+            "✅ TPEx 清單完成：%d 筆，儲存至 %s",
+            len(tpex_records), filepath,
+        )
+    else:
+        logger.warning("TPEx 清單無資料（保留既有檔案）")
 
 
 # ------------------------------------------------------------------
@@ -423,7 +452,7 @@ def main(year: int | None = None, quarter: int | None = None,
     主執行流程：
     1. TWT48U — 抓取未來除息預告
     2. MOPS — 抓取配息日資料（個股）
-    3. Listing — 抓取上市證券清單
+    3. Listing — 抓取上市（TWSE）+ 上櫃（TPEx）證券清單
 
     Args:
         year: 民國年（None 則自動取得當前年）
