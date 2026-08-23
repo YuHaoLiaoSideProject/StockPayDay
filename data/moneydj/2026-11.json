@@ -1,0 +1,19 @@
+{
+  "last_updated": "2026-08-23",
+  "source": "moneydj",
+  "records": [
+    {
+      "code": "3680",
+      "name": "家登",
+      "earnings_dividend": 6.0,
+      "reserve_dividend": 4.0,
+      "cash_dividend": 10.0,
+      "pay_date": "2026-12-18",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-12",
+      "type": "息"
+    }
+  ]
+}

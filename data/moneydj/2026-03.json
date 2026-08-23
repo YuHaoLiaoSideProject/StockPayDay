@@ -1,0 +1,84 @@
+{
+  "last_updated": "2026-08-23",
+  "source": "moneydj",
+  "records": [
+    {
+      "code": "6955",
+      "name": "邦睿生技-創",
+      "earnings_dividend": 1.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.5,
+      "pay_date": "2026-04-10",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-03-19",
+      "type": "息"
+    },
+    {
+      "code": "7857",
+      "name": "合水先進",
+      "earnings_dividend": 0.28487587,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.28487587,
+      "pay_date": "2026-04-24",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-03-26",
+      "type": "息"
+    },
+    {
+      "code": "8908",
+      "name": "欣雄",
+      "earnings_dividend": 1.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.5,
+      "pay_date": "2026-04-28",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-03-26",
+      "type": "息"
+    },
+    {
+      "code": "5283",
+      "name": "禾聯碩",
+      "earnings_dividend": 0.2,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.2,
+      "pay_date": "2026-04-24",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-03-27",
+      "type": "息"
+    },
+    {
+      "code": "6752",
+      "name": "叡揚",
+      "earnings_dividend": 4.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 4.5,
+      "pay_date": "2026-04-27",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-03-27",
+      "type": "息"
+    },
+    {
+      "code": "2937",
+      "name": "集雅社",
+      "earnings_dividend": 2.1,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 2.1,
+      "pay_date": "2026-05-22",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-03-30",
+      "type": "息"
+    }
+  ]
+}

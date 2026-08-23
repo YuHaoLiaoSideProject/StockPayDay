@@ -1,0 +1,58 @@
+{
+  "last_updated": "2026-08-23",
+  "source": "moneydj",
+  "records": [
+    {
+      "code": "2330",
+      "name": "台積電",
+      "earnings_dividend": 7.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 7.0,
+      "pay_date": "2027-01-07",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-10",
+      "type": "息"
+    },
+    {
+      "code": "6021",
+      "name": "美好證",
+      "earnings_dividend": 1.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.0,
+      "pay_date": "2027-01-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-17",
+      "type": "息"
+    },
+    {
+      "code": "6548",
+      "name": "長科*",
+      "earnings_dividend": 0.45,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.45,
+      "pay_date": "2027-01-13",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-17",
+      "type": "息"
+    },
+    {
+      "code": "5306",
+      "name": "桂盟",
+      "earnings_dividend": 1.29232541,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.29232541,
+      "pay_date": "2027-01-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-21",
+      "type": "息"
+    }
+  ]
+}

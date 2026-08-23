@@ -1,0 +1,123 @@
+{
+  "last_updated": "2026-08-23",
+  "source": "moneydj",
+  "records": [
+    {
+      "code": "1784",
+      "name": "訊聯",
+      "earnings_dividend": 0.880964,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.880964,
+      "pay_date": "2026-10-30",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-01",
+      "type": "息"
+    },
+    {
+      "code": "2323",
+      "name": "中環",
+      "earnings_dividend": 0.2,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.2,
+      "pay_date": "2026-10-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-01",
+      "type": "息"
+    },
+    {
+      "code": "9927",
+      "name": "泰銘",
+      "earnings_dividend": 5.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 5.0,
+      "pay_date": "2026-10-29",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-01",
+      "type": "息"
+    },
+    {
+      "code": "2614",
+      "name": "東森",
+      "earnings_dividend": 0.4,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.4,
+      "pay_date": "2026-11-23",
+      "earnings_stock": 0.8,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.8,
+      "ex_date": "2026-10-06",
+      "type": "權息"
+    },
+    {
+      "code": "6108",
+      "name": "競國",
+      "earnings_dividend": 1.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.0,
+      "pay_date": "2026-10-21",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-07",
+      "type": "息"
+    },
+    {
+      "code": "6947",
+      "name": "台鎔科技",
+      "earnings_dividend": 0.53332663,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.53332663,
+      "pay_date": "2026-11-11",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-07",
+      "type": "息"
+    },
+    {
+      "code": "1565",
+      "name": "精華",
+      "earnings_dividend": 5.8,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 5.8,
+      "pay_date": "2026-10-30",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-12",
+      "type": "息"
+    },
+    {
+      "code": "6548",
+      "name": "長科*",
+      "earnings_dividend": 0.45105516,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.45105516,
+      "pay_date": "2026-11-18",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-15",
+      "type": "息"
+    },
+    {
+      "code": "8102",
+      "name": "傑霖科技",
+      "earnings_dividend": 0.9,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.9,
+      "pay_date": "2026-11-20",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-22",
+      "type": "息"
+    }
+  ]
+}

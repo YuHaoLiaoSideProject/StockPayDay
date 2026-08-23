@@ -1,0 +1,58 @@
+{
+  "last_updated": "2026-08-23",
+  "source": "moneydj",
+  "records": [
+    {
+      "code": "6669",
+      "name": "緯穎",
+      "earnings_dividend": 144.39154497,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 144.39154497,
+      "pay_date": "2026-07-17",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-06-22",
+      "type": "息"
+    },
+    {
+      "code": "9917",
+      "name": "中保科",
+      "earnings_dividend": 5.7,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 5.7,
+      "pay_date": "2026-07-16",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-06-24",
+      "type": "息"
+    },
+    {
+      "code": "7728",
+      "name": "光焱科技",
+      "earnings_dividend": 4.23389701,
+      "reserve_dividend": 0.76610644,
+      "cash_dividend": 5.00000345,
+      "pay_date": "2026-07-22",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-06-25",
+      "type": "息"
+    },
+    {
+      "code": "3416",
+      "name": "融程電",
+      "earnings_dividend": 5.09594553,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 5.09594553,
+      "pay_date": "2026-07-27",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-06-30",
+      "type": "息"
+    }
+  ]
+}

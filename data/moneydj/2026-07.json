@@ -1,0 +1,84 @@
+{
+  "last_updated": "2026-08-23",
+  "source": "moneydj",
+  "records": [
+    {
+      "code": "2753",
+      "name": "八方雲集",
+      "earnings_dividend": 7.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 7.5,
+      "pay_date": "2026-07-30",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-07-02",
+      "type": "息"
+    },
+    {
+      "code": "3013",
+      "name": "晟銘電",
+      "earnings_dividend": 0.4,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.4,
+      "pay_date": "2026-08-07",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-07-14",
+      "type": "息"
+    },
+    {
+      "code": "1240",
+      "name": "茂生農經",
+      "earnings_dividend": 3.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 3.0,
+      "pay_date": "2026-08-12",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-07-15",
+      "type": "息"
+    },
+    {
+      "code": "1734",
+      "name": "杏輝",
+      "earnings_dividend": 1.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.0,
+      "pay_date": "2026-08-28",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-07-24",
+      "type": "息"
+    },
+    {
+      "code": "4549",
+      "name": "桓達",
+      "earnings_dividend": 3.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 3.0,
+      "pay_date": "2026-08-21",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-07-29",
+      "type": "息"
+    },
+    {
+      "code": "2249",
+      "name": "湧盛",
+      "earnings_dividend": 3.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 3.0,
+      "pay_date": "2026-08-20",
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
+      "ex_date": "2026-07-30",
+      "type": "息"
+    }
+  ]
+}
