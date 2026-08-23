@@ -2,7 +2,6 @@
 
 > **對應 Roadmap**：Phase 5
 > **技術棧**：Vue 3.x (Composition API) · Vite 5.x · Tailwind CSS 3.x
-> **Tech Decision**：`docs/tech-decision-stockpayday-2026-07-21.md`
 > **操作流程**：`docs/interaction-flows/phases/phase-5-前端進階.md`
 > **BDD**：`docs/bdds/stockpayday.feature`
 > **測試計畫**：`docs/test-plans/phases/phase-5-前端進階測試計畫.md`

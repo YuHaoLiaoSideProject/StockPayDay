@@ -2,7 +2,6 @@
 
 > **對應 Roadmap**：Phase 0 — `docs/roadmaps/phases.md` 項目 #1
 > **技術棧**：Python 3.11+ · Vue 3 · Vite 5 · Tailwind CSS 3
-> **Tech Decision**：`docs/tech-decision-stockpayday-2026-07-21.md`
 > **操作流程**：`docs/interaction-flows/phases/phase-0-專案建置.md`
 > **狀態**：設計完成，待開發
 

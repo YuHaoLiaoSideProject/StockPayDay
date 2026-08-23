@@ -2,7 +2,6 @@
 
 > **對應 Roadmap**：Phase 3 — `docs/roadmaps/phases.md` 項目 #4
 > **技術棧**：Python 3.11+ · pathlib · json · datetime
-> **Tech Decision**：`docs/tech-decision-stockpayday-2026-07-21.md`
 > **操作流程**：`docs/interaction-flows/phases/phase-3-資料處理器.md`
 > **BDD**：`docs/bdds/stockpayday.feature`（LINE 通知、自動化部署、Edge Cases 相關 Scenario）
 > **測試計畫**：`docs/test-plans/phases/phase-3-資料處理器測試計畫.md`

@@ -1,7 +1,6 @@
 # Phase 4 前端基礎（行事曆 + 列表） — 開發規格
 
 > **技術棧**：Vue 3.x (Composition API) · Vite 5.x · Tailwind CSS 3.x · Vitest · Vue Test Utils
-> **Tech Decision**：`docs/tech-decision-stockpayday-2026-07-21.md`
 > **操作流程**：`docs/interaction-flows/phases/phase-4-前端基礎.md`
 > **BDD**：`docs/bdds/stockpayday.feature`
 > **測試計畫**：`docs/test-plans/phases/phase-4-前端基礎測試計畫.md`

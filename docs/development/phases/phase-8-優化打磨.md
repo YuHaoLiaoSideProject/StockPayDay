@@ -2,7 +2,6 @@
 
 > **對應 Roadmap**：Phase 8 — `docs/roadmaps/phases.md` 項目 #11（RWD 響應式設計）+ #12（深色模式）
 > **技術棧**：Vue 3.x · Vite 5.x · Tailwind CSS 3.x
-> **Tech Decision**：`docs/tech-decision-stockpayday-2026-07-21.md`
 > **操作流程**：`docs/interaction-flows/phases/phase-8-優化打磨.md`
 > **BDD**：`docs/bdds/stockpayday.feature`
 > **測試計畫**：`docs/test-plans/phases/phase-8-優化打磨測試計畫.md`

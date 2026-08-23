@@ -1128,7 +1128,13 @@ def main(year: int | None = None, quarter: int | None = None,
 # CLI 入口
 # ------------------------------------------------------------------
 
-if __name__ == "__main__":
+def cli(argv: list | None = None) -> None:
+    """
+    CLI 入口：解析參數並派發執行
+
+    Args:
+        argv: 命令列參數（None 代表 sys.argv[1:]）
+    """
     parser = argparse.ArgumentParser(description="StockPayDay++ 爬蟲")
     parser.add_argument("year", type=int, nargs="?", default=None,
                         help="民國年（如 114）")
@@ -1147,7 +1153,7 @@ if __name__ == "__main__":
     parser.add_argument("--moneydj", action="store_true",
                         help="僅執行 MoneyDJ 除權除息爬蟲（預設）")
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     # 驗證參數
     if (args.year is None) != (args.quarter is None):
@@ -1171,3 +1177,7 @@ if __name__ == "__main__":
             listing_only=args.listing,
             all_sources=args.all,
         )
+
+
+if __name__ == "__main__":
+    cli()

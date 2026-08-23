@@ -1,7 +1,6 @@
 # Phase 6 通知功能（LINE Notify） — 開發規格
 
 > **技術棧**：Python 3.11+ · requests
-> **Tech Decision**：`docs/tech-decision-stockpayday-2026-07-21.md`
 > **操作流程**：`docs/interaction-flows/phases/phase-6-通知功能.md`
 > **BDD**：`docs/bdds/stockpayday.feature`（LINE 通知章節）
 > **測試計畫**：`docs/test-plans/phases/phase-6-通知功能測試計畫.md`

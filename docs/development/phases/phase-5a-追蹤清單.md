@@ -1,7 +1,6 @@
 # Phase 5a 追蹤清單 — 開發規格
 
 > **技術棧**：Vue 3.x (Composition API) · Vite 5.x · Tailwind CSS 3.x · Vitest · Vue Test Utils
-> **Tech Decision**：`docs/tech-decision-stockpayday-2026-07-21.md`
 > **前置階段**：Phase 4（前端基礎）、Phase 5（前端進階）
 > **狀態**：設計完成，待開發
 

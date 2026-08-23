@@ -113,6 +113,19 @@ class TestSplitMoneydjEvents:
         assert events[0]["type"] == "權"
         assert events[0]["ex_date"] == "2026-09-01"
 
+    def test_no_date_produces_no_event(self):
+        """除息日與除權日皆空 → 不產生事件"""
+        records = [{
+            "code": "9999", "name": "無日期",
+            "ex_date": "", "ex_rights_date": "",
+            "earnings_dividend": 0.0, "reserve_dividend": 0.0,
+            "cash_dividend": 0.0, "pay_date": "",
+            "earnings_stock": 0.0, "reserve_stock": 0.0,
+            "stock_dividend": 0.0,
+        }]
+
+        assert _split_moneydj_events(records) == []
+
 
 class TestMergeSameDayDividendEvents:
     """測試同日 息+權 併成權息"""

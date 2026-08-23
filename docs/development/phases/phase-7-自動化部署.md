@@ -2,7 +2,6 @@
 
 > **對應 Roadmap**：Phase 7 — `docs/roadmaps/phases.md` 項目 #10
 > **技術棧**：Python 3.11+ · GitHub Actions · GitHub Pages
-> **Tech Decision**：`docs/tech-decision-stockpayday-2026-07-21.md`
 > **操作流程**：`docs/interaction-flows/phases/phase-7-自動化部署.md`
 > **BDD**：`docs/bdds/stockpayday.feature`（「自動化部署」章節）
 > **測試計畫**：`docs/test-plans/phases/phase-7-自動化部署測試計畫.md`
