@@ -46,7 +46,7 @@ class BaseCrawler:
                 "q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
             ),
             "Accept-Language": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Encoding": "gzip, deflate",
             "Connection": "keep-alive",
         })
         self.max_retries = max_retries
