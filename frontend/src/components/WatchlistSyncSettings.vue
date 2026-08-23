@@ -32,6 +32,8 @@ const { items, add, isWatched } = useWatchlist()
 const emailInput = ref('')
 const tokenInput = ref('')
 const showTokenInput = ref(false)
+const creating = ref(false)  // createAccount 進行中
+const createError = ref('')  // createAccount 錯誤訊息
 const backupOpen = ref(false)
 const exportText = ref('')
 const importText = ref('')
@@ -52,9 +54,23 @@ function formatTime(ts: number | null): string | null {
 
 /** Email 啟動：透過 Worker 建立帳號 + 取得 token */
 async function onEmailSubmit() {
-  if (!emailInput.value.trim()) return
-  await createAccount(emailInput.value)
-  emailInput.value = ''
+  if (!emailInput.value.trim() || creating.value) return
+  creating.value = true
+  createError.value = ''
+  try {
+    await createAccount(emailInput.value)
+    // 成功後 createAccount 會設 token → v-if 切換到已配對區塊
+    // 若失敗（token 仍為空），留在 email 表單並顯示錯誤
+    if (!token.value && !lastError.value) {
+      createError.value = '建立失敗，請稍後再試'
+    } else if (!token.value && lastError.value) {
+      createError.value = lastError.value
+    }
+  } catch {
+    createError.value = '建立失敗，請檢查網路連線'
+  } finally {
+    creating.value = false
+  }
 }
 
 /** 配對碼直接輸入（備援：使用者已有 token 時可直接貼上） */
@@ -113,10 +129,23 @@ function handleImport() {
           placeholder="輸入 email 啟動同步"
           aria-label="email"
           required
+          :disabled="creating"
           data-testid="sync-email-input"
         />
-        <button class="btn-primary" type="submit" data-testid="sync-email-submit">啟動</button>
+        <button
+          class="btn-primary"
+          type="submit"
+          :disabled="creating || !emailInput.trim()"
+          data-testid="sync-email-submit"
+        >
+          {{ creating ? '建立中…' : '啟動' }}
+        </button>
       </form>
+
+      <!-- 建立帳號錯誤訊息 -->
+      <p v-if="createError" class="sync-error" data-testid="sync-create-error">
+        {{ createError }}
+      </p>
 
       <!-- 配對碼備援（已有 token 時直接貼上） -->
       <div class="sync-token-fallback">
@@ -264,6 +293,16 @@ function handleImport() {
 .sync-input:focus {
   outline: none;
   border-color: var(--tab-active-bg);
+}
+
+.sync-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .sync-status-row {
