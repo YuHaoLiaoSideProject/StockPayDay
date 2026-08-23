@@ -3,7 +3,7 @@ StockPayDay++ 主爬蟲腳本
 負責協調所有爬蟲模組，抓取配息資料
 
 使用方式：
-    python crawler/fetch.py              # 預設只爬取 MoneyDJ（全市場，可取代其他配息來源）
+    python crawler/fetch.py              # 預設爬取 MoneyDJ（全市場）+ 上市/上櫃證券清單
     python crawler/fetch.py --all        # 完整爬取所有來源
     python crawler/fetch.py --twt48u     # 僅執行 TWT48U
     python crawler/fetch.py --mops 114 2 # 僅執行 MOPS（指定年季）
@@ -1064,9 +1064,10 @@ def main(year: int | None = None, quarter: int | None = None,
     """
     主執行流程
 
-    預設只爬取 MoneyDJ 除權除息：MoneyDJ 除權除息表涵蓋全市場
-    （上市 + 上櫃 + ETF），且含現金/股票股利與 pay_date，
-    可取代 TWT48U / MOPS / TPEx ETF / TPEx 除權除息等配息來源。
+    預設爬取 MoneyDJ 除權除息 + 上市/上櫃證券清單：
+    MoneyDJ 除權除息表涵蓋全市場（上市 + 上櫃 + ETF），且含
+    現金/股票股利與 pay_date，可取代 TWT48U / MOPS / TPEx ETF /
+    TPEx 除權除息等配息來源；證券清單供搜尋索引與明細爬取使用。
 
     需要完整爬取時請指定 all_sources=True：
     1. TWT48U — 抓取未來除息預告
@@ -1115,8 +1116,10 @@ def main(year: int | None = None, quarter: int | None = None,
             logger.info("指定: 民國 %d 年第 %d 季", year, quarter)
         fetch_mops_dividend(year, quarter)
     else:
-        # 預設：只爬 MoneyDJ（可取代其他配息來源）
+        # 預設：MoneyDJ 全市場除權除息（可取代其他配息來源）
+        #       + 上市/上櫃證券清單（搜尋索引與明細爬取需要）
         fetch_moneydj_exright()
+        fetch_listing()
 
     logger.info("\n" + "=" * 50 + "\n✅ 所有爬蟲完成\n" + "=" * 50)
 

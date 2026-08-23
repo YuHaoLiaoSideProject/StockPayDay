@@ -32,7 +32,9 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    permissions:
+      contents: write        # 爬蟲後 commit data/ 回 repo 需要寫入權限
+    timeout-minutes: 20
 
     steps:
       # ─── Step 1: Checkout 專案 ───
@@ -50,9 +52,36 @@ jobs:
         run: pip install -r requirements.txt
 
       # ─── Step 4: 執行爬蟲（僅 cron 或手動勾選時） ───
+      # 預設指令 = MoneyDJ 全市場除權除息 + 上市/上櫃證券清單（搜尋索引需要）
       - name: Run crawler
         if: github.event_name == 'schedule' || inputs.run_crawler == true
         run: python crawler/fetch.py
+
+      # ─── Step 4b: 爬蟲後把 data/ commit 回 repo ───
+      # 讓之後的 push 觸發部署也能直接使用 repo 內資料（不需重爬）
+      - name: Commit crawled data
+        if: github.event_name == 'schedule' || inputs.run_crawler == true
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add data/
+          if git diff --cached --quiet; then
+            echo "✅ data/ 無變更，跳過 commit"
+          else
+            git commit -m "data: 線上重新爬取（$(date -u +%Y-%m-%d)）"
+            git push
+            echo "📤 data/ 已 commit 並 push 回 master"
+          fi
+
+      # ─── Step 4c: push 且 repo 無 data/ 時直接失敗 ───
+      # 避免用空資料部署出空站（搜尋索引 0 筆）
+      - name: Check data exists
+        if: github.event_name == 'push'
+        run: |
+          if [ ! -d "data" ] || [ -z "$(ls -A data 2>/dev/null)" ]; then
+            echo "::error::repo 內沒有 data/。請先手動觸發本 workflow 並勾選 run_crawler=True，線上爬蟲會重建並 commit data/ 回 repo。"
+            exit 1
+          fi
 
       # ─── Step 5: 執行處理器 ───
       - name: Run processor
