@@ -1,7 +1,8 @@
 """
 整合測試 — 完整處理器流程
 
-測試 data/ → processor → api/ 的端到端流程
+測試 data/ → processor → api/ 的端到端流程。
+資料來源可切換：預設 moneydj；既有測試沿用原組合邏輯（twses-mops）。
 """
 import pytest
 import json
@@ -19,11 +20,24 @@ def _write_twses(data_dir: Path, records: list) -> None:
     )
 
 
+def _write_moneydj(data_dir: Path, month: str, records: list) -> None:
+    """輔助：寫入 MoneyDJ 格式的測試資料（data/moneydj/{month}.json）"""
+    moneydj_dir = data_dir / "moneydj"
+    moneydj_dir.mkdir(parents=True, exist_ok=True)
+    (moneydj_dir / f"{month}.json").write_text(
+        json.dumps({
+            "last_updated": "2026-08-23",
+            "source": "moneydj",
+            "records": records,
+        }, ensure_ascii=False)
+    )
+
+
 class TestProcessorIntegration:
     """處理器整合測試"""
 
     def test_full_process(self, tmp_path, monkeypatch):
-        """完整處理流程：api/ 產出所有檔案"""
+        """完整處理流程（twses-mops 來源）：api/ 產出所有檔案"""
         data_dir = tmp_path / "data"
         _write_twses(data_dir, [
             {
@@ -42,7 +56,7 @@ class TestProcessorIntegration:
         monkeypatch.setattr(mod, "DATA_DIR", data_dir)
         monkeypatch.setattr(mod, "API_DIR", tmp_path / "api")
 
-        run_processor()
+        run_processor("twses-mops")
 
         api_dir = tmp_path / "api"
         assert (api_dir / "upcoming.json").exists()
@@ -52,7 +66,7 @@ class TestProcessorIntegration:
         assert (api_dir / "securities" / "0050.json").exists()
 
     def test_json_format_valid(self, tmp_path, monkeypatch):
-        """所有產出的 JSON 檔案格式正確"""
+        """所有產出的 JSON 檔案格式正確（twses-mops 來源）"""
         data_dir = tmp_path / "data"
         _write_twses(data_dir, [
             {
@@ -66,7 +80,7 @@ class TestProcessorIntegration:
         monkeypatch.setattr(mod, "DATA_DIR", data_dir)
         monkeypatch.setattr(mod, "API_DIR", tmp_path / "api")
 
-        run_processor()
+        run_processor("twses-mops")
 
         api_dir = tmp_path / "api"
         for json_file in api_dir.rglob("*.json"):
@@ -103,7 +117,7 @@ class TestProcessorIntegration:
         assert isinstance(hist["history"], list)
 
     def test_processing_time(self, tmp_path, monkeypatch):
-        """處理時間 < 30 秒"""
+        """處理時間 < 30 秒（twses-mops 來源）"""
         data_dir = tmp_path / "data"
         twses_dir = data_dir / "twses"
         twses_dir.mkdir(parents=True)
@@ -125,13 +139,13 @@ class TestProcessorIntegration:
         monkeypatch.setattr(mod, "API_DIR", tmp_path / "api")
 
         start = time.time()
-        run_processor()
+        run_processor("twses-mops")
         elapsed = time.time() - start
 
         assert elapsed < 30, f"處理時間 {elapsed:.1f}s 超過 30 秒上限"
 
     def test_empty_data_no_crash(self, tmp_path, monkeypatch):
-        """data/ 目錄為空時不崩潰"""
+        """data/ 目錄為空時不崩潰（twses-mops 來源）"""
         data_dir = tmp_path / "data"
         data_dir.mkdir(parents=True)
 
@@ -140,10 +154,10 @@ class TestProcessorIntegration:
         monkeypatch.setattr(mod, "API_DIR", tmp_path / "api")
 
         # 不應拋出異常
-        run_processor()
+        run_processor("twses-mops")
 
     def test_missing_subdir_no_crash(self, tmp_path, monkeypatch):
-        """部分子目錄不存在時不崩潰"""
+        """部分子目錄不存在時不崩潰（twses-mops 來源）"""
         data_dir = tmp_path / "data"
         # 只建立 twses，不建立 mops
         _write_twses(data_dir, [
@@ -158,16 +172,16 @@ class TestProcessorIntegration:
         monkeypatch.setattr(mod, "DATA_DIR", data_dir)
         monkeypatch.setattr(mod, "API_DIR", tmp_path / "api")
 
-        run_processor()
+        run_processor("twses-mops")
 
         api_dir = tmp_path / "api"
         assert (api_dir / "upcoming.json").exists()
 
     def test_mops_merge_populates_pay_date(self, tmp_path, monkeypatch):
-        """MOPS 資料補充 pay_date 至 upcoming"""
+        """MOPS（新 API）資料補充 pay_date 至 upcoming（twses-mops 來源）"""
         data_dir = tmp_path / "data"
         twses_dir = data_dir / "twses"
-        mops_dir = data_dir / "mops"
+        mops_dir = data_dir / "mops_dividend"
         twses_dir.mkdir(parents=True)
         mops_dir.mkdir(parents=True)
 
@@ -191,9 +205,72 @@ class TestProcessorIntegration:
         monkeypatch.setattr(mod, "DATA_DIR", data_dir)
         monkeypatch.setattr(mod, "API_DIR", tmp_path / "api")
 
-        run_processor()
+        run_processor("twses-mops")
 
         with open(tmp_path / "api" / "upcoming.json") as f:
             upcoming = json.load(f)
         assert len(upcoming) == 1
         assert upcoming[0]["pay_date"] == "2099-08-15"
+
+    def test_moneydj_default_source(self, tmp_path, monkeypatch):
+        """預設來源 moneydj：data/moneydj 產生 upcoming"""
+        data_dir = tmp_path / "data"
+        _write_moneydj(data_dir, "2026-08", [
+            {
+                "code": "00679B", "name": "元大美債20年",
+                "ex_date": "2099-09-11", "type": "息",
+                "pay_date": "2099-09-11",
+                "cash_dividend": 0.28, "stock_dividend": 0.0,
+            },
+        ])
+
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", data_dir)
+        monkeypatch.setattr(mod, "API_DIR", tmp_path / "api")
+
+        # 不帶來源參數 → 使用預設 moneydj
+        run_processor()
+
+        api_dir = tmp_path / "api"
+        assert (api_dir / "upcoming.json").exists()
+        with open(api_dir / "upcoming.json") as f:
+            upcoming = json.load(f)
+        assert len(upcoming) == 1
+        assert upcoming[0]["code"] == "00679B"
+        assert upcoming[0]["pay_date"] == "2099-09-11"
+        assert upcoming[0]["cash_dividend"] == 0.28
+
+    def test_moneydj_source_switch(self, tmp_path, monkeypatch):
+        """顯式切換到 twses-mops 來源：moneydj 資料不被使用"""
+        data_dir = tmp_path / "data"
+        _write_twses(data_dir, [
+            {
+                "code": "2330", "name": "台積電",
+                "ex_date": "2099-01-01", "type": "息",
+                "cash_dividend": 3.5, "stock_dividend": 0,
+            },
+        ])
+        _write_moneydj(data_dir, "2026-08", [
+            {
+                "code": "00679B", "name": "元大美債20年",
+                "ex_date": "2099-09-11", "type": "息",
+                "pay_date": "2099-09-11",
+                "cash_dividend": 0.28, "stock_dividend": 0.0,
+            },
+        ])
+
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", data_dir)
+        monkeypatch.setattr(mod, "API_DIR", tmp_path / "api")
+
+        run_processor("twses-mops")
+
+        with open(tmp_path / "api" / "upcoming.json") as f:
+            upcoming = json.load(f)
+        assert [u["code"] for u in upcoming] == ["2330"]
+
+    def test_unknown_source_raises(self):
+        """未知來源名稱拋出 ValueError"""
+        import processor.generate_api as mod
+        with pytest.raises(ValueError):
+            run_processor("not-a-source")

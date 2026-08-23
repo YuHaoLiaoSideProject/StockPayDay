@@ -21,6 +21,11 @@ from processor.generate_api import (
     load_securities,
     load_listings,
     merge_securities_and_announcements,
+    load_moneydj,
+    DEFAULT_SOURCE,
+    SOURCE_REGISTRY,
+    get_source,
+    build_records,
 )
 
 
@@ -519,6 +524,153 @@ class TestLoadListings:
 
         listings = load_listings()
         assert listings == []
+
+
+class TestLoadMoneydj:
+    """測試 MoneyDJ 讀取（data/moneydj/）"""
+
+    def test_reads_all_files(self, tmp_path, monkeypatch):
+        """讀取所有月份檔案並攤平紀錄"""
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", tmp_path)
+
+        moneydj_dir = tmp_path / "moneydj"
+        moneydj_dir.mkdir(parents=True)
+        (moneydj_dir / "2026-08.json").write_text(json.dumps({
+            "last_updated": "2026-08-23",
+            "source": "moneydj",
+            "records": [
+                {"code": "00679B", "name": "元大美債20年",
+                 "ex_date": "2026-08-21", "type": "息",
+                 "pay_date": "2026-09-11", "cash_dividend": 0.28,
+                 "stock_dividend": 0.0},
+            ],
+        }, ensure_ascii=False), encoding="utf-8")
+        (moneydj_dir / "2026-09.json").write_text(json.dumps({
+            "records": [
+                {"code": "2330", "name": "台積電",
+                 "ex_date": "2026-09-15", "type": "息",
+                 "pay_date": "", "cash_dividend": 3.5,
+                 "stock_dividend": 0.0},
+            ],
+        }, ensure_ascii=False), encoding="utf-8")
+
+        records = load_moneydj()
+        assert len(records) == 2
+        assert records[0]["code"] == "00679B"
+        assert records[1]["code"] == "2330"
+
+    def test_dedupes_across_files(self, tmp_path, monkeypatch):
+        """跨月份以 (code, ex_date, type) 去重"""
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", tmp_path)
+
+        moneydj_dir = tmp_path / "moneydj"
+        moneydj_dir.mkdir(parents=True)
+        rec = {"code": "0056", "name": "元大高股息",
+               "ex_date": "2026-08-20", "type": "息",
+               "pay_date": "2026-09-10", "cash_dividend": 1.8,
+               "stock_dividend": 0.0}
+        (moneydj_dir / "2026-07.json").write_text(
+            json.dumps({"records": [rec]}, ensure_ascii=False), encoding="utf-8")
+        (moneydj_dir / "2026-08.json").write_text(
+            json.dumps({"records": [rec]}, ensure_ascii=False), encoding="utf-8")
+
+        records = load_moneydj()
+        assert len(records) == 1
+
+    def test_empty_when_no_dir(self, tmp_path, monkeypatch):
+        """目錄不存在時回傳空列表"""
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", tmp_path)
+
+        assert load_moneydj() == []
+
+    def test_skips_invalid_json(self, tmp_path, monkeypatch):
+        """跳過無法解析的 JSON 檔案"""
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", tmp_path)
+
+        moneydj_dir = tmp_path / "moneydj"
+        moneydj_dir.mkdir(parents=True)
+        (moneydj_dir / "bad.json").write_text("{not valid", encoding="utf-8")
+
+        assert load_moneydj() == []
+
+
+class TestSourceRegistry:
+    """測試可切換資料來源"""
+
+    def test_default_source_is_moneydj(self):
+        """預設來源為 moneydj"""
+        assert DEFAULT_SOURCE == "moneydj"
+        assert "moneydj" in SOURCE_REGISTRY
+
+    def test_registry_contains_all_sources(self):
+        """註冊表包含所有可用來源"""
+        expected = {
+            "moneydj", "twses-mops", "twses",
+            "mops", "tpex-etf", "mops-legacy",
+        }
+        assert set(SOURCE_REGISTRY) == expected
+
+    def test_get_source_known(self):
+        """取得已知來源"""
+        src = get_source("twses-mops")
+        assert src.name == "twses-mops"
+        assert src.label
+        assert callable(src.build_announcements)
+
+    def test_get_source_unknown_raises(self):
+        """未知名稱拋出 ValueError"""
+        import pytest
+        with pytest.raises(ValueError):
+            get_source("no-such-source")
+
+    def test_build_records_with_moneydj(self, tmp_path, monkeypatch):
+        """build_records 以指定來源產出合併紀錄"""
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", tmp_path)
+
+        moneydj_dir = tmp_path / "moneydj"
+        moneydj_dir.mkdir(parents=True)
+        (moneydj_dir / "2026-08.json").write_text(json.dumps({
+            "records": [
+                {"code": "2330", "name": "台積電",
+                 "ex_date": "2099-01-01", "type": "息",
+                 "pay_date": "2099-02-01", "cash_dividend": 3.5,
+                 "stock_dividend": 0.0},
+            ],
+        }, ensure_ascii=False), encoding="utf-8")
+
+        records = build_records(get_source("moneydj"))
+        assert len(records) == 1
+        assert records[0]["code"] == "2330"
+        assert records[0]["pay_date"] == "2099-02-01"
+
+    def test_build_records_twses_mops_preserves_original(self, tmp_path, monkeypatch):
+        """twses-mops 來源保持原組合邏輯（TWT48U 補 pay_date）"""
+        import processor.generate_api as mod
+        monkeypatch.setattr(mod, "DATA_DIR", tmp_path)
+
+        twses_dir = tmp_path / "twses"
+        mops_dir = tmp_path / "mops_dividend"
+        twses_dir.mkdir(parents=True)
+        mops_dir.mkdir(parents=True)
+        (twses_dir / "t.json").write_text(json.dumps({"records": [
+            {"code": "2330", "name": "台積電",
+             "ex_date": "2099-07-25", "type": "息",
+             "cash_dividend": 3.5, "stock_dividend": 0},
+        ]}, ensure_ascii=False), encoding="utf-8")
+        (mops_dir / "m.json").write_text(json.dumps({"records": [
+            {"code": "2330", "name": "台積電",
+             "ex_date": "2099-07-25", "pay_date": "2099-08-15",
+             "cash_dividend": 3.5},
+        ]}, ensure_ascii=False), encoding="utf-8")
+
+        records = build_records(get_source("twses-mops"))
+        assert len(records) == 1
+        assert records[0]["pay_date"] == "2099-08-15"
 
 
 class TestSaveApiFile:
