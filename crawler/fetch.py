@@ -1,11 +1,13 @@
 """
 StockPayDay++ 主爬蟲腳本
-負責協調所有爬蟲模組，抓取 TWSE 配息資料
+負責協調所有爬蟲模組，抓取配息資料
 
 使用方式：
-    python crawler/fetch.py              # 執行所有爬蟲
+    python crawler/fetch.py              # 預設只爬取 MoneyDJ（全市場，可取代其他配息來源）
+    python crawler/fetch.py --all        # 完整爬取所有來源
     python crawler/fetch.py --twt48u     # 僅執行 TWT48U
     python crawler/fetch.py --mops 114 2 # 僅執行 MOPS（指定年季）
+    python crawler/fetch.py --listing    # 僅執行 Listing
 """
 
 import sys
@@ -1058,13 +1060,21 @@ def fetch_listing() -> None:
 
 def main(year: int | None = None, quarter: int | None = None,
          twt48u_only: bool = False, mops_only: bool = False,
-         listing_only: bool = False) -> None:
+         listing_only: bool = False, all_sources: bool = False) -> None:
     """
-    主執行流程：
+    主執行流程
+
+    預設只爬取 MoneyDJ 除權除息：MoneyDJ 除權除息表涵蓋全市場
+    （上市 + 上櫃 + ETF），且含現金/股票股利與 pay_date，
+    可取代 TWT48U / MOPS / TPEx ETF / TPEx 除權除息等配息來源。
+
+    需要完整爬取時請指定 all_sources=True：
     1. TWT48U — 抓取未來除息預告
-    2. MOPS Dividend — 抓取配息日資料（使用新 API t05st09_2）
-    3. TPEx ETF — 抓取上櫃 ETF 配息
-    4. Listing — 抓取上市（TWSE）+ 上櫃（TPEx）證券清單
+    2. TPEx ETF — 抓取上櫃 ETF 配息
+    3. TPEx 除權除息 — 上櫃除權除息計算結果
+    4. MoneyDJ — 全市場除權除息表
+    5. MOPS Dividend — 配息日資料（使用新 API t05st09_2）
+    6. Listing — 抓取上市（TWSE）+ 上櫃（TPEx）證券清單
 
     Args:
         year: 民國年（None 則自動取得當前年）
@@ -1072,39 +1082,41 @@ def main(year: int | None = None, quarter: int | None = None,
         twt48u_only: 僅執行 TWT48U
         mops_only: 僅執行 MOPS
         listing_only: 僅執行 Listing
+        all_sources: 完整爬取所有來源（原預設行為）
     """
     # 確保目錄存在
     ensure_dirs()
 
-    # 根據參數決定執行哪些爬蟲
-    if listing_only:
-        # 僅執行 Listing
-        fetch_listing()
-    elif not mops_only:
-        # 1. TWT48U — 除息預告（上市）
+    if all_sources:
+        # 完整爬取（原預設行為）
         fetch_twt48u()
-
-        # 2. TPEx ETF — 上櫃 ETF 配息
         fetch_tpex_etf_dividend()
-
-        # 3. TPEx 除權除息 — 上櫃除權除息計算結果
         fetch_tpex_exright_daily()
-
-        # 4. MoneyDJ 除權除息 — 全市場除權除息表
         fetch_moneydj_exright()
-
-        # 5. Listing — 上市證券清單
         fetch_listing()
-
-    if not twt48u_only and not listing_only:
-        # 6. MOPS Dividend — 配息日（使用新 API t05st09_2）
         if year is None or quarter is None:
             year, quarter = get_current_year_quarter()
             logger.info("自動偵測: 民國 %d 年第 %d 季", year, quarter)
         else:
             logger.info("指定: 民國 %d 年第 %d 季", year, quarter)
-
         fetch_mops_dividend(year, quarter)
+    elif listing_only:
+        # 僅執行 Listing
+        fetch_listing()
+    elif twt48u_only:
+        # 僅執行 TWT48U
+        fetch_twt48u()
+    elif mops_only:
+        # 僅執行 MOPS
+        if year is None or quarter is None:
+            year, quarter = get_current_year_quarter()
+            logger.info("自動偵測: 民國 %d 年第 %d 季", year, quarter)
+        else:
+            logger.info("指定: 民國 %d 年第 %d 季", year, quarter)
+        fetch_mops_dividend(year, quarter)
+    else:
+        # 預設：只爬 MoneyDJ（可取代其他配息來源）
+        fetch_moneydj_exright()
 
     logger.info("\n" + "=" * 50 + "\n✅ 所有爬蟲完成\n" + "=" * 50)
 
@@ -1119,6 +1131,8 @@ if __name__ == "__main__":
                         help="民國年（如 114）")
     parser.add_argument("quarter", type=int, nargs="?", default=None,
                         help="季度 1-4")
+    parser.add_argument("--all", action="store_true",
+                        help="完整爬取所有來源（TWT48U + TPEx + MoneyDJ + MOPS + Listing）")
     parser.add_argument("--twt48u", action="store_true",
                         help="僅執行 TWT48U 爬蟲")
     parser.add_argument("--mops", action="store_true",
@@ -1128,7 +1142,7 @@ if __name__ == "__main__":
     parser.add_argument("--tpex-etf", action="store_true",
                         help="僅執行 TPEx ETF 爬蟲")
     parser.add_argument("--moneydj", action="store_true",
-                        help="僅執行 MoneyDJ 除權除息爬蟲")
+                        help="僅執行 MoneyDJ 除權除息爬蟲（預設）")
 
     args = parser.parse_args()
 
@@ -1152,4 +1166,5 @@ if __name__ == "__main__":
             twt48u_only=args.twt48u,
             mops_only=args.mops,
             listing_only=args.listing,
+            all_sources=args.all,
         )
