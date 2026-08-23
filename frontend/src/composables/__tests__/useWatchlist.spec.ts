@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { useWatchlist } from '../useWatchlist'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { useWatchlist, syncActiveRef } from '../useWatchlist'
 
 describe('useWatchlist', () => {
   beforeEach(() => {
@@ -190,6 +190,217 @@ describe('useWatchlist', () => {
 
       expect(items.value.length).toBe(0)
     })
+  })
+})
+
+describe('useWatchlist — 墓碑語意（Phase 9 同步擴充）', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    useWatchlist().reset()
+    syncActiveRef.value = false
+  })
+
+  afterEach(() => {
+    syncActiveRef.value = false
+  })
+
+  describe('未配對 remove（syncActiveRef = false）', () => {
+    it('與現況一致：直接過濾移除、無墓碑', () => {
+      const { add, remove, items } = useWatchlist()
+
+      add('2330', '台積電', 'stock')
+      remove('2330')
+
+      expect(items.value.length).toBe(0)
+    })
+
+    it('移除後不殘留 deleted 墓碑', () => {
+      const { add, remove, items, watchedCodes } = useWatchlist()
+
+      add('2330', '台積電', 'stock')
+      add('0050', '元大台灣50', 'etf')
+      remove('2330')
+
+      expect(items.value).toHaveLength(1)
+      expect(items.value[0].code).toBe('0050')
+      expect(items.value.some(i => i.deleted)).toBe(false)
+      expect(watchedCodes.value.has('2330')).toBe(false)
+    })
+  })
+
+  describe('已配對 remove（syncActiveRef = true）', () => {
+    it('寫入墓碑：item 保留但 deleted: true、updatedAt 更新', () => {
+      syncActiveRef.value = true
+      const { add, remove, items } = useWatchlist()
+
+      add('2330', '台積電', 'stock')
+      expect(items.value[0].deleted).toBeUndefined()
+
+      remove('2330')
+
+      expect(items.value).toHaveLength(1)
+      expect(items.value[0].code).toBe('2330')
+      expect(items.value[0].deleted).toBe(true)
+      expect(items.value[0].updatedAt).toBeTypeOf('number')
+    })
+
+    it('isWatched 立即 false、watchedCodes 排除（UI 層面不可見）', () => {
+      syncActiveRef.value = true
+      const { add, remove, isWatched, watchedCodes } = useWatchlist()
+
+      add('2330', '台積電', 'stock')
+      add('0050', '元大台灣50', 'etf')
+      remove('2330')
+
+      expect(isWatched('2330')).toBe(false)
+      expect(isWatched('0050')).toBe(true)
+      expect(watchedCodes.value.has('2330')).toBe(false)
+      expect(watchedCodes.value.has('0050')).toBe(true)
+      expect(watchedCodes.value.size).toBe(1)
+    })
+
+    it('墓碑不影響其他股票（其餘項目維持活躍）', () => {
+      syncActiveRef.value = true
+      const { add, remove, items } = useWatchlist()
+
+      add('2330', '台積電', 'stock')
+      add('0050', '元大台灣50', 'etf')
+      add('0056', '元大高股息', 'etf')
+      remove('2330')
+
+      const live = items.value.filter(i => !i.deleted)
+      expect(live.map(i => i.code).sort()).toEqual(['0050', '0056'])
+    })
+
+    it('已配對 remove 後重新 add 同一支：墓碑不擋重加，新增筆為活躍項目', () => {
+      syncActiveRef.value = true
+      const { add, remove, items, isWatched } = useWatchlist()
+
+      add('2330', '台積電', 'stock')
+      remove('2330')
+      add('2330', '台積電', 'stock')
+
+      expect(isWatched('2330')).toBe(true)
+      const matches = items.value.filter(i => i.code === '2330')
+      expect(matches).toHaveLength(2) // 墓碑 + 新活躍項目
+      expect(matches[1].deleted).toBeUndefined()
+    })
+
+    it('墓碑更新 updatedAt 大於等於原值', () => {
+      syncActiveRef.value = true
+      const { add, remove, items } = useWatchlist()
+
+      add('2330', '台積電', 'stock')
+      const before = items.value[0].updatedAt!
+      remove('2330')
+
+      expect(items.value[0].updatedAt!).toBeGreaterThanOrEqual(before)
+    })
+  })
+
+  describe('localStorage 失敗降級（墓碑路徑）', () => {
+    it('syncActive 下 remove 寫墓碑時 localStorage.setItem 拋錯：記憶體狀態不受影響、不 crash', () => {
+      const original = Storage.prototype.setItem
+      Storage.prototype.setItem = () => {
+        throw new Error('quota exceeded')
+      }
+      try {
+        syncActiveRef.value = true
+        const { add, remove, items, isWatched } = useWatchlist()
+
+        add('2330', '台積電', 'stock')
+        expect(isWatched('2330')).toBe(true)
+
+        remove('2330')
+
+        expect(items.value).toHaveLength(1)
+        expect(items.value[0].deleted).toBe(true)
+        expect(isWatched('2330')).toBe(false)
+      } finally {
+        Storage.prototype.setItem = original
+      }
+    })
+  })
+})
+
+describe('useWatchlist — 舊資料遷移（Phase 9）', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    useWatchlist().reset()
+  })
+
+  it('無 updatedAt 的舊項目載入時補 updatedAt = addedAt', () => {
+    const addedAt = 1_755_900_000_000
+    localStorage.setItem('stockpayday-watchlist', JSON.stringify([
+      { code: '2330', name: '台積電', type: 'stock', addedAt },
+      { code: '0056', name: '元大高股息', type: 'etf', addedAt: addedAt + 100, updatedAt: 999 },
+    ]))
+
+    useWatchlist().reset()
+    const { items, isWatched } = useWatchlist()
+
+    expect(items.value).toHaveLength(2)
+    expect(items.value[0].updatedAt).toBe(addedAt)
+    // 已帶 updatedAt 者不被覆寫
+    expect(items.value[1].updatedAt).toBe(999)
+    expect(isWatched('2330')).toBe(true)
+    expect(isWatched('0056')).toBe(true)
+  })
+
+  it('遷移結果寫回 localStorage（向前相容）', async () => {
+    const addedAt = 1_755_900_000_000
+    localStorage.setItem('stockpayday-watchlist', JSON.stringify([
+      { code: '2330', name: '台積電', type: 'stock', addedAt },
+    ]))
+
+    useWatchlist().reset()
+    await new Promise(resolve => setTimeout(resolve, 10)) // 等 watchEffect flush
+
+    const stored = JSON.parse(localStorage.getItem('stockpayday-watchlist') || '[]')
+    expect(stored).toHaveLength(1)
+    expect(stored[0].updatedAt).toBe(addedAt)
+  })
+
+  it('遷移時 localStorage.setItem 拋錯：仍能正常載入與操作（不 crash）', () => {
+    localStorage.setItem('stockpayday-watchlist', JSON.stringify([
+      { code: '2330', name: '台積電', type: 'stock', addedAt: 1_755_900_000_000 },
+    ]))
+    const original = Storage.prototype.setItem
+    Storage.prototype.setItem = () => {
+      throw new Error('quota exceeded')
+    }
+    try {
+      useWatchlist().reset()
+      const { items, add, isWatched } = useWatchlist()
+
+      expect(items.value).toHaveLength(1)
+      expect(items.value[0].updatedAt).toBe(1_755_900_000_000)
+      add('0050', '元大台灣50', 'etf')
+      expect(isWatched('0050')).toBe(true)
+      expect(items.value).toHaveLength(2)
+    } finally {
+      Storage.prototype.setItem = original
+    }
+  })
+
+  it('getItem 拋錯時初始化回退空清單，後續操作正常（降級不影響其他功能）', () => {
+    const original = Storage.prototype.getItem
+    Storage.prototype.getItem = () => {
+      throw new Error('access denied')
+    }
+    try {
+      localStorage.clear()
+      useWatchlist().reset()
+      const { items, add, isWatched, remove } = useWatchlist()
+
+      expect(items.value).toEqual([])
+      add('2330', '台積電')
+      expect(isWatched('2330')).toBe(true)
+      remove('2330')
+      expect(isWatched('2330')).toBe(false)
+    } finally {
+      Storage.prototype.getItem = original
+    }
   })
 })
 

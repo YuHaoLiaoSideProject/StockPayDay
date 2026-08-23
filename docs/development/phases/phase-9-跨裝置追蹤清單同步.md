@@ -1,6 +1,9 @@
 # Phase 9 跨裝置追蹤清單同步 — 開發規格
 
-> **對應 Roadmap**：Phase 9 — `docs/roadmaps/phases.md`
+> **對應 Roadmap**：Phase 9 — `docs/roadmaps/phases.md`（Tech Decision 已整併於此）
+> **操作流程**：`docs/interaction-flows/phases/phase-9-跨裝置追蹤清單同步.md`
+> **BDD**：`docs/bdds/phases/phase-9-跨裝置追蹤清單同步.feature`
+> **測試計畫**：`docs/test-plans/phases/phase-9-跨裝置追蹤清單同步測試計畫.md`
 > **技術棧**：Vue 3.x (Composition API) · Vite 5.x · Tailwind CSS 3.x · Vitest · Vue Test Utils · Playwright
 > **前置階段**：Phase 4（前端基礎）、Phase 5（前端進階）、Phase 5a（追蹤清單）
 > **外部依賴**：kvdb.io（免費雲端 JSON 文件，免登入）
@@ -40,7 +43,13 @@ frontend/src/
 └── e2e/
     └── watchlist-sync.spec.ts         ← 新增：配對→跨 tab 同步 E2E
 docs/
-├── roadmaps/phases.md                ← ✅ 已含 Phase 9 決策依據與實作參考
+├── roadmaps/phases.md                      ← ✅ 已含 Phase 9 決策依據與實作參考
+├── interaction-flows/phases/
+│   └── phase-9-跨裝置追蹤清單同步.md         ← ✅ 已產出（操作流程）
+├── bdds/phases/
+│   └── phase-9-跨裝置追蹤清單同步.feature   ← ✅ 已產出（27 情境）
+├── test-plans/phases/
+│   └── phase-9-跨裝置追蹤清單同步測試計畫.md ← ✅ 已產出（57 案例）
 └── README（kvdb bucket 建立 + 開通新成員流程一節）← 交付時新增
 ```
 
@@ -556,6 +565,8 @@ curl https://kvdb.io/stockpayday/tokens/ -u '<secret_key>:' \
 
 ## 8. 測試覆蓋
 
+> 完整測試計畫：`docs/test-plans/phases/phase-9-跨裝置追蹤清單同步測試計畫.md`（57 案例，含 BDD 全場景追溯矩陣與 kvdb mock 策略）
+
 ### 8.1 單元測試（Vitest + Vue Test Utils）
 
 | 測試 | 重點 |
@@ -586,14 +597,37 @@ curl https://kvdb.io/stockpayday/tokens/ -u '<secret_key>:' \
 
 ## 9. BDD Scenario 追溯對照表
 
-| BDD Scenario（待補 `.feature`） | 對應組件/Composable | 對應規格章節 |
+BDD 檔案：`docs/bdds/phases/phase-9-跨裝置追蹤清單同步.feature`（27 情境：25 Scenario + 2 Scenario Outline × 3 列）。
+
+| BDD Scenario | 對應組件/Composable | 對應規格章節 |
 |---|---|---|
-| 跨裝置同步追蹤清單 | useWatchlistSync（syncOnce 全流程） | §1.4, §3 |
-| 未配對裝置維持現況 | useWatchlist（無 sync 路徑） | §1.3, §5 |
-| 離線後自動合併 | useWatchlistSync（merge + 恢復觸發） | §1.4, §3 |
-| 移除跨裝置傳播 | merge 墓碑規則 | §1.4, §5 |
-| 設定配對碼 | WatchlistSyncSettings | §1.5 |
-| 匯出/匯入備援 | 匯出/匯入功能 | §1.1, §5 |
+| 貼上配對碼啟用同步 | WatchlistSyncSettings + `setToken` | §1.4, §1.5 |
+| 配對碼輸入框為空時無法啟動 | WatchlistSyncSettings（表單驗證） | §1.5 |
+| 首次配對（雲端尚無清單）上傳建立 | `syncOnce`：pull 404 → merge → push | §1.4, §2.1, §3 |
+| 首次配對（雲端已有清單）合併為並集 | `syncOnce` merge（並集） | §1.4, §3 |
+| 未配對裝置既有操作行為與現況一致 | useWatchlist（無 sync 路徑） | §1.3, §5 |
+| 未配對時顯示同步設定區塊 | WatchlistSyncSettings（未配對分支） | §1.5 |
+| 同步狀態列顯示目前同步狀態（Outline ×3） | `status` ref + statusLabel | §1.4, §1.5 |
+| 已配對新增追蹤後自動寫回雲端 | `add()` 帶 updatedAt + watchEffect debounce → `syncOnce` | §1.3, §1.4, §3 |
+| 另一台裝置切回頁面即收到變更 | focus/visibilitychange → `syncOnce` | §1.4, §4 |
+| 前台每 60 秒自動檢查收到變更 | `startPolling`（僅 tab visible） | §1.4, §4 |
+| 移除追蹤以墓碑傳播至另一台 | `remove()` 墓碑語意 + merge 保留墓碑 | §1.3, §1.4, §5 |
+| 同一支股票雙端變更以最後寫入者勝出 | merge per-item last-write-wins | §1.4, §5 |
+| 立即同步 | `syncOnce` 手動觸發 | §1.4, §1.5 |
+| 離線時增刪正常且本地清單不受影響 | offline-first；失敗記 `lastError` | §1.3, §1.4, §5 |
+| 恢復連線後自動合併離線期間變更 | focus/輪詢觸發 `syncOnce` | §1.4, §4 |
+| 429 顯示退避訊息並自動恢復 | `SyncRateLimitedError` + 退避重試 | §1.4, §5 |
+| 429 退避秒數 30→60→120（Outline ×3） | `scheduleBackoff` 指數退避 | §1.4, §4 |
+| 自動同步僅於頁面可見時執行 | `startPolling` visible 檢查 + visibilitychange | §1.4, §4 |
+| 停用同步後本地清單保留 | `clearToken`（不刪 watchlist） | §1.4, §4 |
+| 停用後重新貼配對碼重新啟用 | `setToken` 再次啟用 | §1.4 |
+| 匯出追蹤清單取得可攜帶內容 | 匯出功能（備援，不含已移除項目） | §1.1, §5 |
+| 匯入與本地合併且不重複 | 匯入合併（依 code 去重） | §1.1, §5 |
+| 匯入格式錯誤本地清單不變 | 匯入解析驗證 | §1.1, §5 |
+| 配對碼無效同步失敗本地不受影響 | pull/auth 失敗 → `status='error'` | §1.4, §5 |
+| 配對碼過期（TTL 90 天）持續失敗 | 失敗顯示 + 換 token 恢復 | §1.4, §5 |
+| localStorage 不可用視同未配對 | 既有 catch 降級 | §1.3, §5 |
+| 舊版追蹤資料可正常載入並沿用 | 遷移補 `updatedAt = addedAt` | §1.3, §2.2 |
 
 ---
 

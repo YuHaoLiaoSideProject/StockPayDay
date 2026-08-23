@@ -8,6 +8,40 @@ const STORAGE_KEY = 'stockpayday-watchlist'
 const items = ref<WatchlistItem[]>([])
 const sortBy = ref<WatchlistSortBy>('addedAt')
 
+/**
+ * 同步啟用旗標（module-level，供 useWatchlistSync 設定）
+ *
+ * - false（未配對）：remove() 直接過濾移除，行為與現況一致
+ * - true（已配對）：remove() 改為墓碑語意（保留 item 但 deleted: true）
+ *
+ * 由 useWatchlistSync（子任務 B）在配對/停用時寫入；
+ * 此處不 import useWatchlistSync，避免循環依賴。
+ */
+export const syncActiveRef = ref<boolean>(false)
+
+/**
+ * 舊資料遷移：無 updatedAt 的項目補 updatedAt = addedAt（向後相容）
+ * 有遷移發生時立即寫回 localStorage，保持向前相容。
+ */
+function migrateItems(raw: WatchlistItem[]): WatchlistItem[] {
+  let migrated = false
+  const result = raw.map(item => {
+    if (item.updatedAt === undefined) {
+      migrated = true
+      return { ...item, updatedAt: item.addedAt }
+    }
+    return item
+  })
+  if (migrated) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(result))
+    } catch {
+      // 寫入失敗不影響（後續 watchEffect 會再嘗試）
+    }
+  }
+  return result
+}
+
 // 初始化：從 localStorage 讀取（必須在 watchEffect 之前）
 function init(): void {
   try {
@@ -15,7 +49,7 @@ function init(): void {
     if (stored) {
       const parsed = JSON.parse(stored)
       if (Array.isArray(parsed)) {
-        items.value = parsed
+        items.value = migrateItems(parsed)
       }
     }
   } catch {
@@ -57,14 +91,25 @@ export function useWatchlist() {
       name,
       type,
       addedAt: Date.now(),
+      updatedAt: Date.now(),
     })
   }
 
   /**
-   * 移除追蹤
+   * 移除追蹤（同步語意）
+   *
+   * - 未配對（syncActiveRef === false）：與現況一致，直接過濾掉該 item
+   * - 已配對（syncActiveRef === true）：保留 item 但標記 deleted: true（墓碑），
+   *   由 sync 引擎傳播到其他裝置；isWatched()/watchedCodes 立即排除，UI 層面無感
    */
   function remove(code: string): void {
-    items.value = items.value.filter(item => item.code !== code)
+    if (syncActiveRef.value) {
+      items.value = items.value.map(item =>
+        item.code === code ? { ...item, deleted: true, updatedAt: Date.now() } : item
+      )
+    } else {
+      items.value = items.value.filter(item => item.code !== code)
+    }
   }
 
   /**
@@ -79,17 +124,17 @@ export function useWatchlist() {
   }
 
   /**
-   * 查詢是否已追蹤
+   * 查詢是否已追蹤（排除 deleted 墓碑項目）
    */
   function isWatched(code: string): boolean {
-    return items.value.some(item => item.code === code)
+    return items.value.some(item => item.code === code && !item.deleted)
   }
 
   /**
-   * 取得追蹤的證券代號集合
+   * 取得追蹤的證券代號集合（排除 deleted 墓碑項目）
    */
   const watchedCodes = computed(() => {
-    return new Set(items.value.map(item => item.code))
+    return new Set(items.value.filter(item => !item.deleted).map(item => item.code))
   })
 
   /**

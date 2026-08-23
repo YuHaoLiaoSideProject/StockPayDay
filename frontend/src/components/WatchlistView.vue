@@ -15,6 +15,7 @@ import DayDetail from './DayDetail.vue'
 import WatchlistEmpty from './WatchlistEmpty.vue'
 import WatchlistItemRow from './WatchlistItemRow.vue'
 import ViewSwitcher from './ViewSwitcher.vue'
+import WatchlistSyncSettings from './WatchlistSyncSettings.vue'
 import type { ViewMode, UpcomingDividend } from '../types/stock'
 
 const { items, watchedCodes } = useWatchlist()
@@ -30,9 +31,12 @@ onMounted(() => {
   }
 })
 
+// 目前追蹤中的項目（排除 deleted 墓碑：同步合併後移除的股票不應再顯示）
+const activeItems = computed(() => items.value.filter(item => item.deleted !== true))
+
 // 所有追蹤項目（含配息資訊作為附加屬性）
 const allWatchedItems = computed(() => {
-  return items.value.map(item => {
+  return activeItems.value.map(item => {
     const dividend = upcoming.value.find(u => u.code === item.code)
     return {
       ...item,
@@ -54,8 +58,8 @@ const watchlistDividendDates = computed(() => {
   return new Set(watchlistUpcoming.value.map(item => item.ex_date))
 })
 
-// 追蹤清單是否為空
-const isEmpty = computed(() => items.value.length === 0)
+// 追蹤清單是否為空（墓碑不列入）
+const isEmpty = computed(() => activeItems.value.length === 0)
 
 // 行事曆資料（傳入追蹤股票的配息日期和配息資料）
 const { monthLabel, days, prevMonth, nextMonth } = useCalendar(
@@ -96,6 +100,9 @@ const selectedDividends = computed(() => {
 
 <template>
   <div class="watchlist-view">
+    <!-- 同步設定（配對碼 + 匯出/匯入備援） -->
+    <WatchlistSyncSettings />
+
     <!-- 追蹤清單為空 -->
     <WatchlistEmpty v-if="isEmpty" />
 
@@ -117,7 +124,7 @@ const selectedDividends = computed(() => {
         />
         <!-- 行事曆下方：所有追蹤項目概覽 -->
         <div class="watchlist-all-items">
-          <h3 class="watchlist-all-title">所有追蹤（{{ items.length }} 支）</h3>
+          <h3 class="watchlist-all-title">所有追蹤（{{ activeItems.length }} 支）</h3>
           <WatchlistItemRow
             v-for="item in sortedAllItems"
             :key="item.code"
@@ -148,7 +155,7 @@ const selectedDividends = computed(() => {
 
       <!-- 追蹤股票數量提示 -->
       <div class="watchlist-count">
-        已追蹤 {{ items.length }} 支證券
+        已追蹤 {{ activeItems.length }} 支證券
       </div>
       <!-- 日期明細 Modal -->
       <DayDetail
