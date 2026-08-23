@@ -63,24 +63,29 @@ afterEach(() => {
 })
 
 describe(' WatchlistSyncSettings（設定 UI）', () => {
-  it('F-06 未配對時顯示同步設定區塊、說明與配對碼輸入框', () => {
+  it('F-06 未配對時顯示同步設定區塊、說明、email 輸入框與配對碼備援', () => {
     const wrapper = mount(WatchlistSyncSettings)
 
     expect(wrapper.find('[data-testid="watchlist-sync-settings"]').exists()).toBe(true)
     expect(wrapper.text()).toContain('🔄 跨裝置同步（選配）')
     expect(wrapper.text()).toContain('不設定則完全不影響現有功能')
-    expect(wrapper.find('[data-testid="sync-token-input"]').exists()).toBe(true)
-    expect(wrapper.find('[data-testid="sync-token-submit"]').exists()).toBe(true)
+    // Email 輸入為主要方式
+    expect(wrapper.find('[data-testid="sync-email-input"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="sync-email-submit"]').exists()).toBe(true)
+    // 配對碼備援（預設隱藏）
+    expect(wrapper.find('[data-testid="sync-token-input"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="sync-token-toggle"]').exists()).toBe(true)
   })
 
-  it('F-02 空輸入框無法啟動（submit 阻擋：不呼叫 setToken、不發任何同步請求）', async () => {
+  it('F-02 空輸入框無法啟動（submit 阻擋：不呼叫 createAccount/setToken、不發任何同步請求）', async () => {
     const wrapper = mount(WatchlistSyncSettings)
 
+    // Email 為空：submit 阻擋（HTML required 屬性）
     await wrapper.find('form').trigger('submit')
     await nextTick()
 
     // 仍為未配對區塊，token 未寫入
-    expect(wrapper.find('[data-testid="sync-token-input"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="sync-email-input"]').exists()).toBe(true)
     expect(localStorage.getItem('stockpayday-sync-token')).toBeNull()
     expect(kvdbCallCount()).toBe(0)
   })
@@ -88,25 +93,35 @@ describe(' WatchlistSyncSettings（設定 UI）', () => {
   it('F-02b 僅空白字元亦無法啟動', async () => {
     const wrapper = mount(WatchlistSyncSettings)
 
-    await wrapper.find('[data-testid="sync-token-input"]').setValue('   ')
+    await wrapper.find('[data-testid="sync-email-input"]').setValue('   ')
     await wrapper.find('form').trigger('submit')
     await nextTick()
 
     expect(localStorage.getItem('stockpayday-sync-token')).toBeNull()
-    expect(wrapper.find('[data-testid="sync-token-input"]').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="sync-email-input"]').exists()).toBe(true)
     expect(kvdbCallCount()).toBe(0)
   })
 
-  it('F-01 貼上配對碼啟動：trim 後寫入 localStorage、切換已配對並顯示「同步中…」', async () => {
+  it('F-01 配對碼直接輸入啟動：trim 後寫入 localStorage、切換已配對並顯示「同步中…」', async () => {
     kvdbMode = 'delay' // fetch 延遲 → 狀態停留「同步中…」
     const wrapper = mount(WatchlistSyncSettings)
 
+    // 展開配對碼輸入
+    await wrapper.find('[data-testid="sync-token-toggle"]').trigger('click')
+    await nextTick()
+
     await wrapper.find('[data-testid="sync-token-input"]').setValue('  test-token  ')
-    await wrapper.find('form').trigger('submit')
+    // Click the submit button AND trigger form submit (happy-dom may not propagate)
+    const submitBtn = wrapper.find('[data-testid="sync-token-submit"]')
+    await submitBtn.trigger('click')
+    // Also trigger form submit directly as fallback
+    const forms = wrapper.findAll('form')
+    const tokenForm = forms.find(f => f.find('[data-testid="sync-token-input"]').exists())
+    if (tokenForm) await tokenForm.trigger('submit')
     await nextTick()
 
     expect(localStorage.getItem('stockpayday-sync-token')).toBe('test-token')
-    expect(wrapper.find('[data-testid="sync-token-input"]').exists()).toBe(false) // 已配對分支
+    expect(wrapper.find('[data-testid="sync-email-input"]').exists()).toBe(false) // 已配對分支
     expect(wrapper.text()).toContain('同步中…')
     expect(wrapper.text()).not.toContain('上次同步')
     // 啟動後立即發起一次同步（pull）
@@ -181,7 +196,7 @@ describe(' WatchlistSyncSettings（設定 UI）', () => {
     await nextTick()
 
     expect(localStorage.getItem('stockpayday-sync-token')).toBeNull()
-    expect(wrapper.find('[data-testid="sync-token-input"]').exists()).toBe(true) // 未配對分支
+    expect(wrapper.find('[data-testid="sync-email-input"]').exists()).toBe(true) // 回到未配對分支
     expect(isWatched('2330')).toBe(true) // 停用不刪本地清單
   })
 })

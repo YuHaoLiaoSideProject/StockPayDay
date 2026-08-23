@@ -198,6 +198,142 @@ describe('merge 合併規則', () => {
 })
 
 // ============================================================
+// createAccount（透過 Worker 建立帳號 + 取得 token）
+// ============================================================
+describe('createAccount', () => {
+  let kvdb: KvdbMock
+  let workerFn: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    resetAll()
+    kvdb = createKvdbMock()
+    vi.stubGlobal('fetch', kvdb.fn)
+    // Worker fetch mock（獨立於 kvdb mock）
+    workerFn = vi.fn()
+    workerFn.mockClear()
+  })
+
+  afterEach(() => {
+    resetAll()
+  })
+
+  it('Worker 回傳 token → 存入 localStorage、syncActive=true、syncOnce 執行', async () => {
+    // Mock：Worker URL 回傳 token，kvdb URL 回傳 404（首次同步）+ POST 200
+    workerFn.mockImplementation(async (input: unknown, init?: RequestInit) => {
+      const url = String(input)
+      const method = (init?.method as string) ?? 'GET'
+      if (url.includes('kvdb-proxy')) {
+        return {
+          ok: true,
+          json: async () => ({ access_token: 'worker-token-123', bucket_id: 'bucket-abc' }),
+        }
+      }
+      // kvdb 請求
+      if (method === 'GET') return { ok: false, status: 404, json: async () => null }
+      if (method === 'POST') return { ok: true, status: 200, json: async () => null }
+      return { ok: false, status: 405, json: async () => null }
+    })
+    vi.stubGlobal('fetch', workerFn)
+
+    const sync = useWatchlistSync()
+    await sync.createAccount('user@example.com')
+    await flushMicrotasks()
+
+    // Worker 被呼叫一次
+    const workerCalls = workerFn.mock.calls.filter(([u]) => String(u).includes('kvdb-proxy'))
+    expect(workerCalls).toHaveLength(1)
+    const [url, opts] = workerCalls[0]
+    expect(url).toContain('kvdb-proxy')
+    expect(opts.method).toBe('POST')
+    expect(JSON.parse(opts.body)).toEqual({ email: 'user@example.com' })
+
+    expect(sync.token.value).toBe('worker-token-123')
+    expect(localStorage.getItem(TOKEN_KEY)).toBe('worker-token-123')
+    expect(localStorage.getItem('stockpayday-sync-bucket-id')).toBe('bucket-abc')
+    expect(sync.syncActive.value).toBe(true)
+    expect(syncActiveRef.value).toBe(true)
+    expect(sync.status.value).toBe('synced')
+  })
+
+  it('Worker 回傳失敗 → status=error、lastError 含錯誤訊息、token 未寫入', async () => {
+    workerFn.mockImplementation(async (input: unknown) => {
+      const url = String(input)
+      if (url.includes('kvdb-proxy')) {
+        return {
+          ok: false,
+          status: 502,
+          json: async () => ({ error: 'Failed to create bucket: 502' }),
+        }
+      }
+      return { ok: false, status: 404, json: async () => null }
+    })
+    vi.stubGlobal('fetch', workerFn)
+
+    const sync = useWatchlistSync()
+    await sync.createAccount('user@example.com')
+    await flushMicrotasks()
+
+    expect(sync.status.value).toBe('error')
+    expect(sync.lastError.value).toContain('Failed to create bucket')
+    expect(sync.token.value).toBe('')
+    expect(localStorage.getItem(TOKEN_KEY)).toBeNull()
+  })
+
+  it('Worker 網路失敗 → lastError=建立帳號失敗、本地不受影響', async () => {
+    workerFn.mockImplementation(async (input: unknown) => {
+      const url = String(input)
+      if (url.includes('kvdb-proxy')) {
+        throw new TypeError('Failed to fetch')
+      }
+      return { ok: false, status: 404, json: async () => null }
+    })
+    vi.stubGlobal('fetch', workerFn)
+
+    const { add } = useWatchlist()
+    add('2330', '台積電')
+
+    const sync = useWatchlistSync()
+    await sync.createAccount('user@example.com')
+    await flushMicrotasks()
+
+    expect(sync.status.value).toBe('error')
+    expect(sync.lastError.value).toBe('Failed to fetch')
+    expect(useWatchlist().items.value.map(i => i.code)).toContain('2330')
+  })
+
+  it('空白 email → 不發任何請求、不改變狀態', async () => {
+    const sync = useWatchlistSync()
+    await sync.createAccount('   ')
+
+    // workerFn should not have been called for kvdb-proxy
+    const workerCalls = workerFn.mock.calls.filter(([u]) => String(u).includes('kvdb-proxy'))
+    expect(workerCalls).toHaveLength(0)
+    expect(sync.status.value).toBe('disabled')
+  })
+
+  it('Worker 回傳無 access_token → lastError 含錯誤', async () => {
+    workerFn.mockImplementation(async (input: unknown) => {
+      const url = String(input)
+      if (url.includes('kvdb-proxy')) {
+        return {
+          ok: true,
+          json: async () => ({ bucket_id: 'bucket-abc' }), // 無 access_token
+        }
+      }
+      return { ok: false, status: 404, json: async () => null }
+    })
+    vi.stubGlobal('fetch', workerFn)
+
+    const sync = useWatchlistSync()
+    await sync.createAccount('user@example.com')
+    await flushMicrotasks()
+
+    expect(sync.status.value).toBe('error')
+    expect(sync.lastError.value).toContain('未回傳 access_token')
+  })
+})
+
+// ============================================================
 // syncActive 語意 / setToken / clearToken（需求 2、7）
 // ============================================================
 describe('syncActive 語意與對外 API', () => {
@@ -224,7 +360,7 @@ describe('syncActive 語意與對外 API', () => {
     expect(sync.status.value).toBe('disabled')
   })
 
-  it('對外 API 形狀：回傳 { token, status, lastSyncedAt, lastError, syncActive, setToken, clearToken, syncOnce }', () => {
+  it('對外 API 形狀：回傳 { token, status, lastSyncedAt, lastError, syncActive, createAccount, setToken, clearToken, syncOnce }', () => {
     const sync = useWatchlistSync()
     expect(Object.keys(sync)).toEqual([
       'token',
@@ -232,6 +368,7 @@ describe('syncActive 語意與對外 API', () => {
       'lastSyncedAt',
       'lastError',
       'syncActive',
+      'createAccount',
       'setToken',
       'clearToken',
       'syncOnce',

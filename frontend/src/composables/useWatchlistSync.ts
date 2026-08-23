@@ -24,6 +24,13 @@ const WRITE_DEBOUNCE_MS = 1_500
 const BACKOFF_BASE_MS = 30_000
 const BACKOFF_MAX_MS = 120_000
 
+/**
+ * Cloudflare Worker URL（Phase 9 §2.1）
+ * 用於 createAccount()：POST { email } → 建 bucket + 產生 token
+ * 部署後替換為實際 Worker URL；本地開發可用 http://localhost:8787
+ */
+const WORKER_URL = import.meta.env.VITE_SYNC_WORKER_URL || 'https://kvdb-proxy.your-domain.workers.dev'
+
 /** 429 速率限制專屬錯誤：觸發指數退避排程 */
 class SyncRateLimitedError extends Error {
   constructor() {
@@ -235,6 +242,58 @@ function removeListeners(): void {
   window.removeEventListener('focus', onVisibility)
 }
 
+// ── 透過 Worker 建立帳號（§2.1）──
+
+/**
+ * createAccount — 輸入 email → 透過 Cloudflare Worker 建立 kvdb bucket + 取得 token
+ *
+ * Worker 回傳 { access_token, bucket_id }：
+ * - access_token 存入 localStorage → 啟動同步
+ * - bucket_id 存入 localStorage（供未來多 bucket 擴充）
+ */
+async function createAccount(email: string): Promise<void> {
+  if (!email.trim()) return
+  status.value = 'syncing'
+  lastError.value = null
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim() }),
+    })
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+      throw new Error(body.error || `建立帳號失敗: ${res.status}`)
+    }
+    const { access_token, bucket_id } = await res.json() as { access_token: string; bucket_id: string }
+    if (!access_token) throw new Error('Worker 未回傳 access_token')
+
+    // 存入 localStorage
+    try {
+      localStorage.setItem(TOKEN_KEY, access_token)
+      if (bucket_id) {
+        localStorage.setItem('stockpayday-sync-bucket-id', bucket_id)
+      }
+    } catch {
+      // localStorage 不可用 → 視同未配對
+      token.value = ''
+      syncActiveRef.value = false
+      status.value = 'disabled'
+      lastError.value = '無法儲存同步金鑰（localStorage 不可用）'
+      return
+    }
+
+    token.value = access_token
+    syncActiveRef.value = true
+    ensureListeners()
+    startPolling()
+    void syncOnce()
+  } catch (err) {
+    lastError.value = err instanceof Error ? err.message : '建立帳號失敗'
+    status.value = 'error'
+  }
+}
+
 // ── 對外 API（配對 / 停用）──
 
 function setToken(value: string): void {
@@ -322,7 +381,7 @@ export function useWatchlistSync() {
     ensureListeners()
     startPolling()
   }
-  return { token, status, lastSyncedAt, lastError, syncActive, setToken, clearToken, syncOnce }
+  return { token, status, lastSyncedAt, lastError, syncActive, createAccount, setToken, clearToken, syncOnce }
 }
 
 /** 測試用：重置引擎 module 狀態（token/計時器/監聽器/快照） */

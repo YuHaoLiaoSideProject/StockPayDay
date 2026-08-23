@@ -63,8 +63,15 @@ async function removeStock(page: Page, code: string): Promise<void> {
 }
 
 async function pair(page: Page, token: string): Promise<void> {
+  // Use token input fallback for direct pairing
+  await page.locator('[data-testid="sync-token-toggle"]').click()
   await page.locator('[data-testid="sync-token-input"]').fill(token)
   await page.locator('[data-testid="sync-token-submit"]').click()
+}
+
+async function pairByEmail(page: Page, email: string): Promise<void> {
+  await page.locator('[data-testid="sync-email-input"]').fill(email)
+  await page.locator('[data-testid="sync-email-submit"]').click()
 }
 
 async function expectSynced(page: Page): Promise<void> {
@@ -87,7 +94,7 @@ function row(page: Page, code: string) {
 // ── 測試 ─────────────────────────────────────────────────────────────────────
 
 test.describe('Phase 9 跨裝置追蹤清單同步（E2E）', () => {
-  test('E2E-02/05/06 未配對：顯示設定區塊、空白配對碼無法啟動、既有操作零同步請求', async ({ page }) => {
+  test('E2E-02/05/06 未配對：顯示設定區塊、email 輸入框、空白無法啟動、既有操作零同步請求', async ({ page }) => {
     const mock = createKvdbMock('ok')
     await installKvdbMock(page, mock)
     await gotoWatchlist(page)
@@ -97,9 +104,13 @@ test.describe('Phase 9 跨裝置追蹤清單同步（E2E）', () => {
     await expect(page.locator('.sync-pairing .sync-title')).toContainText('🔄 跨裝置同步（選配）')
     await expect(page.locator('.sync-pairing .sync-desc')).toContainText('不設定則完全不影響現有功能')
 
-    // 空白配對碼無法啟動（E2E-02）：仍為未配對、無任何 kvdb 請求
-    await page.locator('[data-testid="sync-token-submit"]').click()
-    await expect(page.locator('[data-testid="sync-token-input"]')).toBeVisible()
+    // 顯示 email 輸入框（主要方式）
+    await expect(page.locator('[data-testid="sync-email-input"]')).toBeVisible()
+    await expect(page.locator('[data-testid="sync-email-submit"]')).toBeVisible()
+
+    // 空白 email 無法啟動（E2E-02）：仍為未配對、無任何 kvdb 請求
+    await page.locator('[data-testid="sync-email-submit"]').click()
+    await expect(page.locator('[data-testid="sync-email-input"]')).toBeVisible()
     expect(await page.evaluate(k => localStorage.getItem(k), TOKEN_KEY)).toBeNull()
 
     // 既有操作與現況完全一致（E2E-05）：搜尋、加入、切換顯示模式、移除
@@ -144,7 +155,7 @@ test.describe('Phase 9 跨裝置追蹤清單同步（E2E）', () => {
     expect(await page.evaluate(k => localStorage.getItem(k), TOKEN_KEY)).toBe('token-phase9')
     await page.reload()
     await expect(page.locator('.watchlist-view')).toBeVisible({ timeout: 10000 })
-    await expect(page.locator('[data-testid="sync-token-input"]')).toBeHidden() // 已配對分支
+    await expect(page.locator('[data-testid="sync-email-input"]')).toBeHidden() // 已配對分支
     await expectSynced(page)
     await expectBadge(page, 1)
   })
@@ -312,7 +323,7 @@ test.describe('Phase 9 跨裝置追蹤清單同步（E2E）', () => {
 
     // 停用
     await page.locator('[data-testid="sync-token-clear"]').click()
-    await expect(page.locator('[data-testid="sync-token-input"]')).toBeVisible() // 回到未配對
+    await expect(page.locator('[data-testid="sync-email-input"]')).toBeVisible() // 回到未配對
     await expect(page.locator('.sync-status-info')).toBeHidden()
     expect(await page.evaluate(k => localStorage.getItem(k), TOKEN_KEY)).toBeNull()
     await expect(page.locator('[data-testid="watchlist-sync-error"]')).toBeHidden()
@@ -404,5 +415,51 @@ test.describe('Phase 9 跨裝置追蹤清單同步（E2E）', () => {
     await expectCount(page, 1) // 本地清單不變
     await expect(row(page, '2330')).toHaveCount(1)
     await expectBadge(page, 1)
+  })
+
+  test('E2E-email email 啟動同步：透過 Worker 建立帳號、token 自動寫入、同步成功', async ({ page }) => {
+    const mock = createKvdbMock('ok')
+    await installKvdbMock(page, mock)
+    await gotoWatchlist(page)
+
+    await addStock(page, '2330')
+    await expectBadge(page, 1)
+
+    // 輸入 email → 透過 Worker 建立帳號
+    await pairByEmail(page, 'test@example.com')
+    await expectSynced(page)
+
+    // Worker 被呼叫
+    expect(mock.workerRequests).toBe(1)
+
+    // kvdb 收到合併後的資料
+    await waitUntil(() => cloudCodes(mock).includes('2330'))
+    expect(cloudCodes(mock)).toEqual(['2330'])
+    await expectBadge(page, 1)
+
+    // Token 記住於本機
+    const storedToken = await page.evaluate(k => localStorage.getItem(k), TOKEN_KEY)
+    expect(storedToken).toBeTruthy()
+    expect(storedToken).toContain('worker-token-')
+  })
+
+  test('E2E-email 配對碼備援：展開後可直接貼上 token 啟動', async ({ page }) => {
+    const mock = createKvdbMock('ok')
+    await installKvdbMock(page, mock)
+    await gotoWatchlist(page)
+
+    await addStock(page, '2330')
+
+    // 展開配對碼輸入
+    await page.locator('[data-testid="sync-token-toggle"]').click()
+    await expect(page.locator('[data-testid="sync-token-input"]')).toBeVisible()
+
+    // 直接貼上 token 啟動
+    await pair(page, 'direct-token-123')
+    await expectSynced(page)
+
+    // 零 Worker 請求（直接用 token）
+    expect(mock.workerRequests).toBe(0)
+    await waitUntil(() => cloudCodes(mock).includes('2330'))
   })
 })

@@ -2,7 +2,7 @@
 /**
  * WatchlistSyncSettings 同步設定（Phase 9 子任務 C）
  *
- * - 未配對：配對碼輸入框＋說明；空白輸入不可送出（表單 submit 阻擋）
+ * - 未配對：email 輸入框（主要）+ 配對碼直接輸入（備援）＋說明；空白輸入不可送出
  * - 已配對：同步狀態（同步中…／已同步＋上次同步時間／同步失敗＋錯誤訊息，含 429 退避）
  *           ＋「立即同步」＋「停用」（停用不刪本地清單）
  * - 匯出/匯入備援：匯出目前追蹤項目（不含已移除）；匯入貼上內容合併、依 code 去重、
@@ -17,10 +17,21 @@ import {
   WatchlistImportError,
 } from '../composables/useWatchlistExport'
 
-const { token, status, lastSyncedAt, lastError, setToken, clearToken, syncOnce } = useWatchlistSync()
+const {
+  token,
+  status,
+  lastSyncedAt,
+  lastError,
+  createAccount,
+  setToken,
+  clearToken,
+  syncOnce,
+} = useWatchlistSync()
 const { items, add, isWatched } = useWatchlist()
 
+const emailInput = ref('')
 const tokenInput = ref('')
+const showTokenInput = ref(false)
 const backupOpen = ref(false)
 const exportText = ref('')
 const importText = ref('')
@@ -39,7 +50,14 @@ function formatTime(ts: number | null): string | null {
   return ts ? new Date(ts).toLocaleTimeString() : null
 }
 
-/** 啟動：空白輸入不可送出（submit 阻擋） */
+/** Email 啟動：透過 Worker 建立帳號 + 取得 token */
+async function onEmailSubmit() {
+  if (!emailInput.value.trim()) return
+  await createAccount(emailInput.value)
+  emailInput.value = ''
+}
+
+/** 配對碼直接輸入（備援：使用者已有 token 時可直接貼上） */
 function onTokenSubmit() {
   if (!tokenInput.value.trim()) return
   setToken(tokenInput.value)
@@ -79,24 +97,50 @@ function handleImport() {
 
 <template>
   <section class="watchlist-sync-settings" data-testid="watchlist-sync-settings">
-    <!-- 未配對：配對碼輸入 -->
+    <!-- 未配對：email 輸入（主要）+ 配對碼備援 -->
     <div v-if="!token" class="sync-pairing">
       <h3 class="sync-title">🔄 跨裝置同步（選配）</h3>
       <p class="sync-desc">
-        貼上配對碼後，追蹤清單會在本裝置與其他裝置間自動同步。不設定則完全不影響現有功能。
+        輸入 email 後，系統自動建立雲端空間並產生同步金鑰。不設定則完全不影響現有功能。
       </p>
-      <form class="sync-token-form" @submit.prevent="onTokenSubmit">
+
+      <!-- Email 啟動（主要方式） -->
+      <form class="sync-token-form" @submit.prevent="onEmailSubmit">
         <input
-          v-model="tokenInput"
+          v-model="emailInput"
           class="sync-input"
-          type="text"
-          placeholder="貼上配對碼（access token）"
-          aria-label="配對碼"
+          type="email"
+          placeholder="輸入 email 啟動同步"
+          aria-label="email"
           required
-          data-testid="sync-token-input"
+          data-testid="sync-email-input"
         />
-        <button class="btn-primary" type="submit" data-testid="sync-token-submit">啟動</button>
+        <button class="btn-primary" type="submit" data-testid="sync-email-submit">啟動</button>
       </form>
+
+      <!-- 配對碼備援（已有 token 時直接貼上） -->
+      <div class="sync-token-fallback">
+        <button
+          type="button"
+          class="sync-fallback-toggle"
+          data-testid="sync-token-toggle"
+          @click="showTokenInput = !showTokenInput"
+        >
+          {{ showTokenInput ? '收起配對碼輸入' : '已有配對碼？直接貼上' }}
+        </button>
+        <form v-if="showTokenInput" class="sync-token-form" @submit.prevent="onTokenSubmit">
+          <input
+            v-model="tokenInput"
+            class="sync-input"
+            type="text"
+            placeholder="貼上配對碼（access token）"
+            aria-label="配對碼"
+            required
+            data-testid="sync-token-input"
+          />
+          <button class="btn-primary" type="submit" data-testid="sync-token-submit">啟動</button>
+        </form>
+      </div>
     </div>
 
     <!-- 已配對：同步狀態 + 操作 -->
@@ -328,5 +372,24 @@ function handleImport() {
 .sync-textarea:focus {
   outline: none;
   border-color: var(--tab-active-bg);
+}
+
+.sync-token-fallback {
+  margin-top: 0.5rem;
+}
+
+.sync-fallback-toggle {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.125rem 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.sync-fallback-toggle:hover {
+  color: var(--tab-active-bg);
 }
 </style>
