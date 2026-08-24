@@ -174,7 +174,6 @@ body {
 .content-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 0.75rem 1rem;
 }
 
 /* Calendar */
@@ -379,7 +378,6 @@ body {
 
 /* List view */
 .list-view {
-  padding: 0.75rem 1rem;
   max-width: 760px;
 }
 
