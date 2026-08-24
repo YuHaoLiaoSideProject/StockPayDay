@@ -4,26 +4,16 @@
  *
  * 整合：
  * - Vue Router
- * - SearchBar（導覽列）
  * - 追蹤清單連結 + 徽章
  * - 深色模式切換
  */
 import { useRouter } from 'vue-router'
-import { useSearch } from './composables/useSearch'
 import { useWatchlist } from './composables/useWatchlist'
 import { useDarkMode } from './composables/useDarkMode'
-import SearchBar from './components/SearchBar.vue'
-import WatchlistButton from './components/WatchlistButton.vue'
 
 const router = useRouter()
-const { query, results } = useSearch()
 const { watchedCodes } = useWatchlist()
 const { isDark, toggle: toggleDark } = useDarkMode()
-
-function onStockSelect(result: { code: string; name: string }) {
-  router.push(`/stock/${result.code}`)
-  query.value = ''
-}
 
 function goToWatchlist() {
   router.push('/watchlist')
@@ -78,16 +68,6 @@ function goToWatchlist() {
 
     <!-- Router View -->
     <main class="app-main">
-      <SearchBar v-model="query" :results="results" @select="onStockSelect">
-        <template #result-actions="{ result }">
-          <WatchlistButton
-            :code="result.code"
-            :name="result.name"
-            type="stock"
-            size="sm"
-          />
-        </template>
-      </SearchBar>
       <router-view />
     </main>
   </div>
