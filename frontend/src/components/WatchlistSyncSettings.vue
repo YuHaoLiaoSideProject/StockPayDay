@@ -1,8 +1,9 @@
 <script setup lang="ts">
 /**
- * WatchlistSyncSettings 同步設定（Phase 9 子任務 C）
+ * WatchlistSyncSettings 同步設定
  *
- * - 未配對：email 輸入框（主要）+ 配對碼直接輸入（備援）＋說明；空白輸入不可送出
+ * - 未配對：「建立同步空間」按鈕（主要）+ 同步碼直接輸入（備援）＋說明
+ * - 已建立：顯示同步碼 + 複製按鈕 + 說明如何在其他裝置同步
  * - 已配對：同步狀態（同步中…／已同步＋上次同步時間／同步失敗＋錯誤訊息，含 429 退避）
  *           ＋「立即同步」＋「停用」（停用不刪本地清單）
  * - 匯出/匯入備援：匯出目前追蹤項目（不含已移除）；匯入貼上內容合併、依 code 去重、
@@ -24,19 +25,17 @@ const {
   lastError,
   syncActive,
   createAccount,
-  confirmVerification,
   setToken,
   clearToken,
   syncOnce,
 } = useWatchlistSync()
 const { items, add, isWatched } = useWatchlist()
 
-const emailInput = ref('')
 const tokenInput = ref('')
 const showTokenInput = ref(false)
-const creating = ref(false)  // createAccount 進行中
-const createError = ref('')  // createAccount 錯誤訊息
-const createdBucketId = ref('')  // createAccount 成功後的 bucket ID
+const creating = ref(false)  // createSyncSpace 進行中
+const createError = ref('')  // createSyncSpace 錯誤訊息
+const createdToken = ref('')  // createSyncSpace 成功後的 sync token
 const copied = ref(false)
 const backupOpen = ref(false)
 const exportText = ref('')
@@ -56,15 +55,14 @@ function formatTime(ts: number | null): string | null {
   return ts ? new Date(ts).toLocaleTimeString() : null
 }
 
-/** Email 啟動：直連 kvdb.io 建立 bucket */
-async function onEmailSubmit() {
-  if (!emailInput.value.trim() || creating.value) return
+/** 建立同步空間：直連 npoint.io 建立文件 */
+async function onCreateSyncSpace() {
+  if (creating.value) return
   creating.value = true
   createError.value = ''
   try {
-    const result = await createAccount(emailInput.value)
-    createdBucketId.value = result.bucketId
-    emailInput.value = ''
+    const result = await createAccount()
+    createdToken.value = result.token
   } catch (err) {
     createError.value = err instanceof Error ? err.message : '建立失敗，請檢查網路連線'
   } finally {
@@ -72,16 +70,16 @@ async function onEmailSubmit() {
   }
 }
 
-/** 複製 bucket ID 到剪貼簿 */
-async function onCopyBucketId() {
+/** 複製同步碼到剪貼簿 */
+async function onCopyToken() {
   try {
-    await navigator.clipboard.writeText(createdBucketId.value)
+    await navigator.clipboard.writeText(createdToken.value || bucketId.value)
     copied.value = true
     setTimeout(() => { copied.value = false }, 2000)
   } catch {
     // fallback: textarea 選取複製
     const ta = document.createElement('textarea')
-    ta.value = createdBucketId.value
+    ta.value = createdToken.value || bucketId.value
     ta.style.position = 'fixed'
     ta.style.opacity = '0'
     document.body.appendChild(ta)
@@ -93,16 +91,12 @@ async function onCopyBucketId() {
   }
 }
 
-/** 確認 email 已驗證，啟動同步 */
-function onConfirmVerification() {
-  confirmVerification()
-}
-
 /** 配對碼直接輸入（備援：使用者已有 token 時可直接貼上） */
 function onTokenSubmit() {
   if (!tokenInput.value.trim()) return
   setToken(tokenInput.value)
   tokenInput.value = ''
+  createdToken.value = '' // 清除建立流程的 token
 }
 
 /** 匯出：目前追蹤項目（不含已移除墓碑） */
@@ -138,41 +132,29 @@ function handleImport() {
 
 <template>
   <section class="watchlist-sync-settings" data-testid="watchlist-sync-settings">
-    <!-- 未配對：email 輸入（主要）+ 配對碼備援 -->
-    <div v-if="!bucketId && !createdBucketId" class="sync-pairing">
+    <!-- 未配對：建立同步空間（主要）+ 同步碼備援 -->
+    <div v-if="!bucketId && !createdToken" class="sync-pairing">
       <h3 class="sync-title">🔄 跨裝置同步（選配）</h3>
       <p class="sync-desc">
-        輸入 email 後，系統自動建立雲端空間。驗證 email 後即可跨裝置同步。不設定則完全不影響現有功能。
+        一鍵建立雲端同步空間，取得同步碼後分享到其他裝置即可同步追蹤清單。不設定則完全不影響現有功能。
       </p>
 
-      <!-- Email 啟動（主要方式） -->
-      <form class="sync-token-form" @submit.prevent="onEmailSubmit">
-        <input
-          v-model="emailInput"
-          class="sync-input"
-          type="email"
-          placeholder="輸入 email 啟動同步"
-          aria-label="email"
-          required
-          :disabled="creating"
-          data-testid="sync-email-input"
-        />
-        <button
-          class="btn-primary"
-          type="submit"
-          :disabled="creating || !emailInput.trim()"
-          data-testid="sync-email-submit"
-        >
-          {{ creating ? '建立中…' : '建立' }}
-        </button>
-      </form>
+      <!-- 建立同步空間（主要方式） -->
+      <button
+        class="btn-primary sync-create-btn"
+        :disabled="creating"
+        data-testid="sync-create-btn"
+        @click="onCreateSyncSpace"
+      >
+        {{ creating ? '建立中…' : '建立同步空間' }}
+      </button>
 
-      <!-- 建立帳號錯誤訊息 -->
+      <!-- 建立錯誤訊息 -->
       <p v-if="createError" class="sync-error" data-testid="sync-create-error">
         {{ createError }}
       </p>
 
-      <!-- 配對碼備援（已有 token 時直接貼上） -->
+      <!-- 同步碼備援（已有 token 時直接貼上） -->
       <div class="sync-token-fallback">
         <button
           type="button"
@@ -180,14 +162,14 @@ function handleImport() {
           data-testid="sync-token-toggle"
           @click="showTokenInput = !showTokenInput"
         >
-          {{ showTokenInput ? '收起配對碼輸入' : '已有同步碼？直接貼上' }}
+          {{ showTokenInput ? '收起同步碼輸入' : '已有同步碼？直接貼上' }}
         </button>
         <form v-if="showTokenInput" class="sync-token-form" @submit.prevent="onTokenSubmit">
           <input
             v-model="tokenInput"
             class="sync-input"
             type="text"
-            placeholder="貼上同步碼（Bucket ID）"
+            placeholder="貼上同步碼（Sync Token）"
             aria-label="同步碼"
             required
             data-testid="sync-token-input"
@@ -197,25 +179,25 @@ function handleImport() {
       </div>
     </div>
 
-    <!-- Bucket 已建立：顯示 ID + 驗證提示 -->
-    <div v-else-if="createdBucketId && !syncActive" class="sync-pairing">
+    <!-- 同步空間已建立：顯示 token + 使用說明 -->
+    <div v-else-if="createdToken && !syncActive" class="sync-pairing">
       <h3 class="sync-title">✅ 同步空間已建立</h3>
 
       <div class="bucket-id-display">
-        <label class="bucket-label">同步碼（Bucket ID）：</label>
+        <label class="bucket-label">同步碼（Sync Token）：</label>
         <div class="bucket-id-row">
-          <code class="bucket-id-code" data-testid="bucket-id-display">{{ createdBucketId }}</code>
-          <button class="btn-copy" @click="onCopyBucketId" data-testid="copy-bucket-id">
+          <code class="bucket-id-code" data-testid="token-display">{{ createdToken }}</code>
+          <button class="btn-copy" @click="onCopyToken" data-testid="copy-token">
             {{ copied ? '已複製 ✓' : '複製' }}
           </button>
         </div>
         <p class="sync-desc">請將此同步碼貼到其他裝置的設定區，即可跨裝置同步追蹤清單。</p>
       </div>
 
-      <div class="verify-notice">
-        <p>📧 <strong>重要</strong>：請到 <a href="https://kvdb.io/login" target="_blank" rel="noopener">kvdb.io/login</a> 用此 email 登入以啟用帳號。啟用後點下方按鈕開始同步。</p>
-        <button class="btn-primary" @click="onConfirmVerification" data-testid="confirm-verification">
-          我已完成啟用，開始同步
+      <div class="sync-ready-notice">
+        <p>🎉 同步已自動啟動！同步碼已保存，關閉視窗後重新開啟仍會自動同步。</p>
+        <button class="btn-primary" @click="setToken(createdToken)" data-testid="start-sync">
+          開始同步
         </button>
       </div>
     </div>
@@ -230,6 +212,9 @@ function handleImport() {
         <p v-if="lastError" class="sync-error" data-testid="watchlist-sync-error">{{ lastError }}</p>
       </div>
       <div class="sync-actions">
+        <button class="btn-copy" @click="onCopyToken" data-testid="copy-sync-token">
+          {{ copied ? '已複製 ✓' : '複製同步碼' }}
+        </button>
         <button class="btn-secondary" @click="syncOnce">立即同步</button>
         <button class="btn-danger" data-testid="sync-token-clear" @click="clearToken">停用</button>
       </div>
@@ -351,6 +336,11 @@ function handleImport() {
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.sync-create-btn {
+  width: 100%;
+  margin-top: 0.5rem;
 }
 
 .sync-status-row {
@@ -533,21 +523,21 @@ function handleImport() {
   border-color: var(--tab-active-bg);
 }
 
-.verify-notice {
+.sync-ready-notice {
   margin-top: 0.75rem;
   padding: 0.75rem;
-  background: rgba(59, 130, 246, 0.08);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
   border-radius: 8px;
 }
 
-.verify-notice p {
+.sync-ready-notice p {
   margin: 0 0 0.5rem;
   font-size: 0.8125rem;
   color: var(--text-secondary);
 }
 
-.verify-notice .btn-primary {
+.sync-ready-notice .btn-primary {
   width: 100%;
 }
 </style>

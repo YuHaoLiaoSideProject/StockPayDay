@@ -1,23 +1,29 @@
 /**
  * useWatchlistSync — 跨裝置追蹤清單同步引擎（Phase 9 子任務 B）
  *
- * 職責：配對碼（kvdb access token）存在時，負責本機追蹤清單與 kvdb.io 雲端
- * 文件之間的雙向同步：pull → merge → push；含 1.5s debounce 寫回、60s 前景
+ * 職責：同步碼（npoint.io document token）存在時，負責本機追蹤清單與 npoint.io
+ * 雲端文件之間的雙向同步：pull → merge → push；含 1.5s debounce 寫回、60s 前景
  * 輪詢（僅 tab visible）、focus/visibilitychange 即時讀取，以及 429 指數退避
  * （30s → 60s → 120s）。
  *
- * 選配鐵律（§1.4 / §5）：無配對碼（syncActive=false）時整個引擎不啟動，
+ * 選配鐵律（§1.4 / §5）：無同步碼（syncActive=false）時整個引擎不啟動，
  * syncOnce() 直接 return，不發任何請求，行為與現況 100% 一致。
  *
  * 依賴：useWatchlist（子任務 A）已擴充 module-level `syncActiveRef`；
  * 此處僅讀寫該旗標（配對 → true、停用 → false），不引入循環依賴。
+ *
+ * 後端服務：npoint.io（免費 JSON 存儲，無需 email 驗證）
+ * - 建立文件：POST https://www.npoint.io/documents → 回傳 { token, api_url, ... }
+ * - 讀取文件：GET https://api.npoint.io/{token}
+ * - 更新文件：POST https://api.npoint.io/{token}
  */
 import { ref, computed, watchEffect, onBeforeUnmount, getCurrentInstance } from 'vue'
 import type { WatchlistItem, WatchlistSyncDoc, SyncStatus } from '../types/watchlist'
 import { useWatchlist, syncActiveRef } from './useWatchlist'
 
-const BUCKET_ID_KEY = 'stockpayday-sync-bucket-id'
-const KVDB_BASE = 'https://kvdb.io'
+const SYNC_TOKEN_KEY = 'stockpayday-sync-token'
+const NPOINT_API_BASE = 'https://api.npoint.io'
+const NPOINT_CREATE_URL = 'https://www.npoint.io/documents'
 const POLL_INTERVAL_MS = 60_000
 const WRITE_DEBOUNCE_MS = 1_500
 const BACKOFF_BASE_MS = 30_000
@@ -31,35 +37,27 @@ class SyncRateLimitedError extends Error {
   }
 }
 
-/**
- * kvdb key：一人一份 → user:<uid>:watchlist
- * uid 於開通時由擁有者指定（見 README 開通流程）；此處以單一使用者語意簡化
- */
-function kvKey(): string {
-  return 'user:me:watchlist'
+function npointUrl(): string {
+  return `${NPOINT_API_BASE}/${syncToken.value}`
 }
 
-function kvdbUrl(): string {
-  return `${KVDB_BASE}/${bucketId.value}/${kvKey()}`
-}
-
-/** 讀取 localStorage 中的 bucket_id（讀取失敗時視同未配對，維持現況） */
-function readBucketId(): string {
+/** 讀取 localStorage 中的同步碼（讀取失敗時視同未配對，維持現況） */
+function readSyncToken(): string {
   try {
-    return localStorage.getItem(BUCKET_ID_KEY) ?? ''
+    return localStorage.getItem(SYNC_TOKEN_KEY) ?? ''
   } catch {
     return ''
   }
 }
 
 // ── module-level 狀態（singleton，與 useWatchlist 同層）──
-const bucketId = ref<string>(readBucketId())
+const syncToken = ref<string>(readSyncToken())
 const status = ref<SyncStatus>('disabled')
 const lastSyncedAt = ref<number | null>(null)
 const lastError = ref<string | null>(null)
 
-/** 已配對（bucket_id 非空）→ 同步引擎可運作 */
-const syncActive = computed(() => bucketId.value.length > 0)
+/** 已配對（syncToken 非空）→ 同步引擎可運作 */
+const syncActive = computed(() => syncToken.value.length > 0)
 
 // ── 引擎內部狀態 ──
 let pollTimer: number | undefined
@@ -81,21 +79,24 @@ function isVisible(): boolean {
   return document.visibilityState === 'visible'
 }
 
-// ── kvdb.io 契約（§2.1）──
+// ── npoint.io 契約 ──
 
 /** 拉取雲端文件；GET 404（首次）→ null */
 async function pull(): Promise<WatchlistSyncDoc | null> {
-  const res = await fetch(kvdbUrl())
+  const res = await fetch(npointUrl())
   if (res.status === 404) return null // 首次：雲端尚無文件
   if (res.status === 429) throw new SyncRateLimitedError()
   if (!res.ok) throw new Error(`pull failed: ${res.status}`)
-  return (await res.json()) as WatchlistSyncDoc
+  const data = await res.json()
+  // npoint.io 回傳 null 或空物件時視為首次
+  if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) return null
+  return data as WatchlistSyncDoc
 }
 
 /** 寫回合併後的本地清單（POST WatchlistSyncDoc） */
 async function push(items: WatchlistItem[]): Promise<void> {
   const doc: WatchlistSyncDoc = { updatedAt: Date.now(), items }
-  const res = await fetch(kvdbUrl(), {
+  const res = await fetch(npointUrl(), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(doc),
@@ -128,7 +129,7 @@ export function merge(localItems: WatchlistItem[], remoteItems?: WatchlistItem[]
   return [...byCode.values()]
 }
 
-// ── 同步主流程：pull → merge → push（§1.4 / §3）──
+// ── 同步主流程：pull → merge → push ──
 async function syncOnce(): Promise<void> {
   if (!syncActive.value) return // 未配對：零負擔，不發任何請求
   if (inFlight) return // 避免重入（輪詢/退避/debounce 疊加）
@@ -158,7 +159,7 @@ async function syncOnce(): Promise<void> {
   }
 }
 
-// ── 觸發策略（§1.4 / §4）──
+// ── 觸發策略 ──
 
 function clearDebounceTimer(): void {
   if (debounceTimer !== undefined) {
@@ -234,59 +235,47 @@ function removeListeners(): void {
   window.removeEventListener('focus', onVisibility)
 }
 
-// ── 建立帳號（直連 kvdb.io）──
+// ── 建立同步空間（直連 npoint.io）──
 
 /**
- * createAccount — 輸入 email → POST kvdb.io 建立 bucket
+ * createSyncSpace — POST npoint.io 建立文件
  *
- * kvdb.io 回傳純文字 bucket_id；email 未驗證前寫入會 403，
- * 因此建完 bucket 後不立即啟動同步，需呼叫 confirmVerification()。
+ * npoint.io 回傳 JSON 含 token；無需 email 驗證，建立後立即可寫入。
  */
-async function createAccount(email: string): Promise<{ bucketId: string }> {
-  if (!email.trim()) throw new Error('Email required')
+async function createSyncSpace(): Promise<{ token: string }> {
   status.value = 'syncing'
   lastError.value = null
   try {
-    const res = await fetch(KVDB_BASE, {
+    const res = await fetch(NPOINT_CREATE_URL, {
       method: 'POST',
-      body: new URLSearchParams({ email: email.trim() }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
     })
     if (!res.ok) {
       const text = await res.text().catch(() => '')
-      throw new Error(`建立帳號失敗: ${res.status} ${text}`)
+      throw new Error(`建立同步空間失敗: ${res.status} ${text}`)
     }
-    const newBucketId = (await res.text()).trim()
-    if (!newBucketId) throw new Error('kvdb.io 未回傳 bucket_id')
+    const data = await res.json()
+    const newToken = data?.token
+    if (!newToken) throw new Error('npoint.io 未回傳 token')
 
     try {
-      localStorage.setItem(BUCKET_ID_KEY, newBucketId)
+      localStorage.setItem(SYNC_TOKEN_KEY, newToken)
     } catch {
-      bucketId.value = ''
+      syncToken.value = ''
       syncActiveRef.value = false
       status.value = 'disabled'
-      lastError.value = '無法儲存同步金鑰（localStorage 不可用）'
+      lastError.value = '無法儲存同步碼（localStorage 不可用）'
       throw new Error(lastError.value)
     }
 
-    // 不設 bucketId.value（等待 confirmVerification 才啟動同步）
-    return { bucketId: newBucketId }
+    // 不立即啟動同步（等待使用者點擊「開始同步」）
+    return { token: newToken }
   } catch (err) {
     status.value = 'error'
-    lastError.value = err instanceof Error ? err.message : '建立帳號失敗'
+    lastError.value = err instanceof Error ? err.message : '建立同步空間失敗'
     throw err
   }
-}
-
-/** confirmVerification — email 驗證完成後呼叫，從 localStorage 讀取 bucket_id 並啟動同步 */
-function confirmVerification(): void {
-  // 從 localStorage 讀取 createAccount 儲存的 bucket_id
-  const savedBucketId = readBucketId()
-  if (!savedBucketId) return
-  bucketId.value = savedBucketId
-  syncActiveRef.value = true
-  ensureListeners()
-  startPolling()
-  void syncOnce()
 }
 
 // ── 對外 API（配對 / 停用）──
@@ -295,23 +284,23 @@ function setToken(value: string): void {
   const trimmed = value.trim()
   if (trimmed) {
     try {
-      localStorage.setItem(BUCKET_ID_KEY, trimmed)
+      localStorage.setItem(SYNC_TOKEN_KEY, trimmed)
     } catch {
       // localStorage 不可用 → 視同未配對，同步不啟動（維持現況）
-      bucketId.value = ''
+      syncToken.value = ''
       syncActiveRef.value = false
       status.value = 'disabled'
       return
     }
   } else {
     try {
-      localStorage.removeItem(BUCKET_ID_KEY)
+      localStorage.removeItem(SYNC_TOKEN_KEY)
     } catch {
       // ignore
     }
   }
 
-  bucketId.value = trimmed
+  syncToken.value = trimmed
   syncActiveRef.value = syncActive.value // 同步驅動 useWatchlist 的墓碑語意
   if (syncActive.value) {
     status.value = 'syncing'
@@ -326,11 +315,11 @@ function setToken(value: string): void {
 
 function clearToken(): void {
   try {
-    localStorage.removeItem(BUCKET_ID_KEY)
+    localStorage.removeItem(SYNC_TOKEN_KEY)
   } catch {
     // ignore
   }
-  bucketId.value = ''
+  syncToken.value = ''
   syncActiveRef.value = false
   status.value = 'disabled'
   lastError.value = null
@@ -341,7 +330,7 @@ function clearToken(): void {
   clearBackoffTimer()
 }
 
-// ── 初始化：有 bucket_id 才啟動（reload 恢復配對）──
+// ── 初始化：有同步碼才啟動（reload 恢復配對）──
 syncActiveRef.value = syncActive.value
 if (syncActive.value) {
   ensureListeners()
@@ -349,7 +338,7 @@ if (syncActive.value) {
   void syncOnce()
 }
 
-// 本地變更 → debounce 寫回（$1.4 watchEffect；快照比對防自觸發）
+// 本地變更 → debounce 寫回（watchEffect；快照比對防自觸發）
 watchEffect(() => {
   if (!syncActive.value) return
   const { items } = useWatchlist()
@@ -376,7 +365,7 @@ export function useWatchlistSync() {
     ensureListeners()
     startPolling()
   }
-  return { bucketId, status, lastSyncedAt, lastError, syncActive, createAccount, confirmVerification, setToken, clearToken, syncOnce }
+  return { bucketId: syncToken, status, lastSyncedAt, lastError, syncActive, createAccount: createSyncSpace, confirmVerification: () => {}, setToken, clearToken, syncOnce }
 }
 
 /** 測試用：重置引擎 module 狀態（token/計時器/監聽器/快照） */
@@ -388,7 +377,7 @@ export function resetSyncState(): void {
   backoff = 0
   inFlight = false
   lastPushedSnapshot = null
-  bucketId.value = ''
+  syncToken.value = ''
   status.value = 'disabled'
   lastSyncedAt.value = null
   lastError.value = null
