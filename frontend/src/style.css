@@ -29,8 +29,7 @@
   /* Landing tokens (007) */
   --hero-bg: #f0f7ff;
   --hero-gradient: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 50%, #ffffff 100%);
-  --feature-icon-bg: rgba(26,115,232,0.1);
-  --feature-icon-color: #1a73e8;
+
   --step-circle-bg: #1a73e8;
   --cta-section-bg: #f9fafb;
   --card-radius: 16px;
@@ -58,8 +57,7 @@
   /* Landing tokens (007) */
   --hero-bg: #0f172a;
   --hero-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #111827 100%);
-  --feature-icon-bg: rgba(96,165,250,0.15);
-  --feature-icon-color: #60a5fa;
+
   --step-circle-bg: #60a5fa;
   --cta-section-bg: #1f2937;
 }
@@ -932,12 +930,7 @@ body {
   border-radius: 14px;
 }
 
-/* Features Section */
-.features {
-  padding: var(--section-padding) 24px;
-  background: var(--bg);
-}
-
+/* Section Header */
 .section-header {
   text-align: center;
   margin-bottom: 48px;
@@ -953,61 +946,6 @@ body {
 .section-header p {
   font-size: 1rem;
   color: var(--text-secondary);
-}
-
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-  max-width: 960px;
-  margin: 0 auto;
-}
-
-.feature-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--card-radius);
-  padding: 32px 24px;
-  text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: default;
-}
-
-.feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-
-.dark .feature-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-.feature-icon {
-  width: 56px;
-  height: 56px;
-  background: var(--feature-icon-bg);
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 20px;
-}
-
-.feature-icon svg {
-  color: var(--feature-icon-color);
-}
-
-.feature-card h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text);
-  margin-bottom: 8px;
-}
-
-.feature-card p {
-  font-size: 0.9375rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
 }
 
 /* How It Works */
@@ -1162,25 +1100,6 @@ body {
   .hero-br-desktop { display: none; }
   .hero-actions { flex-direction: column; }
   .hero-actions .landing-btn { width: 100%; }
-  .features { padding: var(--section-padding-mobile) 16px; }
-  .features-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  .feature-card {
-    display: flex;
-    align-items: center;
-    text-align: left;
-    gap: 16px;
-    padding: 20px;
-  }
-  .feature-icon {
-    margin: 0;
-    flex-shrink: 0;
-    width: 48px;
-    height: 48px;
-  }
-  .feature-icon svg { width: 24px; height: 24px; }
   .how-it-works { padding: var(--section-padding-mobile) 16px; }
   .steps {
     flex-direction: column;

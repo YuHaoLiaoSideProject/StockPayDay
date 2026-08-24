@@ -54,13 +54,6 @@ const watchlistWithDividends = computed(() => {
     .map(item => item.dividend!)
 })
 
-// 追蹤股票中有未來配息的（用於行事曆標記）
-const watchlistUpcoming = computed<UpcomingDividend[]>(() => {
-  return allWatchedItems.value
-    .filter(item => item.hasUpcomingDividend)
-    .map(item => item.dividend!)
-})
-
 // 追蹤清單是否為空（墓碑不列入）
 const isEmpty = computed(() => activeItems.value.length === 0)
 

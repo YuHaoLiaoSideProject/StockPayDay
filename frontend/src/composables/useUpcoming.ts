@@ -33,7 +33,7 @@ async function load(): Promise<void> {
 
   try {
     const now = currentMonthKey()
-    const [year, month] = now.split('-').map(Number)
+    const [year] = now.split('-').map(Number)
 
     // 產生所有月份 key（1~12月）
     const allMonthKeys: string[] = []

@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>008 — Landing Features 重新設計（移除方案）· 比較稿</title>
+<style>
+
+/* ════════════════════════════════════════════════════════════
+   設計 Token（對應前端 CSS 變數）
+   ════════════════════════════════════════════════════════════ */
+:root {
+  --accent: #1a73e8; --accent-hover: #1557b0; --accent-light: rgba(26,115,232,0.12);
+  --success: #188038; --success-light: #e6f4ea; --success-border: #a8dab5;
+  --danger: #c5221f; --danger-light: #fce8e6; --danger-border: #f5c6c2;
+  --warning: #e37400; --warning-light: #fff4e5;
+  --radius: 10px; --radius-sm: 6px; --transition: 0.2s ease;
+  --h: 36px; --h-mobile: 44px; --fs: 0.875rem;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+[data-theme="light"] {
+  --bg: #ffffff; --surface: #ffffff; --surface-2: #f6f7f9; --surface-3: #eef0f3;
+  --border: #e3e6ea; --text: #374151; --muted: #9ca3af;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08); --shadow-lg: 0 12px 32px rgba(0,0,0,0.16);
+  --frame: #eef0f3;
+}
+[data-theme="dark"] {
+  --bg: #11191f; --surface: #181e25; --surface-2: #1e2530; --surface-3: #232c38;
+  --border: #262e38; --text: #c7c9ce; --muted: #7d8590;
+  --shadow: 0 2px 16px rgba(0,0,0,0.45); --shadow-lg: 0 12px 36px rgba(0,0,0,0.6);
+  --frame: #0d1318;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background: var(--bg); color: var(--text); transition: background var(--transition), color var(--transition);
+  padding: 2rem 1.25rem 4rem;
+}
+.wrap { max-width: 1200px; margin: 0 auto; }
+.topbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+h1 { font-size: 1.35rem; margin: 0; }
+.sub { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+.controls { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.segmented { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 2px; }
+.segmented button { border: none; background: none; color: var(--muted); font-size: 0.85rem; padding: 0.45rem 0.9rem; border-radius: 7px; cursor: pointer; transition: all var(--transition); font-weight: 500; }
+.segmented button:hover { color: var(--text); }
+.segmented button.active { background: var(--surface); color: var(--accent); box-shadow: var(--shadow); }
+
+.frame { background: var(--frame); border: 1px solid var(--border); border-radius: 14px; padding: 1.6rem 1.5rem 1.8rem; margin-bottom: 1.5rem; }
+.frame h2 { margin: 0 0 0.25rem; font-size: 1.1rem; }
+.frame .fsub { color: var(--muted); font-size: 0.82rem; margin: 0 0 1rem; line-height: 1.6; }
+.browser-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 1rem; }
+.bdot { width: 11px; height: 11px; border-radius: 50%; }
+.bdot:nth-child(1){ background:#f87171 } .bdot:nth-child(2){ background:#fbbf24 } .bdot:nth-child(3){ background:#34d399 }
+.browser-url { flex: 1; max-width: 420px; margin-left: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.8rem; font-size: 0.75rem; color: var(--muted); }
+.elem-count { font-size: 0.72rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.2rem 0.7rem; white-space: nowrap; }
+.elem-count b { color: var(--accent); }
+
+.app-page { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); transition: background var(--transition); overflow: hidden; }
+.app-page.is-mobile { max-width: 390px; margin: 0 auto; }
+
+/* Landing Page 內部樣式 */
+.landing { background: var(--bg); color: var(--text); }
+
+/* Hero */
+.hero { background: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 50%, #ffffff 100%); padding: 64px 24px; text-align: center; }
+[data-theme="dark"] .hero { background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #111827 100%); }
+.hero-content { max-width: 640px; margin: 0 auto; }
+.hero-icon { width: 72px; height: 72px; background: rgba(26,115,232,0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
+.hero-icon svg { color: #1a73e8; }
+[data-theme="dark"] .hero-icon { background: rgba(96,165,250,0.15); }
+[data-theme="dark"] .hero-icon svg { color: #60a5fa; }
+.hero h1 { font-size: 2.5rem; font-weight: 700; color: var(--text); margin: 0 0 12px; line-height: 1.2; }
+.hero-subtitle { font-size: 1.25rem; color: var(--text-secondary, #6b7280); margin: 0 0 32px; line-height: 1.6; }
+.hero-actions { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+.social-proof { display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--muted); }
+.social-proof .star { color: #f59e0b; }
+
+/* Landing Buttons */
+.landing-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 32px; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-decoration: none; white-space: nowrap; border: none; }
+.landing-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(26,115,232,0.4); }
+.landing-btn-primary { background: #1a73e8; color: white; }
+.landing-btn-primary:hover { box-shadow: 0 4px 16px rgba(26,115,232,0.3); transform: translateY(-1px); }
+[data-theme="dark"] .landing-btn-primary { background: #60a5fa; }
+[data-theme="dark"] .landing-btn-primary:hover { box-shadow: 0 4px 16px rgba(96,165,250,0.3); }
+.landing-btn-secondary { background: transparent; color: var(--text-secondary, #6b7280); border: 1px solid var(--border); }
+.landing-btn-secondary:hover { background: var(--surface-2); color: var(--text); border-color: var(--muted); }
+
+/* Features Section（BEFORE 才顯示） */
+.features { padding: 80px 24px; background: var(--bg); }
+.section-header { text-align: center; margin-bottom: 48px; }
+.section-header h2 { font-size: 1.75rem; font-weight: 700; color: var(--text); margin: 0 0 8px; }
+.section-header p { font-size: 1rem; color: var(--text-secondary, #6b7280); margin: 0; }
+.features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 960px; margin: 0 auto; }
+.feature-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 32px 24px; text-align: center; transition: transform 0.2s ease, box-shadow 0.2s ease; cursor: default; }
+.feature-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+[data-theme="dark"] .feature-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.feature-icon { width: 56px; height: 56px; background: rgba(26,115,232,0.1); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+.feature-icon svg { color: #1a73e8; }
+[data-theme="dark"] .feature-icon { background: rgba(96,165,250,0.15); }
+[data-theme="dark"] .feature-icon svg { color: #60a5fa; }
+.feature-card h3 { font-size: 1.125rem; font-weight: 600; color: var(--text); margin: 0 0 8px; }
+.feature-card p { font-size: 0.9375rem; color: var(--text-secondary, #6b7280); line-height: 1.6; margin: 0; }
+
+/* How It Works */
+.how-it-works { padding: 80px 24px; background: var(--surface-2); }
+[data-theme="dark"] .how-it-works { background: var(--surface-2); }
+.steps { display: flex; align-items: flex-start; justify-content: center; gap: 16px; max-width: 800px; margin: 0 auto; }
+.step { flex: 1; text-align: center; max-width: 220px; }
+.step-number { width: 56px; height: 56px; background: #1a73e8; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; font-weight: 700; margin: 0 auto 16px; }
+[data-theme="dark"] .step-number { background: #60a5fa; }
+.step h3 { font-size: 1rem; font-weight: 600; color: var(--text); margin: 0 0 8px; }
+.step p { font-size: 0.875rem; color: var(--text-secondary, #6b7280); line-height: 1.5; margin: 0; }
+.step-arrow { display: flex; align-items: center; padding-top: 16px; color: var(--muted); }
+.step-arrow svg { width: 24px; height: 24px; }
+
+/* CTA Section */
+.cta-section { padding: 80px 24px; background: var(--surface); text-align: center; }
+.cta-section h2 { font-size: 1.75rem; font-weight: 700; color: var(--text); margin: 0 0 24px; }
+.cta-note { margin-top: 16px; font-size: 0.875rem; color: var(--muted); }
+.landing-btn-large { height: 56px; padding: 0 40px; font-size: 1.125rem; border-radius: 14px; }
+
+/* Footer */
+.landing-footer { padding: 48px 24px 32px; background: var(--text); text-align: center; }
+.footer-brand { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 16px; }
+.footer-brand svg { color: #1a73e8; }
+[data-theme="dark"] .footer-brand svg { color: #60a5fa; }
+.footer-brand span { font-size: 1rem; font-weight: 600; color: var(--bg); }
+.footer-desc { font-size: 0.875rem; color: var(--text-secondary, #d1d5db); margin: 0 0 24px; }
+.footer-links { display: flex; align-items: center; justify-content: center; gap: 24px; margin-bottom: 32px; }
+.footer-links a { font-size: 0.875rem; color: var(--text-secondary, #d1d5db); text-decoration: none; transition: color 0.15s ease; }
+.footer-links a:hover { color: var(--bg); }
+.footer-copy { font-size: 0.75rem; color: var(--text-secondary, #d1d5db); padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); margin: 0; }
+[data-theme="dark"] .footer-copy { border-top-color: rgba(255,255,255,0.08); }
+
+/* BEFORE / AFTER 標籤 */
+.badge-before { display: inline-block; background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger-border); border-radius: 20px; padding: 0.15rem 0.6rem; font-size: 0.72rem; font-weight: 700; margin-bottom: 0.5rem; }
+.badge-after { display: inline-block; background: var(--success-light); color: var(--success); border: 1px solid var(--success-border); border-radius: 20px; padding: 0.15rem 0.6rem; font-size: 0.72rem; font-weight: 700; margin-bottom: 0.5rem; }
+
+/* 移除標記 */
+.removed-zone { position: relative; }
+.removed-zone::after { content: "已移除"; position: absolute; top: 8px; right: 8px; background: var(--danger); color: white; font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.6rem; border-radius: 4px; }
+
+/* 分隔比較 */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media (max-width: 900px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-col { min-width: 0; }
+
+/* 元件規格 */
+.anatomy { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1.1rem; }
+@media (max-width: 760px) { .anatomy { grid-template-columns: 1fr; } }
+.anat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem 1.1rem; }
+.anat-card h4 { margin: 0 0 0.8rem; font-size: 0.92rem; display: flex; align-items: center; gap: 0.4rem; }
+.anat-card h4 .tag { font-size: 0.62rem; font-weight: 700; background: var(--accent-light); color: var(--accent); border-radius: 20px; padding: 0.12rem 0.5rem; }
+.anat-stage { background: var(--frame); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1rem; margin-bottom: 0.85rem; }
+.anat-dims { font-size: 0.74rem; color: var(--muted); line-height: 1.8; }
+.anat-dims b { color: var(--accent); font-family: var(--mono); }
+
+/* 狀態矩陣 */
+.states { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 1rem; }
+.states th, .states td { border: 1px solid var(--border); padding: 0.55rem 0.75rem; text-align: left; vertical-align: top; }
+.states th { background: var(--surface-2); font-size: 0.74rem; color: var(--muted); font-weight: 700; }
+.states td:first-child { white-space: nowrap; font-weight: 600; }
+
+/* Token 卡片 */
+.tokens { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+.tcard { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem 0.95rem; }
+.tcard .tk { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.4px; }
+.tcard .tv { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-top: 0.2rem; }
+.tcard .td { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; line-height: 1.5; }
+.tcard .tv.accent { color: var(--accent); }
+
+.note { font-size: 0.78rem; color: var(--muted); margin-top: 1rem; line-height: 1.7; background: var(--surface); border: 1px dashed var(--border); border-radius: 10px; padding: 0.6rem 0.9rem; }
+.note b { color: var(--accent); }
+
+.footnote { margin-top: 2rem; font-size: 0.72rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 0.75rem; line-height: 1.7; }
+
+/* Mobile frame */
+.frame.mobile-frame { display: none; }
+body.view-mobile .frame.mobile-frame { display: block; }
+body.view-mobile .frame.desktop-frame { display: none; }
+
+/* Legend */
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.5rem 1.5rem; margin-top: 1rem; }
+.anno { display: flex; gap: 0.55rem; font-size: 0.8rem; color: var(--muted); align-items: flex-start; line-height: 1.55; }
+.anno .num { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-size: 0.7rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+.anno b { color: var(--text); }
+
+.demo-hint { font-size: 0.78rem; color: var(--muted); margin-top: 0.7rem; line-height: 1.6; }
+.demo-hint b { color: var(--accent); }
+
+/* ── 節省空間標示 ── */
+.space-saved { display: inline-flex; align-items: center; gap: 0.35rem; background: var(--success-light); color: var(--success); border: 1px solid var(--success-border); border-radius: 6px; padding: 0.3rem 0.7rem; font-size: 0.78rem; font-weight: 600; margin-top: 0.5rem; }
+[data-theme="dark"] .space-saved { background: rgba(24,128,56,0.15); border-color: rgba(24,128,56,0.3); color: #34d399; }
+</style>
+</head>
+<body data-theme="light">
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <h1>📊 Landing Features 區塊 — 移除方案</h1>
+      <div class="sub">008 · BEFORE / AFTER 比較稿 · 說明為什麼 Utility App 不需要 Feature List</div>
+    </div>
+    <div class="controls">
+      <div class="segmented" id="devSwitch">
+        <button data-dev="desktop" class="active">🖥 Desktop</button>
+        <button data-dev="mobile">📱 Mobile</button>
+      </div>
+      <button class="segmented" id="themeToggle" style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:3px;">🌙 切換深色</button>
+    </div>
+  </div>
+
+  <!-- ══════════ 1. 決策摘要 ══════════ -->
+  <div class="frame">
+    <h2>1️⃣ 決策摘要 — 為什麼移除 Features</h2>
+    <p class="fsub">從轉換率、資訊密度、Mobile 使用行為三個角度分析。</p>
+    <div class="tokens">
+      <div class="tcard">
+        <div class="tk">資訊重疊</div>
+        <div class="tv accent">Hero + How It Works</div>
+        <div class="td">Hero 說「掌握配息時程」，How It Works 展示 3 步流程，Features 再重複一遍</div>
+      </div>
+      <div class="tcard">
+        <div class="tk">滾動距離</div>
+        <div class="tv accent">−320px</div>
+        <div class="td">移除後 CTA 前減少 ~320px 滾動，Mobile 上約 1.5 屏</div>
+      </div>
+      <div class="tcard">
+        <div class="tk">用戶行為</div>
+        <div class="tv accent">直接用</div>
+        <div class="td">Utility app 用戶「直接試用」而非「讀功能列表後再決定」</div>
+      </div>
+      <div class="tcard">
+        <div class="tk">轉換漏斗</div>
+        <div class="tv accent">每屏 −10~20%</div>
+        <div class="td">Landing page 每多一屏，跳出率增加（industry benchmark）</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 2. BEFORE / AFTER 比較 ══════════ -->
+  <div class="frame desktop-frame">
+    <h2>2️⃣ BEFORE / AFTER 比較（Desktop）</h2>
+    <p class="fsub">左側為現狀（含 Features 區塊），右側為建議方案（移除 Features）。兩側均以 50% 寬度呈現，確認排版真實性。</p>
+    <div class="compare-grid">
+
+      <!-- BEFORE -->
+      <div class="compare-col">
+        <span class="badge-before">BEFORE — 現狀</span>
+        <div class="app-page" style="max-height:1800px; overflow-y:auto;">
+          <div class="landing">
+            <!-- Hero（簡化） -->
+            <div class="hero" style="padding:48px 20px;">
+              <div class="hero-content">
+                <div class="hero-icon" style="width:56px;height:56px;border-radius:16px;margin-bottom:16px;">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <h1 style="font-size:1.75rem;margin:0 0 8px;">你的股利，不再錯過。</h1>
+                <p class="hero-subtitle" style="font-size:1rem;margin:0 0 20px;">StockPayDay 幫你掌握每一筆配息時程。</p>
+                <div class="hero-actions" style="margin-bottom:16px;">
+                  <a href="#" class="landing-btn landing-btn-primary" style="height:40px;padding:0 20px;font-size:0.875rem;">立即查看配息行事曆</a>
+                  <a href="#features" class="landing-btn landing-btn-secondary" style="height:40px;padding:0 16px;font-size:0.875rem;">了解更多 ↓</a>
+                </div>
+                <p class="social-proof" style="font-size:0.8rem;"><span class="star">★</span> 已追蹤超過 2,000 支股票的配息時程</p>
+              </div>
+            </div>
+
+            <!-- Features Section（這是被移除的區塊） -->
+            <div class="features" style="padding:40px 20px;" id="features">
+              <div class="section-header" style="margin-bottom:24px;">
+                <h2 style="font-size:1.25rem;">為什麼選擇 StockPayDay</h2>
+                <p style="font-size:0.875rem;">專為台灣投資人設計的配息管理工具</p>
+              </div>
+              <div class="features-grid" style="gap:12px;">
+                <div class="feature-card" style="padding:20px 16px;">
+                  <div class="feature-icon" style="width:44px;height:44px;border-radius:12px;margin:0 auto 12px;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y1="10"/></svg>
+                  </div>
+                  <h3 style="font-size:0.95rem;margin:0 0 6px;">配息行事曆</h3>
+                  <p style="font-size:0.82rem;margin:0;">一目了然的行事曆視圖，所有配息日期清楚標示。</p>
+                </div>
+                <div class="feature-card" style="padding:20px 16px;">
+                  <div class="feature-icon" style="width:44px;height:44px;border-radius:12px;margin:0 auto 12px;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  </div>
+                  <h3 style="font-size:0.95rem;margin:0 0 6px;">即時搜尋</h3>
+                  <p style="font-size:0.82rem;margin:0;">輸入股票代號或名稱，快速找到你關注的標的。</p>
+                </div>
+                <div class="feature-card" style="padding:20px 16px;">
+                  <div class="feature-icon" style="width:44px;height:44px;border-radius:12px;margin:0 auto 12px;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </div>
+                  <h3 style="font-size:0.95rem;margin:0 0 6px;">追蹤清單</h3>
+                  <p style="font-size:0.82rem;margin:0;">建立你的個人追蹤清單，跨裝置同步。</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- How It Works（簡化） -->
+            <div class="how-it-works" style="padding:40px 20px;">
+              <div class="section-header" style="margin-bottom:24px;">
+                <h2 style="font-size:1.25rem;">使用方式超簡單</h2>
+              </div>
+              <div class="steps" style="gap:8px;">
+                <div class="step">
+                  <div class="step-number" style="width:40px;height:40px;font-size:1rem;">1</div>
+                  <h3 style="font-size:0.875rem;">搜尋股票</h3>
+                </div>
+                <div class="step-arrow" style="padding-top:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+                <div class="step">
+                  <div class="step-number" style="width:40px;height:40px;font-size:1rem;">2</div>
+                  <h3 style="font-size:0.875rem;">加入追蹤</h3>
+                </div>
+                <div class="step-arrow" style="padding-top:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+                <div class="step">
+                  <div class="step-number" style="width:40px;height:40px;font-size:1rem;">3</div>
+                  <h3 style="font-size:0.875rem;">掌握時程</h3>
+                </div>
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="cta-section" style="padding:40px 20px;">
+              <h2 style="font-size:1.25rem;">準備好掌握了嗎？</h2>
+              <a href="#" class="landing-btn landing-btn-primary" style="height:44px;padding:0 24px;font-size:0.95rem;">開始使用 StockPayDay</a>
+              <p class="cta-note" style="margin-top:10px;font-size:0.8rem;">免費使用 · 無需註冊 · 資料每日更新</p>
+            </div>
+          </div>
+        </div>
+        <div class="demo-hint">
+          <b>現狀結構：</b>Hero → <b style="color:var(--danger);">Features（冗餘）</b> → How It Works → CTA<br>
+          Features 區塊佔 ~200px 垂直空間，內容與 Hero + How It Works 高度重疊
+        </div>
+      </div>
+
+      <!-- AFTER -->
+      <div class="compare-col">
+        <span class="badge-after">AFTER — 建議方案</span>
+        <div class="app-page" style="max-height:1800px; overflow-y:auto;">
+          <div class="landing">
+            <!-- Hero（完整） -->
+            <div class="hero" style="padding:48px 20px;">
+              <div class="hero-content">
+                <div class="hero-icon" style="width:56px;height:56px;border-radius:16px;margin-bottom:16px;">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <h1 style="font-size:1.75rem;margin:0 0 8px;">你的股利，不再錯過。</h1>
+                <p class="hero-subtitle" style="font-size:1rem;margin:0 0 20px;">StockPayDay 幫你掌握每一筆配息時程。<br>一目了然的行事曆，讓你精準掌握投資節奏。</p>
+                <div class="hero-actions" style="margin-bottom:16px;">
+                  <a href="#" class="landing-btn landing-btn-primary" style="height:40px;padding:0 20px;font-size:0.875rem;">立即查看配息行事曆</a>
+                  <a href="#how-it-works" class="landing-btn landing-btn-secondary" style="height:40px;padding:0 16px;font-size:0.875rem;">了解更多 ↓</a>
+                </div>
+                <p class="social-proof" style="font-size:0.8rem;"><span class="star">★</span> 已追蹤超過 2,000 支股票的配息時程</p>
+              </div>
+            </div>
+
+            <!-- ⚡ Features 區塊已移除 ⚡ -->
+
+            <!-- How It Works（完整） -->
+            <div class="how-it-works" style="padding:40px 20px;" id="how-it-works">
+              <div class="section-header" style="margin-bottom:24px;">
+                <h2 style="font-size:1.25rem;">使用方式超簡單</h2>
+                <p style="font-size:0.875rem;">三個步驟，開始掌握你的配息</p>
+              </div>
+              <div class="steps" style="gap:8px;">
+                <div class="step">
+                  <div class="step-number" style="width:40px;height:40px;font-size:1rem;">1</div>
+                  <h3 style="font-size:0.875rem;">搜尋股票</h3>
+                  <p style="font-size:0.8rem;">輸入代號或名稱，快速找到標的</p>
+                </div>
+                <div class="step-arrow" style="padding-top:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+                <div class="step">
+                  <div class="step-number" style="width:40px;height:40px;font-size:1rem;">2</div>
+                  <h3 style="font-size:0.875rem;">加入追蹤</h3>
+                  <p style="font-size:0.8rem;">點擊愛心，加入你的追蹤清單</p>
+                </div>
+                <div class="step-arrow" style="padding-top:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+                <div class="step">
+                  <div class="step-number" style="width:40px;height:40px;font-size:1rem;">3</div>
+                  <h3 style="font-size:0.875rem;">掌握時程</h3>
+                  <p style="font-size:0.8rem;">行事曆自動標示配息日期</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="cta-section" style="padding:40px 20px;">
+              <h2 style="font-size:1.25rem;">準備好掌握了嗎？</h2>
+              <a href="#" class="landing-btn landing-btn-primary" style="height:44px;padding:0 24px;font-size:0.95rem;">開始使用 StockPayDay</a>
+              <p class="cta-note" style="margin-top:10px;font-size:0.8rem;">免費使用 · 無需註冊 · 資料每日更新</p>
+            </div>
+          </div>
+        </div>
+        <div class="demo-hint">
+          <b>建議結構：</b>Hero → How It Works → CTA<br>
+          移除 Features 後，CTA 提前 ~200px 出現，減少滾動
+        </div>
+        <div class="space-saved">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          節省 ~200px 滾動（Mobile 約 1 屏）
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="anno"><span class="num">1</span><span><b>Hero 區塊</b> — 價值主張 + CTA，已包含所有必要資訊</span></div>
+      <div class="anno"><span class="num">2</span><span><b>How It Works</b> — 3 步操作流程，覆蓋 Features 的所有功能點</span></div>
+      <div class="anno"><span class="num">3</span><span><b>CTA 區塊</b> — 移除 Features 後，CTA 提前出現，提高轉換率</span></div>
+      <div class="anno"><span class="num">4</span><span><b>「了解更多」按鈕</b> — 改為錨點到 How It Works（原為 #features）</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 3. Mobile 比較 ══════════ -->
+  <div class="frame mobile-frame">
+    <h2>3️⃣ Mobile 比較</h2>
+    <p class="fsub">Mobile 上 Features 區塊佔 ~1.5 屏，移除後 CTA 提前出現。</p>
+    <div class="compare-grid">
+      <div class="compare-col">
+        <span class="badge-before">BEFORE</span>
+        <div class="app-page is-mobile" style="max-height:900px;overflow-y:auto;">
+          <div class="landing">
+            <div class="hero" style="padding:32px 16px;">
+              <div class="hero-content">
+                <div class="hero-icon" style="width:48px;height:48px;border-radius:14px;margin:0 auto 12px;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <h1 style="font-size:1.5rem;margin:0 0 8px;">你的股利，不再錯過。</h1>
+                <p style="font-size:0.875rem;color:var(--muted);margin:0 0 16px;">StockPayDay 幫你掌握每一筆配息時程。</p>
+                <a href="#" class="landing-btn landing-btn-primary" style="width:100%;height:44px;font-size:0.9rem;margin-bottom:12px;">立即查看配息行事曆</a>
+                <a href="#features" class="landing-btn landing-btn-secondary" style="width:100%;height:44px;font-size:0.875rem;">了解更多 ↓</a>
+              </div>
+            </div>
+            <div class="features" style="padding:24px 16px;" id="features-mobile">
+              <div class="section-header" style="margin-bottom:16px;">
+                <h2 style="font-size:1.1rem;">為什麼選擇 StockPayDay</h2>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;">
+                <div class="feature-card" style="display:flex;align-items:center;text-align:left;gap:12px;padding:14px;border-radius:12px;">
+                  <div class="feature-icon" style="width:40px;height:40px;border-radius:10px;margin:0;flex-shrink:0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  </div>
+                  <div><h3 style="font-size:0.875rem;margin:0 0 2px;">配息行事曆</h3><p style="font-size:0.78rem;margin:0;color:var(--muted);">一目了然的行事曆視圖</p></div>
+                </div>
+                <div class="feature-card" style="display:flex;align-items:center;text-align:left;gap:12px;padding:14px;border-radius:12px;">
+                  <div class="feature-icon" style="width:40px;height:40px;border-radius:10px;margin:0;flex-shrink:0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  </div>
+                  <div><h3 style="font-size:0.875rem;margin:0 0 2px;">即時搜尋</h3><p style="font-size:0.78rem;margin:0;color:var(--muted);">快速找到你關注的標的</p></div>
+                </div>
+                <div class="feature-card" style="display:flex;align-items:center;text-align:left;gap:12px;padding:14px;border-radius:12px;">
+                  <div class="feature-icon" style="width:40px;height:40px;border-radius:10px;margin:0;flex-shrink:0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  </div>
+                  <div><h3 style="font-size:0.875rem;margin:0 0 2px;">追蹤清單</h3><p style="font-size:0.78rem;margin:0;color:var(--muted);">跨裝置同步追蹤</p></div>
+                </div>
+              </div>
+            </div>
+            <div class="cta-section" style="padding:32px 16px;">
+              <h2 style="font-size:1.1rem;">準備好掌握了嗎？</h2>
+              <a href="#" class="landing-btn landing-btn-primary" style="width:100%;height:48px;font-size:0.95rem;">開始使用 StockPayDay</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="compare-col">
+        <span class="badge-after">AFTER</span>
+        <div class="app-page is-mobile" style="max-height:900px;overflow-y:auto;">
+          <div class="landing">
+            <div class="hero" style="padding:32px 16px;">
+              <div class="hero-content">
+                <div class="hero-icon" style="width:48px;height:48px;border-radius:14px;margin:0 auto 12px;">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                <h1 style="font-size:1.5rem;margin:0 0 8px;">你的股利，不再錯過。</h1>
+                <p style="font-size:0.875rem;color:var(--muted);margin:0 0 16px;">StockPayDay 幫你掌握每一筆配息時程。<br>一目了然的行事曆，讓你精準掌握投資節奏。</p>
+                <a href="#" class="landing-btn landing-btn-primary" style="width:100%;height:44px;font-size:0.9rem;margin-bottom:12px;">立即查看配息行事曆</a>
+                <a href="#how-it-works-mobile" class="landing-btn landing-btn-secondary" style="width:100%;height:44px;font-size:0.875rem;">了解更多 ↓</a>
+              </div>
+            </div>
+            <div class="how-it-works" style="padding:32px 16px;" id="how-it-works-mobile">
+              <div class="section-header" style="margin-bottom:20px;">
+                <h2 style="font-size:1.1rem;">使用方式超簡單</h2>
+                <p style="font-size:0.8rem;">三個步驟，開始掌握你的配息</p>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:20px;">
+                <div class="step" style="max-width:none;">
+                  <div class="step-number" style="width:44px;height:44px;font-size:1.1rem;">1</div>
+                  <h3 style="font-size:0.875rem;">搜尋股票</h3>
+                  <p style="font-size:0.8rem;">輸入代號或名稱，快速找到標的</p>
+                </div>
+                <div class="step-arrow" style="transform:rotate(90deg);padding-top:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+                <div class="step" style="max-width:none;">
+                  <div class="step-number" style="width:44px;height:44px;font-size:1.1rem;">2</div>
+                  <h3 style="font-size:0.875rem;">加入追蹤</h3>
+                  <p style="font-size:0.8rem;">點擊愛心，加入你的追蹤清單</p>
+                </div>
+                <div class="step-arrow" style="transform:rotate(90deg);padding-top:0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+                <div class="step" style="max-width:none;">
+                  <div class="step-number" style="width:44px;height:44px;font-size:1.1rem;">3</div>
+                  <h3 style="font-size:0.875rem;">掌握時程</h3>
+                  <p style="font-size:0.8rem;">行事曆自動標示配息日期</p>
+                </div>
+              </div>
+            </div>
+            <div class="cta-section" style="padding:32px 16px;">
+              <h2 style="font-size:1.1rem;">準備好掌握了嗎？</h2>
+              <a href="#" class="landing-btn landing-btn-primary" style="width:100%;height:48px;font-size:0.95rem;">開始使用 StockPayDay</a>
+              <p class="cta-note" style="margin-top:10px;font-size:0.8rem;">免費使用 · 無需註冊 · 資料每日更新</p>
+            </div>
+          </div>
+        </div>
+        <div class="space-saved" style="margin-top:8px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          Mobile 節省 ~1 屏滾動
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 4. 需要修改的檔案 ══════════ -->
+  <div class="frame">
+    <h2>4️⃣ 實作指引 — 需要修改的檔案</h2>
+    <p class="fsub">移除 Features 區塊的具體修改位置。</p>
+    <table class="states">
+      <tr><th style="width:250px;">檔案</th><th>修改內容</th></tr>
+      <tr>
+        <td><code>frontend/src/views/LandingView.vue</code></td>
+        <td>移除 <code>&lt;section id="features" class="features"&gt;...&lt;/section&gt;</code> 整個區塊（約 40 行）</td>
+      </tr>
+      <tr>
+        <td><code>frontend/src/views/LandingView.vue</code></td>
+        <td>Hero 中「了解更多 ↓」按鈕的 <code>href="#features"</code> 改為 <code>href="#how-it-works"</code>，並在 How It Works section 加上 <code>id="how-it-works"</code></td>
+      </tr>
+      <tr>
+        <td><code>frontend/src/style.css</code></td>
+        <td>可保留 `.features` 樣式（供未來使用），或清理相關 CSS（約 40 行）</td>
+      </tr>
+      <tr>
+        <td><code>frontend/src/views/LandingView.vue</code></td>
+        <td>Footer 中「功能介紹」連結改為指向 <code>#how-it-works</code> 或移除</td>
+      </tr>
+    </table>
+    <div class="note"><b>影響範圍：</b>僅 <code>LandingView.vue</code> + 可選 <code>style.css</code>。不影響 app 功能、路由、或其他頁面。</div>
+  </div>
+
+  <!-- ══════════ 5. 驗收清單 ══════════ -->
+  <div class="frame">
+    <h2>5️⃣ 驗收清單</h2>
+    <p class="fsub">實作完成後的確認項目。</p>
+    <table class="states">
+      <tr><th style="width:40px;">✓</th><th>項目</th></tr>
+      <tr><td>☐</td><td>Features 區塊（<code>&lt;section id="features"&gt;</code>）已從 <code>LandingView.vue</code> 移除</td></tr>
+      <tr><td>☐</td><td>Hero「了解更多 ↓」按鈕錨點改為 <code>#how-it-works</code></td></tr>
+      <tr><td>☐</td><td>How It Works section 加上 <code>id="how-it-works"</code></td></tr>
+      <tr><td>☐</td><td>Footer「功能介紹」連結更新</td></tr>
+      <tr><td>☐</td><td>Desktop RWD 響應正常（≥1024 / 768–1023）</td></tr>
+      <tr><td>☐</td><td>Mobile RWD 響應正常（≤767）</td></tr>
+      <tr><td>☐</td><td>Dark mode 正常</td></tr>
+      <tr><td>☐</td><td>無 console error</td></tr>
+      <tr><td>☐</td><td>Lighthouse Performance ≥ 90</td></tr>
+    </table>
+  </div>
+
+  <div class="footnote">
+    📄 設計文件：<b>docs/uiux/008-landing-features-redesign.md</b> ・ 本文件：<b>docs/uiux/008-landing-features-redesign-mockup.html</b><br>
+    實作範圍：<b>LandingView.vue</b>（移除 features section + 更新錨點）・ <b>style.css</b>（可選清理）
+  </div>
+</div>
+
+<script>
+// ── 通用切換 ──
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', () => {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '🌙 切換深色' : '☀️ 切換淺色';
+});
+const devSwitch = document.getElementById('devSwitch');
+devSwitch.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+  devSwitch.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  document.body.classList.toggle('view-mobile', b.dataset.dev === 'mobile');
+}));
+</script>
+</body>
+</html>
