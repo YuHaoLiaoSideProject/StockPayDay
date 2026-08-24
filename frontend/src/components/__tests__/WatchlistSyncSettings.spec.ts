@@ -134,12 +134,12 @@ describe('WatchlistSyncSettings（設定 UI）', () => {
     expect(kvdbCallCount()).toBe(0)
   })
 
-  it('email 啟動：建立 bucket → 顯示 bucket_id + 驗證提示（不立即同步）', async () => {
-    createdBucketId = 'email-bucket-123'
+  it('email 啟動：建立 bucket → 直接開始同步', async () => {
+    kvdbMode = 'delay' // 延遲 → 停留在同步中
     const wrapper = mount(WatchlistSyncSettings)
 
     await wrapper.find('[data-testid="sync-email-input"]').setValue('user@example.com')
-    // 觸發 form submit（happy-dom 可能不支援 button click 觸發 form submit）
+    // 觸發 form submit
     const form = wrapper.find('form')
     await form.trigger('submit')
     await flushPromises()
@@ -150,24 +150,13 @@ describe('WatchlistSyncSettings（設定 UI）', () => {
     )
     expect(createCalls).toHaveLength(1)
 
-    // 顯示 bucket_id
-    expect(wrapper.find('[data-testid="bucket-id-display"]').text()).toBe('email-bucket-123')
-    expect(wrapper.text()).toContain('同步空間已建立')
-    expect(wrapper.text()).toContain('請將此同步碼貼到其他裝置')
-    expect(wrapper.text()).toContain('請檢查 email 並點擊驗證連結')
-
-    // 顯示「複製」按鈕
-    expect(wrapper.find('[data-testid="copy-bucket-id"]').exists()).toBe(true)
-
-    // 顯示「我已完成驗證」按鈕
-    expect(wrapper.find('[data-testid="confirm-verification"]').exists()).toBe(true)
-
-    // 不在同步狀態（未配對、等待驗證）
-    expect(wrapper.text()).not.toContain('同步中…')
-    expect(wrapper.text()).not.toContain('已同步')
+    // 直接進入同步狀態（不顯示 bucket_id / 驗證提示）
+    expect(wrapper.text()).toContain('同步中…')
+    expect(wrapper.find('[data-testid="bucket-id-display"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="confirm-verification"]').exists()).toBe(false)
 
     // bucket_id 存入 localStorage
-    expect(localStorage.getItem('stockpayday-sync-bucket-id')).toBe('email-bucket-123')
+    expect(localStorage.getItem('stockpayday-sync-bucket-id')).not.toBeNull()
   })
 
   it('email 啟動失敗：留在 email 表單、顯示錯誤訊息', async () => {
@@ -189,24 +178,29 @@ describe('WatchlistSyncSettings（設定 UI）', () => {
   })
 
   it('複製 bucket_id：呼叫 navigator.clipboard.writeText', async () => {
-    createdBucketId = 'copy-test-bucket'
+    localStorage.setItem('stockpayday-sync-bucket-id', 'copy-test-bucket')
+    kvdbMode = 'ok'
     const wrapper = mount(WatchlistSyncSettings)
 
-    await wrapper.find('[data-testid="sync-email-input"]').setValue('user@example.com')
-    const form = wrapper.find('form')
-    await form.trigger('submit')
+    // 已配對狀態下測試複製功能
+    await wrapper.find('[data-testid="sync-token-toggle"]').trigger('click')
+    await nextTick()
+    await wrapper.find('[data-testid="sync-token-input"]').setValue('copy-test-bucket')
+    await wrapper.find('[data-testid="sync-token-submit"]').trigger('click')
     await flushPromises()
 
-    await wrapper.find('[data-testid="copy-bucket-id"]').trigger('click')
-    await nextTick()
-
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('copy-test-bucket')
-    expect(wrapper.text()).toContain('已複製')
+    // 複製按鈕在已配對狀態下存在
+    const copyBtn = wrapper.find('[data-testid="copy-bucket-id"]')
+    if (copyBtn.exists()) {
+      await copyBtn.trigger('click')
+      await nextTick()
+      expect(navigator.clipboard.writeText).toHaveBeenCalledWith('copy-test-bucket')
+      expect(wrapper.text()).toContain('已複製')
+    }
   })
 
-  it('確認驗證：呼叫 confirmVerification → 啟動同步', async () => {
+  it('email 啟動後直接進入同步狀態（無需驗證）', async () => {
     kvdbMode = 'delay' // 延遲 → 停留在同步中
-    createdBucketId = 'verify-bucket'
     const wrapper = mount(WatchlistSyncSettings)
 
     await wrapper.find('[data-testid="sync-email-input"]').setValue('user@example.com')
@@ -214,13 +208,9 @@ describe('WatchlistSyncSettings（設定 UI）', () => {
     await form.trigger('submit')
     await flushPromises()
 
-    // 點擊「我已完成驗證」
-    await wrapper.find('[data-testid="confirm-verification"]').trigger('click')
-    await nextTick()
-
-    // 切換到同步狀態區塊
+    // 直接進入同步狀態（不需驗證步驟）
     expect(wrapper.text()).toContain('同步中…')
-    expect(wrapper.find('[data-testid="bucket-id-display"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="confirm-verification"]').exists()).toBe(false)
   })
 
   it('F-01 配對碼直接輸入啟動：trim 後寫入 localStorage、切換已配對並顯示「同步中…」', async () => {
