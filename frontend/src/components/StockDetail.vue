@@ -88,15 +88,15 @@ function barWidth(item: DividendHistory): number {
     <table class="history-table">
       <thead>
         <tr>
-          <th class="col-date">除息日</th>
-          <th class="col-date">配息日</th>
+          <th class="col-date col-ex-date">除息日</th>
+          <th class="col-date col-pay-date">配息日</th>
           <th class="col-amount">配息金額</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="item in sortedHistory" :key="item.ex_date" class="history-row">
-          <td class="col-date">{{ item.ex_date }}</td>
-          <td class="col-date">{{ item.pay_date || '-' }}</td>
+          <td class="col-date col-ex-date">{{ item.ex_date }}</td>
+          <td class="col-date col-pay-date">{{ item.pay_date || '-' }}</td>
           <td class="amount">
             ${{ getDividend(item).toFixed(2) }}
             <span class="amount-bar" :style="{ width: barWidth(item) + '%' }"></span>
