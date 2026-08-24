@@ -19,6 +19,9 @@ const mockFetch = vi.fn((url: unknown) => {
   if (u.includes('securities-index')) {
     return Promise.resolve({ ok: true, json: () => Promise.resolve(mockSecuritiesIndex) })
   }
+  if (u.includes('dividends/')) {
+    return Promise.resolve({ ok: true, json: () => Promise.resolve(mockUpcoming) })
+  }
   if (u.includes('upcoming')) {
     return Promise.resolve({ ok: true, json: () => Promise.resolve(mockUpcoming) })
   }

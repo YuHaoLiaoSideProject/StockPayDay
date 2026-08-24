@@ -11,9 +11,9 @@
    - mops-legacy MOPS 配息日（舊格式，供 reference）
 2. 讀取 data/{stocks,etfs,preferred}/*.json（各證券完整配息歷史）
 3. 讀取 data/listings/*.json（證券清單）
-4. 產生 api/upcoming.json（未來配息清單）
-5. 產生 api/securities-index.json（證券清單）
-6. 產生 api/securities/{code}.json（單股歷史）
+4. 產生 frontend/public/api/dividends/YYYY-MM.json（月份配息）
+5. 產生 frontend/public/api/securities-index.json（證券清單）
+6. 產生 frontend/public/api/securities/{code}.json（單股歷史）
 
 使用方式：
     python processor/generate_api.py                       # 預設來源 moneydj
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 # 專案路徑
 ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
-API_DIR = ROOT_DIR / "api"
+API_DIR = ROOT_DIR / "frontend" / "public" / "api"
 
 # 證券基底資料子目錄（phase-3 規格）
 DATA_SUBDIRS = ["stocks", "etfs", "preferred"]
@@ -788,6 +788,46 @@ def generate_securities_history(
     return len(by_code)
 
 
+def generate_monthly_dividends(records: List[Dict]) -> Dict[str, List[Dict]]:
+    """
+    依月份分組產生配息清單，寫入 api/dividends/YYYY-MM.json。
+
+    每個檔案包含該月所有配息紀錄（含過去與未來），供行事曆與列表使用。
+    業務規則：
+    - 以 ex_date 的年月分組
+    - 每月內依 ex_date 升冪排序
+
+    Args:
+        records: 合併後的紀錄列表
+
+    Returns:
+        {"2026-03": [...], "2026-04": [...], ...}（已排序）
+    """
+    by_month: Dict[str, List[Dict]] = {}
+
+    for rec in records:
+        ex_date = rec.get("ex_date", "")
+        if not ex_date or len(ex_date) < 7:
+            continue
+        month_key = ex_date[:7]  # "2026-03"
+        entry = {
+            "code": rec["code"],
+            "name": rec["name"],
+            "type": rec.get("type", "息"),
+            "ex_date": ex_date,
+            "pay_date": rec.get("pay_date", ""),
+            "cash_dividend": rec.get("cash_dividend", 0),
+            "stock_dividend": rec.get("stock_dividend", 0),
+        }
+        by_month.setdefault(month_key, []).append(entry)
+
+    # 每月內依 ex_date 排序
+    for month_key in by_month:
+        by_month[month_key].sort(key=lambda x: x["ex_date"])
+
+    return dict(sorted(by_month.items()))
+
+
 def save_api_file(data, filename: str, output_dir: Optional[Path] = None) -> Path:
     """
     將資料寫入 api/ 目錄的 JSON 檔案
@@ -855,11 +895,17 @@ def main(source_name: str = DEFAULT_SOURCE):
 
     print(f"📊 合併後共 {len(records)} 筆紀錄")
 
-    # 4. 產生 upcoming.json
-    print("📅 篩選未來配息...")
-    upcoming = generate_upcoming(records)
-    save_api_file(upcoming, "upcoming.json")
-    print(f"   ✅ upcoming.json: {len(upcoming)} 筆未來配息")
+    # 4. 產生月份配息（api/dividends/YYYY-MM.json）
+    print("📅 產生月份配息資料...")
+    monthly = generate_monthly_dividends(records)
+    dividends_dir = API_DIR / "dividends"
+    dividends_dir.mkdir(parents=True, exist_ok=True)
+    total_dividends = 0
+    for month_key, month_records in monthly.items():
+        save_api_file(month_records, f"{month_key}.json", dividends_dir)
+        total_dividends += len(month_records)
+        print(f"   ✅ dividends/{month_key}.json: {len(month_records)} 筆")
+    print(f"   共 {len(monthly)} 個月份，{total_dividends} 筆配息")
 
     # 5. 產生 securities-index.json
     print("📋 產生證券清單...")
@@ -877,7 +923,7 @@ def main(source_name: str = DEFAULT_SOURCE):
     # 7. 統計
     print(f"\n{'='*50}")
     print(f"✅ API 資料產生完成（來源: {source.name}）")
-    print(f"   未來配息：{len(upcoming)} 筆")
+    print(f"   月份配息：{total_dividends} 筆（{len(monthly)} 個月份）")
     print(f"   證券總數：{len(index)} 支")
     print(f"   輸出目錄：{API_DIR}")
     print(f"{'='*50}")

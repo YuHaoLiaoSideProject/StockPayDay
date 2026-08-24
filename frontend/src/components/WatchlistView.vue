@@ -20,7 +20,7 @@ import WatchlistSyncSettings from './WatchlistSyncSettings.vue'
 import type { ViewMode, UpcomingDividend } from '../types/stock'
 
 const { items, watchedCodes } = useWatchlist()
-const { upcoming, status, load, getByDate } = useUpcoming()
+const { allMonths, status, load, getByDate, upcoming } = useUpcoming()
 const router = useRouter()
 
 const currentView = ref<ViewMode>('calendar')
@@ -61,19 +61,20 @@ const watchlistUpcoming = computed<UpcomingDividend[]>(() => {
     .map(item => item.dividend!)
 })
 
-// 追蹤股票的配息日期集合
-const watchlistDividendDates = computed(() => {
-  return new Set(watchlistUpcoming.value.map(item => item.ex_date))
-})
-
 // 追蹤清單是否為空（墓碑不列入）
 const isEmpty = computed(() => activeItems.value.length === 0)
 
-// 行事曆資料（傳入追蹤股票的配息日期和配息資料）
-const { monthLabel, days, prevMonth, nextMonth } = useCalendar(
-  watchlistDividendDates,
-  watchlistUpcoming
-)
+// 行事曆：只顯示追蹤股票的配息
+const filteredMonths = computed(() => {
+  const codes = watchedCodes.value
+  const result = new Map<string, UpcomingDividend[]>()
+  for (const [key, records] of allMonths.value.entries()) {
+    const filtered = records.filter(item => codes.has(item.code))
+    if (filtered.length > 0) result.set(key, filtered)
+  }
+  return result
+})
+const { monthLabel, days, prevMonth, nextMonth } = useCalendar(filteredMonths)
 
 // 所有追蹤項目（依加入時間排序）
 const sortedAllItems = computed(() => {

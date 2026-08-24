@@ -7,11 +7,11 @@ import type { CalendarDay, UpcomingDividend } from '../types/stock'
  * 計算當月日曆格子（含前後月補齊），
  * 標記有配息的日期。
  *
- * 接收 refs 以確保資料變動時 days 會重新計算。
+ * 直接從 allMonths reactive ref 讀取當月配息資料，
+ * 切換月份時自動重新計算。
  */
 export function useCalendar(
-  dividendDates: Ref<Set<string>>,
-  upcoming: Ref<UpcomingDividend[]>
+  allMonths: Ref<Map<string, UpcomingDividend[]>>
 ) {
   const currentDate = ref(new Date())
 
@@ -21,11 +21,7 @@ export function useCalendar(
     return `${d.getFullYear()} 年 ${d.getMonth() + 1} 月`
   })
 
-  /**
-   * 產生行事曆格子（最多 6 週 = 42 格）
-   * - 第一格為當月 1 日前的補齊（isCurrentMonth = false）
-   * - 最後一格為當月最後一日後的補齊
-   */
+  /** 產生行事曆格子（最多 6 週 = 42 格） */
   const days = computed<CalendarDay[]>(() => {
     const d = currentDate.value
     const year = d.getFullYear()
@@ -34,38 +30,34 @@ export function useCalendar(
     const firstDay = new Date(year, month, 1)
     const lastDay = new Date(year, month + 1, 0)
 
-    // 1 日是星期幾（0=日, 6=六）
     const startWeekday = firstDay.getDay()
-    // 當月總天數
     const totalDays = lastDay.getDate()
 
     const today = new Date()
     const todayStr = formatDate(today)
 
-    // 取得當前 ref 的值
-    const currentDividendDates = dividendDates.value
-    const currentUpcoming = upcoming.value
+    const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`
+    const currentMonthData = allMonths.value.get(monthKey) ?? []
+    const calDividendDates = new Set(currentMonthData.map(item => item.ex_date))
 
     const result: CalendarDay[] = []
 
     // 補齊前月
     for (let i = startWeekday - 1; i >= 0; i--) {
       const date = new Date(year, month, -i)
-      result.push(createDay(date, todayStr, year, month, currentDividendDates, currentUpcoming))
+      result.push(createDay(date, todayStr, year, month, calDividendDates, currentMonthData))
     }
 
     // 當月
     for (let d = 1; d <= totalDays; d++) {
       const date = new Date(year, month, d)
-      result.push(createDay(date, todayStr, year, month, currentDividendDates, currentUpcoming))
+      result.push(createDay(date, todayStr, year, month, calDividendDates, currentMonthData))
     }
 
     // 補齊後月（確保至少 35 格 = 5 週）
     while (result.length < 35) {
-      // result.length 已含前月補齊（startWeekday 格）與當月天數，
-      // 減去後即為「下月第 N 天」（N 從 1 開始），交給 Date 自動進位到下個月
       const date = new Date(year, month, result.length - startWeekday + 1)
-      result.push(createDay(date, todayStr, year, month, currentDividendDates, currentUpcoming))
+      result.push(createDay(date, todayStr, year, month, calDividendDates, currentMonthData))
     }
 
     return result

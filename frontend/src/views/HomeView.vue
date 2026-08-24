@@ -25,8 +25,8 @@ import ListView from '../components/ListView.vue'
 import DayDetail from '../components/DayDetail.vue'
 
 const router = useRouter()
-const { upcoming, status, errorMessage, load, retry, getByDate, sortedUpcoming, dividendDates } = useUpcoming()
-const { monthLabel, days, prevMonth, nextMonth } = useCalendar(dividendDates, upcoming)
+const { status, errorMessage, load, retry, allMonths, getByDate, sortedUpcoming } = useUpcoming()
+const { monthLabel, days, prevMonth, nextMonth } = useCalendar(allMonths)
 
 const currentView = ref<ViewMode>('calendar')
 const selectedDate = ref<string | null>(null)

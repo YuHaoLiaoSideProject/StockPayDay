@@ -14,20 +14,18 @@ describe('useCalendar', () => {
   })
 
   it('should generate calendar days for current month', () => {
-    const dividendDates = ref(new Set<string>())
-    const upcoming = ref<UpcomingDividend[]>([])
+    const allMonths = ref(new Map<string, UpcomingDividend[]>())
 
-    const { days } = useCalendar(dividendDates, upcoming)
+    const { days } = useCalendar(allMonths)
 
     expect(days.value.length).toBeGreaterThanOrEqual(35)
     expect(days.value.length).toBeLessThanOrEqual(42)
   })
 
   it('should have correct day structure', () => {
-    const dividendDates = ref(new Set<string>())
-    const upcoming = ref<UpcomingDividend[]>([])
+    const allMonths = ref(new Map<string, UpcomingDividend[]>())
 
-    const { days } = useCalendar(dividendDates, upcoming)
+    const { days } = useCalendar(allMonths)
 
     const firstDay = days.value[0]
     expect(firstDay).toHaveProperty('date')
@@ -38,41 +36,38 @@ describe('useCalendar', () => {
   })
 
   it('should display correct month label', () => {
-    const dividendDates = ref(new Set<string>())
-    const upcoming = ref<UpcomingDividend[]>([])
+    const allMonths = ref(new Map<string, UpcomingDividend[]>())
 
-    const { monthLabel } = useCalendar(dividendDates, upcoming)
+    const { monthLabel } = useCalendar(allMonths)
 
     expect(monthLabel.value).toBe('2026 年 7 月')
   })
 
   it('should navigate to previous month', () => {
-    const dividendDates = ref(new Set<string>())
-    const upcoming = ref<UpcomingDividend[]>([])
+    const allMonths = ref(new Map<string, UpcomingDividend[]>())
 
-    const { monthLabel, prevMonth } = useCalendar(dividendDates, upcoming)
+    const { monthLabel, prevMonth } = useCalendar(allMonths)
 
     prevMonth()
     expect(monthLabel.value).toBe('2026 年 6 月')
   })
 
   it('should navigate to next month', () => {
-    const dividendDates = ref(new Set<string>())
-    const upcoming = ref<UpcomingDividend[]>([])
+    const allMonths = ref(new Map<string, UpcomingDividend[]>())
 
-    const { monthLabel, nextMonth } = useCalendar(dividendDates, upcoming)
+    const { monthLabel, nextMonth } = useCalendar(allMonths)
 
     nextMonth()
     expect(monthLabel.value).toBe('2026 年 8 月')
   })
 
   it('should mark dates with dividends', () => {
-    const dividendDates = ref(new Set(['2026-07-25']))
-    const upcoming = ref<UpcomingDividend[]>([
-      { code: '2330', name: '台積電', type: 'stock', ex_date: '2026-07-25', pay_date: '2026-08-15', dividend: 3.5 },
-    ])
+    const mockData: UpcomingDividend[] = [
+      { code: '2330', name: '台積電', type: 'stock', ex_date: '2026-07-25', pay_date: '2026-08-15', cash_dividend: 3.5, stock_dividend: 0 },
+    ]
+    const allMonths = ref(new Map([['2026-07', mockData]]))
 
-    const { days } = useCalendar(dividendDates, upcoming)
+    const { days } = useCalendar(allMonths)
 
     const dividendDay = days.value.find(d => d.date === '2026-07-25')
     expect(dividendDay?.hasDividend).toBe(true)
@@ -80,23 +75,19 @@ describe('useCalendar', () => {
   })
 
   it('should mark today correctly', () => {
-    const dividendDates = ref(new Set<string>())
-    const upcoming = ref<UpcomingDividend[]>([])
+    const allMonths = ref(new Map<string, UpcomingDividend[]>())
 
-    const { days } = useCalendar(dividendDates, upcoming)
+    const { days } = useCalendar(allMonths)
 
     const today = days.value.find(d => d.isToday)
     expect(today?.date).toBe('2026-07-15')
   })
 
   it('should fill trailing next-month days with correct consecutive dates', () => {
-    const dividendDates = ref(new Set<string>())
-    const upcoming = ref<UpcomingDividend[]>([])
+    const allMonths = ref(new Map<string, UpcomingDividend[]>())
 
-    const { days } = useCalendar(dividendDates, upcoming)
+    const { days } = useCalendar(allMonths)
 
-    // 所有格子必須是連續日期（相鄰兩格相差一天），
-    // 且下月補齊的第一格必須是下月 1 日（2026-08-01）
     const dates = days.value.map(d => d.date)
     expect(dates).toContain('2026-08-01')
 
@@ -108,24 +99,40 @@ describe('useCalendar', () => {
     }
   })
 
-  it('should update when dividendDates ref changes', async () => {
-    const dividendDates = ref(new Set<string>())
-    const upcoming = ref<UpcomingDividend[]>([])
-
-    const { days } = useCalendar(dividendDates, upcoming)
+  it('should reactively update when allMonths data arrives', async () => {
+    const allMonths = ref(new Map<string, UpcomingDividend[]>())
+    const { days } = useCalendar(allMonths)
 
     // Initially no dividends
     const day25Before = days.value.find(d => d.date === '2026-07-25')
     expect(day25Before?.hasDividend).toBe(false)
 
-    // Update dividendDates
-    dividendDates.value = new Set(['2026-07-25'])
-    upcoming.value = [
-      { code: '2330', name: '台積電', type: 'stock', ex_date: '2026-07-25', pay_date: '2026-08-15', dividend: 3.5 },
-    ]
+    // Simulate async data loading
+    allMonths.value = new Map([[
+      '2026-07',
+      [{ code: '2330', name: '台積電', type: 'stock', ex_date: '2026-07-25', pay_date: '2026-08-15', cash_dividend: 3.5, stock_dividend: 0 }],
+    ]])
 
     // Should now have dividend
     const day25After = days.value.find(d => d.date === '2026-07-25')
     expect(day25After?.hasDividend).toBe(true)
+  })
+
+  it('should reload data when month changes', () => {
+    const julyData: UpcomingDividend[] = [
+      { code: '2330', name: '台積電', type: 'stock', ex_date: '2026-07-25', pay_date: '2026-08-15', cash_dividend: 3.5, stock_dividend: 0 },
+    ]
+    const allMonths = ref(new Map([['2026-07', julyData]]))
+
+    const { days, nextMonth } = useCalendar(allMonths)
+
+    // 7月有配息
+    const day25Before = days.value.find(d => d.date === '2026-07-25')
+    expect(day25Before?.hasDividend).toBe(true)
+
+    // 切到8月（無配息資料）
+    nextMonth()
+    const day25After = days.value.find(d => d.date === '2026-08-25')
+    expect(day25After?.hasDividend).toBe(false)
   })
 })
