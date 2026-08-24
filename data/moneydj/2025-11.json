@@ -1,0 +1,58 @@
+{
+  "last_updated": "2026-08-25",
+  "source": "moneydj",
+  "records": [
+    {
+      "code": "3563",
+      "name": "牧德",
+      "earnings_dividend": 1.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.0,
+      "pay_date": "2025-12-03",
+      "earnings_stock": 1.0000001031,
+      "reserve_stock": 0.0,
+      "stock_dividend": 1.0000001031,
+      "ex_date": "2025-11-04",
+      "type": "權息"
+    },
+    {
+      "code": "3289",
+      "name": "宜特",
+      "earnings_dividend": 1.03325511,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.03325511,
+      "pay_date": "2025-11-28",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2025-11-06",
+      "type": "息"
+    },
+    {
+      "code": "7780",
+      "name": "大研生醫*",
+      "earnings_dividend": 0.84786323,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.84786323,
+      "pay_date": "2025-12-30",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2025-11-24",
+      "type": "息"
+    },
+    {
+      "code": "2762",
+      "name": "世界健身-KY",
+      "earnings_dividend": 0.93259104,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.93259104,
+      "pay_date": "2025-12-18",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2025-11-27",
+      "type": "息"
+    }
+  ]
+}

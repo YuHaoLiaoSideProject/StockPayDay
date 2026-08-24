@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-24",
+  "last_updated": "2026-08-25",
   "source": "moneydj",
   "records": [
     {
@@ -861,6 +861,32 @@
       "type": "息"
     },
     {
+      "code": "00940",
+      "name": "元大台灣價值高息",
+      "earnings_dividend": 0.055,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.055,
+      "pay_date": "2026-10-01",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-08",
+      "type": "息"
+    },
+    {
+      "code": "2379",
+      "name": "瑞昱",
+      "earnings_dividend": 25.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 25.0,
+      "pay_date": "2026-10-07",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-08",
+      "type": "息"
+    },
+    {
       "code": "2442",
       "name": "新美齊",
       "earnings_dividend": 2.03186184,
@@ -991,6 +1017,19 @@
       "type": "權息"
     },
     {
+      "code": "1815",
+      "name": "富喬",
+      "earnings_dividend": 0.0,
+      "reserve_dividend": 0.50001709,
+      "cash_dividend": 0.50001709,
+      "pay_date": "2026-10-13",
+      "earnings_stock": 0.5000171092,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.5000171092,
+      "ex_date": "2026-09-09",
+      "type": "權息"
+    },
+    {
       "code": "3059",
       "name": "華晶科",
       "earnings_dividend": 1.0,
@@ -1058,9 +1097,9 @@
     {
       "code": "6603",
       "name": "富強鑫",
-      "earnings_dividend": 0.2,
-      "reserve_dividend": 0.2,
-      "cash_dividend": 0.4,
+      "earnings_dividend": 0.202392775,
+      "reserve_dividend": 0.202392775,
+      "cash_dividend": 0.40478555,
       "pay_date": "2026-10-14",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
@@ -1114,6 +1153,19 @@
       "reserve_dividend": 0.0,
       "cash_dividend": 0.8,
       "pay_date": "2026-10-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-10",
+      "type": "息"
+    },
+    {
+      "code": "5328",
+      "name": "華容",
+      "earnings_dividend": 0.35,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.35,
+      "pay_date": "2026-10-14",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
@@ -1212,6 +1264,19 @@
       "type": "息"
     },
     {
+      "code": "5278",
+      "name": "尚凡*",
+      "earnings_dividend": 0.26618165,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.26618165,
+      "pay_date": "2026-10-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-14",
+      "type": "息"
+    },
+    {
       "code": "5426",
       "name": "振發",
       "earnings_dividend": 0.3,
@@ -1262,6 +1327,19 @@
       "stock_dividend": 1.858,
       "ex_date": "2026-09-17",
       "type": "權息"
+    },
+    {
+      "code": "1595",
+      "name": "川寶",
+      "earnings_dividend": 0.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.5,
+      "pay_date": "2026-10-28",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-23",
+      "type": "息"
     },
     {
       "code": "1808",

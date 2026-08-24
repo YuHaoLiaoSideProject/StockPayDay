@@ -1,0 +1,45 @@
+{
+  "last_updated": "2026-08-25",
+  "source": "moneydj",
+  "records": [
+    {
+      "code": "8102",
+      "name": "傑霖科技",
+      "earnings_dividend": 0.9,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.9,
+      "pay_date": "2025-11-17",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2025-10-28",
+      "type": "息"
+    },
+    {
+      "code": "2756",
+      "name": "聯發國際",
+      "earnings_dividend": 1.3,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.3,
+      "pay_date": "2025-11-28",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2025-10-30",
+      "type": "息"
+    },
+    {
+      "code": "2947",
+      "name": "振宇五金",
+      "earnings_dividend": 1.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.0,
+      "pay_date": "2025-11-28",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2025-10-31",
+      "type": "息"
+    }
+  ]
+}
