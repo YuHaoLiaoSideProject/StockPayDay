@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI/UX 設計規格 — App Header 重設計（比較稿）</title>
+<style>
+
+/* ════════════════════════════════════════════════════════════
+   設計 Token（對應前端 CSS 變數）
+   ════════════════════════════════════════════════════════════ */
+:root {
+  --accent: #1a73e8; --accent-hover: #1557b0; --accent-light: rgba(26,115,232,0.12);
+  --success: #188038; --success-light: #e6f4ea; --success-border: #a8dab5;
+  --danger: #c5221f; --danger-light: #fce8e6; --danger-border: #f5c6c2;
+  --warning: #e37400; --warning-light: #fff4e5;
+  --radius: 10px; --radius-sm: 6px; --transition: 0.2s ease;
+  --h: 36px; --h-mobile: 44px; --fs: 0.875rem;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+[data-theme="light"] {
+  --bg: #ffffff; --surface: #f9fafb; --surface-2: #f3f4f6; --surface-3: #eef0f3;
+  --border: #e5e7eb; --text: #111827; --muted: #6b7280;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08); --shadow-lg: 0 12px 32px rgba(0,0,0,0.16);
+  --frame: #f3f4f6;
+}
+[data-theme="dark"] {
+  --bg: #111827; --surface: #1f2937; --surface-2: #374151; --surface-3: #4b5563;
+  --border: #4b5563; --text: #f9fafb; --muted: #9aa3ad;
+  --shadow: 0 2px 16px rgba(0,0,0,0.45); --shadow-lg: 0 12px 36px rgba(0,0,0,0.6);
+  --frame: #0f172a;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background: var(--bg); color: var(--text); transition: background var(--transition), color var(--transition);
+  padding: 2rem 1.25rem 4rem;
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+.topbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+h1 { font-size: 1.35rem; margin: 0; }
+.sub { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+.controls { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.segmented { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 2px; }
+.segmented button { border: none; background: none; color: var(--muted); font-size: 0.85rem; padding: 0.45rem 0.9rem; border-radius: 7px; cursor: pointer; transition: all var(--transition); font-weight: 500; }
+.segmented button:hover { color: var(--text); }
+.segmented button.active { background: var(--surface); color: var(--accent); box-shadow: var(--shadow); }
+
+.frame { background: var(--frame); border: 1px solid var(--border); border-radius: 14px; padding: 1.6rem 1.5rem 1.8rem; margin-bottom: 1.5rem; }
+.frame h2 { margin: 0 0 0.25rem; font-size: 1.1rem; }
+.frame .fsub { color: var(--muted); font-size: 0.82rem; margin: 0 0 1rem; line-height: 1.6; }
+.browser-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 1rem; }
+.bdot { width: 11px; height: 11px; border-radius: 50%; }
+.bdot:nth-child(1){ background:#f87171 } .bdot:nth-child(2){ background:#fbbf24 } .bdot:nth-child(3){ background:#34d399 }
+.browser-url { flex: 1; max-width: 420px; margin-left: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.8rem; font-size: 0.75rem; color: var(--muted); }
+.elem-count { font-size: 0.72rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.2rem 0.7rem; white-space: nowrap; }
+.elem-count b { color: var(--accent); }
+
+.app-page { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); transition: background var(--transition); overflow: hidden; }
+.app-page.is-mobile { max-width: 390px; margin: 0 auto; }
+
+/* ── Header 元件（模擬實際 Header）── */
+.mock-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1rem; height: 56px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg); position: relative; z-index: 40;
+}
+.mock-header.after-header { height: 48px; }
+.mock-header .header-left {
+  display: flex; align-items: center; padding-left: 4px;
+}
+.mock-header .header-left .app-logo {
+  font-size: 1rem; display: flex; align-items: center; gap: 0.4rem;
+  color: var(--text); text-decoration: none; font-weight: 600; white-space: nowrap;
+}
+.mock-header .header-left .app-logo:hover { opacity: 0.8; }
+.mock-header .logo-text { overflow: hidden; text-overflow: ellipsis; font-size: 0.95rem; }
+.mock-header .header-right {
+  display: flex; align-items: center;
+}
+.mock-header .header-icon-group {
+  display: flex; align-items: center; gap: 8px;
+}
+.icon-btn {
+  width: 40px; height: 40px; border: none; background: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); cursor: pointer; position: relative;
+  transition: background var(--transition);
+}
+.icon-btn:hover { background: var(--surface-2); }
+.icon-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-light); }
+.mock-badge {
+  position: absolute; top: 4px; right: 4px; min-width: 16px; height: 16px;
+  padding: 0 4px; font-size: 0.6rem; font-weight: 700;
+  background: var(--accent); color: #fff; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; line-height: 1;
+}
+.mock-search {
+  position: relative; width: 200px;
+}
+.mock-search-input {
+  width: 100%; height: 36px; padding: 0 2rem 0 2.2rem;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text); font-size: 0.875rem;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.mock-search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); outline: none; }
+.mock-search .s-icon {
+  position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+  color: var(--muted); pointer-events: none; display: flex;
+}
+.mock-search .s-clear {
+  position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+  width: 28px; height: 28px; border-radius: 50%; border: none; background: none;
+  color: var(--muted); cursor: pointer; display: none; align-items: center; justify-content: center;
+}
+.mock-search.has-value .s-clear { display: flex; }
+.mock-search .s-clear:hover { background: var(--surface-2); }
+.theme-btn {
+  width: 40px; height: 40px; border: none; background: none; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted); cursor: pointer; transition: background var(--transition);
+}
+.theme-btn:hover { background: var(--surface-2); }
+.theme-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-light); }
+
+/* Mobile header: logo text hidden */
+.mock-header.mobile-mode .logo-text { display: none; }
+
+/* Mock content below header */
+.mock-content { padding: 1rem; }
+.mock-row { height: 32px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 6px; }
+.mock-row.short { width: 70%; }
+.mock-row.medium { width: 85%; }
+
+/* ── BEFORE / AFTER 比較區 ── */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1rem; }
+@media (max-width: 760px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem 1.1rem; }
+.compare-card h4 { margin: 0 0 0.5rem; font-size: 0.92rem; display: flex; align-items: center; gap: 0.4rem; }
+.compare-card h4 .tag { font-size: 0.62rem; font-weight: 700; border-radius: 20px; padding: 0.12rem 0.5rem; }
+.compare-card h4 .tag.before { background: rgba(227,116,0,0.12); color: #e37400; }
+.compare-card h4 .tag.after { background: rgba(24,128,56,0.12); color: #188038; }
+.compare-card .compare-stage { background: var(--frame); border: 1px solid var(--border); border-radius: 8px; padding: 0; margin-bottom: 0.75rem; overflow: hidden; }
+.compare-card .compare-dims { font-size: 0.74rem; color: var(--muted); line-height: 1.8; }
+.compare-card .compare-dims b { color: var(--accent); font-family: var(--mono); }
+
+/* Diff highlights */
+.diff-add { background: rgba(24,128,56,0.08); border-left: 3px solid #188038; padding-left: 6px; }
+.diff-remove { background: rgba(227,116,0,0.06); border-left: 3px solid #e37400; padding-left: 6px; opacity: 0.7; }
+
+/* ── 元件規格（anatomy）── */
+.anatomy { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1.1rem; }
+@media (max-width: 760px) { .anatomy { grid-template-columns: 1fr; } }
+.anat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem 1.1rem; }
+.anat-card h4 { margin: 0 0 0.8rem; font-size: 0.92rem; display: flex; align-items: center; gap: 0.4rem; }
+.anat-card h4 .tag { font-size: 0.62rem; font-weight: 700; background: var(--accent-light); color: var(--accent); border-radius: 20px; padding: 0.12rem 0.5rem; }
+.anat-stage { background: var(--frame); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1rem; margin-bottom: 0.85rem; display: flex; align-items: center; justify-content: center; }
+.anat-dims { font-size: 0.74rem; color: var(--muted); line-height: 1.8; }
+.anat-dims b { color: var(--accent); font-family: var(--mono); }
+
+/* 狀態矩陣表 */
+.states { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 1rem; }
+.states th, .states td { border: 1px solid var(--border); padding: 0.55rem 0.75rem; text-align: left; vertical-align: middle; }
+.states th { background: var(--surface-2); font-size: 0.74rem; color: var(--muted); font-weight: 700; }
+.states td:first-child { white-space: nowrap; font-weight: 600; }
+.states .demo-cell { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.states code { background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 0.05rem 0.35rem; font-size: 0.72rem; font-family: var(--mono); }
+
+/* Token 卡片 */
+.tokens { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+.tcard { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem 0.95rem; }
+.tcard .tk { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.4px; }
+.tcard .tv { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-top: 0.2rem; }
+.tcard .td { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; line-height: 1.5; }
+.tcard .tv.accent { color: var(--accent); }
+.tcard .tv.success { color: #188038; }
+.tcard .tv.danger { color: #c5221f; }
+
+.note { font-size: 0.78rem; color: var(--muted); margin-top: 1rem; line-height: 1.7; background: var(--surface); border: 1px dashed var(--border); border-radius: 10px; padding: 0.6rem 0.9rem; }
+.note b { color: var(--accent); }
+
+.footnote { margin-top: 2rem; font-size: 0.72rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 0.75rem; line-height: 1.7; }
+
+/* mobile 切換 */
+.frame.mobile-frame { display: none; }
+body.view-mobile .frame.mobile-frame { display: block; }
+body.view-mobile .frame.desktop-frame { display: none; }
+body.view-mobile .frame.compare-frame { display: block; }
+
+/* mobile header 模式 */
+.mobile-mode .mock-header { height: 56px; }
+.mobile-mode .mock-search { width: 0; position: static; }
+.mobile-mode .mock-search.expanded {
+  width: 100vw; position: fixed; top: 56px; left: 0; right: 0; z-index: 50;
+  padding: 0.5rem 0.75rem; background: var(--bg); border-bottom: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.mobile-mode .mock-search.expanded .mock-search-input { height: 44px; font-size: 1rem; }
+
+/* Annotation callout */
+.anno-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.5rem 1.5rem; margin-top: 1rem; }
+.anno { display: flex; gap: 0.55rem; font-size: 0.8rem; color: var(--muted); align-items: flex-start; line-height: 1.55; }
+.anno .num { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-size: 0.7rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+.anno b { color: var(--text); }
+
+/* Change list */
+.change-list { list-style: none; padding: 0; margin: 1rem 0 0; }
+.change-list li { display: flex; gap: 0.5rem; padding: 0.4rem 0; font-size: 0.82rem; border-bottom: 1px solid var(--border); line-height: 1.5; }
+.change-list li:last-child { border-bottom: none; }
+.change-list .cl-icon { flex-shrink: 0; width: 20px; text-align: center; }
+.change-list .cl-text b { color: var(--text); }
+
+/* Annotation pointer lines */
+.callout-line { position: relative; display: inline-block; }
+.callout-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); display: inline-block; }
+
+</style>
+</head>
+<body data-theme="light">
+<div class="wrap">
+
+  <!-- ══════════ 頂部控制列 ══════════ -->
+  <div class="topbar">
+    <div>
+      <h1>📊 App Header 重設計 — 互動 Mockup</h1>
+      <div class="sub">StockPayDay++ · frontend/src/App.vue + style.css · 比較稿（BEFORE / AFTER）</div>
+    </div>
+    <div class="controls">
+      <div class="segmented" id="devSwitch">
+        <button data-dev="desktop" class="active">🖥 Desktop</button>
+        <button data-dev="mobile">📱 Mobile</button>
+      </div>
+      <button class="segmented" id="themeToggle" style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:3px;">🌙 切換深色</button>
+    </div>
+  </div>
+
+  <!-- ══════════ 1. 設計 Token ══════════ -->
+  <div class="frame">
+    <h2>1️⃣ 設計 Token — App Header 專用</h2>
+    <p class="fsub">所有數值對應前端 CSS 變數，Header 相關尺寸與間距摘要。</p>
+    <div class="tokens">
+      <div class="tcard"><div class="tk">Header 高度</div><div class="tv accent">48 / 56px</div><div class="td">desktop 48px · mobile 56px</div></div>
+      <div class="tcard"><div class="tk">圖示按鈕尺寸</div><div class="tv">40×40px</div><div class="td">觸碰目標 ≥ 40px（WCAG 2.5.8）</div></div>
+      <div class="tcard"><div class="tk">按鈕間距</div><div class="tv success">8px</div><div class="td">header-icon-group 內 gap</div></div>
+      <div class="tcard"><div class="tk">Logo 左 padding</div><div class="tv">4px</div><div class="td">新增視覺分組間距</div></div>
+      <div class="tcard"><div class="tk">SearchBar z-index</div><div class="tv danger">50</div><div class="td">確保下拉選單在 header 之上</div></div>
+      <div class="tcard"><div class="tk">動畫過渡</div><div class="tv">150ms</div><div class="td">--transition-fast · 尊重 reduced-motion</div></div>
+      <div class="tcard"><div class="tk">Focus 光圈</div><div class="tv">3px ring</div><div class="td">box-shadow: 0 0 0 3px rgba(26,115,232,0.12)</div></div>
+      <div class="tcard"><div class="tk">字級</div><div class="tv">16 / 14px</div><div class="td">Logo 16px · SearchBar 14px</div></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 2. BEFORE / AFTER 比較 ══════════ -->
+  <div class="frame compare-frame">
+    <h2>2️⃣ BEFORE / AFTER 比較</h2>
+    <p class="fsub">左側為現行設計（BEFORE），右側為重設計（AFTER）。互動切換深色/裝置模式觀察兩者差異。</p>
+
+    <div class="compare-grid">
+      <!-- BEFORE -->
+      <div class="compare-card">
+        <h4><span class="tag before">BEFORE</span> 現行 Header</h4>
+        <div class="compare-stage">
+          <div class="mock-header" id="beforeHeader">
+            <div class="header-left">
+              <a class="app-logo" href="javascript:void(0)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span class="logo-text">StockPayDay++</span>
+              </a>
+            </div>
+            <div class="header-right">
+              <div class="header-icon-group" style="gap: 4px;">
+                <button class="icon-btn" aria-label="追蹤清單">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  <span class="mock-badge">3</span>
+                </button>
+                <div class="mock-search">
+                  <span class="s-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+                  <input class="mock-search-input" placeholder="搜尋代號…" readonly tabindex="-1">
+                </div>
+                <button class="theme-btn" aria-label="切換深色模式">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="compare-dims">
+          高度 <b>56px</b> · Logo 無額外 padding · 按鈕間距 <b>4px</b> · z-index <b>40</b> · 無 <code>aria-pressed</code>
+        </div>
+      </div>
+
+      <!-- AFTER -->
+      <div class="compare-card">
+        <h4><span class="tag after">AFTER</span> 重設計 Header</h4>
+        <div class="compare-stage">
+          <div class="mock-header after-header">
+            <div class="header-left diff-add">
+              <a class="app-logo" href="javascript:void(0)">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+                <span class="logo-text" title="StockPayDay++">StockPayDay++</span>
+              </a>
+            </div>
+            <div class="header-right">
+              <div class="header-icon-group diff-add" style="gap: 8px;">
+                <button class="icon-btn" aria-label="追蹤清單">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                  <span class="mock-badge">3</span>
+                </button>
+                <div class="mock-search" style="z-index: 50;">
+                  <span class="s-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+                  <input class="mock-search-input" placeholder="搜尋代號…" readonly tabindex="-1">
+                </div>
+                <button class="theme-btn" aria-label="切換深色模式" aria-pressed="false">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="compare-dims diff-add">
+          高度 <b>48px</b> · Logo 左 padding <b>4px</b> · 按鈕間距 <b>8px</b> · z-index <b>50</b> · <code>aria-pressed</code> ✅
+        </div>
+      </div>
+    </div>
+
+    <!-- 變更清單 -->
+    <ul class="change-list">
+      <li>
+        <span class="cl-icon">📐</span>
+        <span class="cl-text"><b>高度 56px → 48px（desktop）</b>：減少 8px，釋放更多內容空間；mobile 維持 56px 以符合觸控目標</span>
+      </li>
+      <li>
+        <span class="cl-icon">🧭</span>
+        <span class="cl-text"><b>Logo 區域增加 left padding</b>：從 0 改為 4px，與 header-left 內部元素形成視覺分組</span>
+      </li>
+      <li>
+        <span class="cl-icon">↔️</span>
+        <span class="cl-text"><b>圖示按鈕間距 4px → 8px</b>：降低誤觸機率，提升 Fitts' Law 達標效率</span>
+      </li>
+      <li>
+        <span class="cl-icon">🔝</span>
+        <span class="cl-text"><b>SearchBar z-index 40 → 50</b>：確保搜尋下拉選單不會被其他 z-index 層遮蔽</span>
+      </li>
+      <li>
+        <span class="cl-icon">♿</span>
+        <span class="cl-text"><b>Theme toggle 增加 aria-pressed</b>：無障礙螢幕閱讀器可感知目前主題狀態</span>
+      </li>
+      <li>
+        <span class="cl-icon">📱</span>
+        <span class="cl-text"><b>Mobile logo 增加 title tooltip</b>：隱藏文字時仍提供完整名稱提示</span>
+      </li>
+    </ul>
+  </div>
+
+  <!-- ══════════ 3. 完整畫面與互動（Desktop） ══════════ -->
+  <div class="frame desktop-frame">
+    <h2>3️⃣ 完整畫面 — Desktop</h2>
+    <p class="fsub">模擬 StockPayDay++ 首頁 Desktop 畫面，Header 為重設計後的 AFTER 版本。</p>
+    <div class="browser-bar">
+      <span class="bdot"></span><span class="bdot"></span><span class="bdot"></span>
+      <span class="browser-url">https://stockpayday.app/ · 首頁</span>
+      <span class="elem-count">互動：<b>4 個可操作元件</b></span>
+    </div>
+    <div class="app-page">
+      <div class="mock-header after-header">
+        <div class="header-left" style="padding-left: 4px;">
+          <a class="app-logo" href="javascript:void(0)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span class="logo-text">StockPayDay++</span>
+          </a>
+        </div>
+        <div class="header-right">
+          <div class="header-icon-group" style="gap: 8px;">
+            <button class="icon-btn" aria-label="追蹤清單">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              <span class="mock-badge">3</span>
+            </button>
+            <div class="mock-search" style="z-index: 50;">
+              <span class="s-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+              <input class="mock-search-input" placeholder="搜尋代號…" readonly tabindex="-1">
+            </div>
+            <button class="theme-btn" aria-label="切換深色模式" aria-pressed="false">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="mock-content">
+        <div class="mock-row short"></div>
+        <div class="mock-row medium"></div>
+        <div class="mock-row"></div>
+        <div class="mock-row short"></div>
+        <div class="mock-row medium"></div>
+      </div>
+    </div>
+
+    <!-- 元件解剖 -->
+    <h3 style="margin-top: 1.5rem; font-size: 0.95rem;">🧬 元件解剖</h3>
+    <div class="anatomy">
+      <!-- Logo -->
+      <div class="anat-card">
+        <h4>Logo 區域 <span class="tag">&lt;a class="app-logo"&gt;</span></h4>
+        <div class="anat-stage">
+          <a class="app-logo" href="javascript:void(0)" style="display: flex; align-items: center; gap: 0.4rem; color: var(--text); text-decoration: none; font-weight: 600; font-size: 1rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span class="logo-text">StockPayDay++</span>
+          </a>
+        </div>
+        <div class="anat-dims">
+          圖示 <b>18×18px</b> · 文字 <b>16px / 600</b> · left padding <b>4px</b> · 點擊回首頁<br>
+          mobile 模式：文字隱藏，<code>title="StockPayDay++"</code> tooltip
+        </div>
+      </div>
+
+      <!-- 追蹤清單按鈕 -->
+      <div class="anat-card">
+        <h4>追蹤清單 <span class="tag">&lt;button class="icon-btn"&gt;</span></h4>
+        <div class="anat-stage">
+          <button class="icon-btn" aria-label="追蹤清單">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+            <span class="mock-badge">3</span>
+          </button>
+        </div>
+        <div class="anat-dims">
+          按鈕 <b>40×40px</b> · 愛心 <b>18×18px</b> · 徽章 <b>min 16px / 12px font</b><br>
+          色彩：<code>--text-muted</code>（預設）· Hover → <code>--surface-2</code> 背景<br>
+          有追蹤時：徽章顯示數量，<code>background: var(--tab-active-bg)</code>
+        </div>
+      </div>
+
+      <!-- SearchBar -->
+      <div class="anat-card">
+        <h4>SearchBar <span class="tag">&lt;div class="mock-search"&gt;</span></h4>
+        <div class="anat-stage">
+          <div class="mock-search has-value" style="width: 200px;">
+            <span class="s-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+            <input class="mock-search-input" value="2330" readonly tabindex="-1">
+            <button class="s-clear" tabindex="-1">✕</button>
+          </div>
+        </div>
+        <div class="anat-dims">
+          寬度 <b>200px</b>（desktop <b>256px</b> at ≥1024px）· 高度 <b>36px</b> · 圓角 <b>8px</b><br>
+          z-index <b>50</b>（確保下拉不被遮蔽）<br>
+          Focus：<code>border-color: var(--tab-active-bg)</code> + <code>box-shadow 3px ring</code><br>
+          Mobile：全屏展開 <code>width: 100vw; height: 44px</code>
+        </div>
+      </div>
+
+      <!-- Theme Toggle -->
+      <div class="anat-card">
+        <h4>Theme Toggle <span class="tag">&lt;button class="theme-btn"&gt;</span></h4>
+        <div class="anat-stage">
+          <button class="theme-btn" aria-label="切換深色模式" aria-pressed="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="anat-dims">
+          按鈕 <b>40×40px</b> · 圖示 <b>18×18px</b> · <code>aria-pressed</code> ✅<br>
+          淺色模式：<code>☽</code> 月亮圖示 · 深色模式：<code>☀</code> 太陽圖示<br>
+          <code>aria-label="切換為深色/淺色模式"</code> 動態切換
+        </div>
+      </div>
+    </div>
+
+    <!-- 狀態矩陣 -->
+    <h3 style="margin-top: 1.5rem; font-size: 0.95rem;">🎯 狀態矩陣 — Header 各元件</h3>
+    <table class="states">
+      <tr>
+        <th style="width:130px;">元件 × 狀態</th>
+        <th style="width:200px;">視覺表現</th>
+        <th>互動行為</th>
+      </tr>
+      <tr>
+        <td>Logo<br><code>idle</code></td>
+        <td>圖示 + 文字，<code>color: var(--text)</code></td>
+        <td>預設態，正常顯示</td>
+      </tr>
+      <tr>
+        <td>Logo<br><code>hover</code></td>
+        <td><code>opacity: 0.8</code>，整體微透明</td>
+        <td>滑鼠移入，視覺回饋</td>
+      </tr>
+      <tr>
+        <td>追蹤按鈕<br><code>idle</code></td>
+        <td>愛心 outline，<code>--text-muted</code></td>
+        <td>預設態，可點擊</td>
+      </tr>
+      <tr>
+        <td>追蹤按鈕<br><code>hover</code></td>
+        <td>背景 <code>--surface-2</code> 圓形填充</td>
+        <td>滑鼠移入，背景高亮</td>
+      </tr>
+      <tr>
+        <td>追蹤按鈕<br><code>focus</code></td>
+        <td>box-shadow <code>3px ring</code>（accent）</td>
+        <td>Tab 鍵聚焦，可見 focus ring</td>
+      </tr>
+      <tr>
+        <td>SearchBar<br><code>idle</code></td>
+        <td>背景 <code>--surface</code>，border <code>--border</code></td>
+        <td>預設態，可點擊聚焦</td>
+      </tr>
+      <tr>
+        <td>SearchBar<br><code>focus</code></td>
+        <td>border <code>--tab-active-bg</code>，3px ring</td>
+        <td>聚焦後可輸入，z-index: 50</td>
+      </tr>
+      <tr>
+        <td>SearchBar<br><code>has-value</code></td>
+        <td>右側出現 ✕ 清除按鈕</td>
+        <td>點擊清除按鈕清空搜尋</td>
+      </tr>
+      <tr>
+        <td>Theme Toggle<br><code>idle</code></td>
+        <td>月亮/太陽圖示，<code>--text-muted</code></td>
+        <td>預設態，可點擊</td>
+      </tr>
+      <tr>
+        <td>Theme Toggle<br><code>hover</code></td>
+        <td>背景 <code>--surface-2</code> 圓形填充</td>
+        <td>滑鼠移入，背景高亮</td>
+      </tr>
+      <tr>
+        <td>Theme Toggle<br><code>focus</code></td>
+        <td>box-shadow <code>3px ring</code>（accent）</td>
+        <td>Tab 鍵聚焦，aria-pressed 可讀</td>
+      </tr>
+      <tr>
+        <td>Theme Toggle<br><code>active/pressed</code></td>
+        <td>圖示切換（☽↔☀），<code>aria-pressed</code> 切換</td>
+        <td>點擊切換主題，全域生效</td>
+      </tr>
+    </table>
+
+    <div class="note">
+      <b>無障礙重點：</b>
+      ① 所有按鈕具備 <code>aria-label</code>（追蹤清單、主題切換）<br>
+      ② Theme toggle 增加 <code>aria-pressed</code>，螢幕閱讀器可感知「目前為深色/淺色」<br>
+      ③ Focus ring 使用 3px box-shadow（<code>--accent-light</code>），對比度符合 WCAG 2.1 AA<br>
+      ④ 觸碰目標均 ≥ 40px（<code>icon-btn: 40×40</code>, <code>theme-btn: 40×40</code>）
+    </div>
+  </div>
+
+  <!-- ══════════ 4. Mobile 畫面 ══════════ -->
+  <div class="frame mobile-frame">
+    <h2>4️⃣ 完整畫面 — Mobile</h2>
+    <p class="fsub">Mobile 模式下 Header 行為：Logo 文字隱藏、搜尋欄全屏展開、觸碰目標 ≥ 44px。</p>
+    <div class="app-page is-mobile">
+      <div class="mock-header mobile-mode" style="height: 56px;">
+        <div class="header-left" style="padding-left: 4px;">
+          <a class="app-logo" href="javascript:void(0)" title="StockPayDay++">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span class="logo-text" title="StockPayDay++">StockPayDay++</span>
+          </a>
+        </div>
+        <div class="header-right">
+          <div class="header-icon-group" style="gap: 8px;">
+            <button class="icon-btn" aria-label="追蹤清單" style="width: 44px; height: 44px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              <span class="mock-badge">3</span>
+            </button>
+            <div class="mock-search" style="width: 0; position: static; overflow: hidden;">
+              <span class="s-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+              <input class="mock-search-input" placeholder="搜尋代號…" readonly tabindex="-1">
+            </div>
+            <button class="theme-btn" aria-label="切換深色模式" aria-pressed="false" style="width: 44px; height: 44px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="mock-content">
+        <div class="mock-row short"></div>
+        <div class="mock-row medium"></div>
+        <div class="mock-row"></div>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>Mobile 規範：</b><br>
+      ① Header 高度維持 <b>56px</b>（符合 WCAG 2.5.5 觸碰目標 ≥ 44px）<br>
+      ② Logo 文字隱藏（<code>.logo-text { display: none }</code>），增加 <code>title="StockPayDay++"</code> tooltip<br>
+      ③ 圖示按鈕放大至 <b>44×44px</b>（原始 40px）以符合觸控標準<br>
+      ④ SearchBar 點擊後全屏展開：<code>width: 100vw; top: 56px; z-index: 50</code><br>
+      ⑤ 輸入框放大至 <b>44px height / 1rem font-size</b>，方便觸控輸入
+    </div>
+  </div>
+
+  <!-- ══════════ 5. 規格摘要 ══════════ -->
+  <div class="frame">
+    <h2>5️⃣ 規格摘要 — CSS 變數對應</h2>
+    <p class="fsub">實作時直接套用下列變數與結構。</p>
+    <table class="states">
+      <tr><th style="width:200px;">項目</th><th>BFORE</th><th>AFTER</th><th>CSS 變數 / 規則</th></tr>
+      <tr><td>Header 高度（desktop）</td><td>56px</td><td><b>48px</b></td><td><code>.app-header { height: 48px }</code> + <code>@media</code></td></tr>
+      <tr><td>Header 高度（mobile）</td><td>56px</td><td><b>56px</b></td><td><code>@media (max-width:767px) { height: 56px }</code></td></tr>
+      <tr><td>Logo left padding</td><td>0px</td><td><b>4px</b></td><td><code>.header-left { padding-left: 4px }</code></td></tr>
+      <tr><td>按鈕間距</td><td>4px (0.25rem)</td><td><b>8px (0.5rem)</b></td><td><code>.header-icon-group { gap: 8px }</code></td></tr>
+      <tr><td>SearchBar z-index</td><td>40</td><td><b>50</b></td><td><code>.search-bar { z-index: 50 }</code></td></tr>
+      <tr><td>Theme toggle</td><td>aria-label only</td><td><b>+ aria-pressed</b></td><td><code>:aria-pressed="isDark"</code> + 動態切換</td></tr>
+      <tr><td>Mobile logo</td><td>display: none</td><td><b>+ title tooltip</b></td><td><code>&lt;span class="logo-text" title="StockPayDay++"&gt;</code></td></tr>
+      <tr><td>觸碰目標</td><td>44×44px</td><td><b>44×44px</b>（mobile）</td><td><code>.icon-btn { width: 44px; height: 44px }</code> @mobile</td></tr>
+      <tr><td>Focus ring</td><td>3px ring</td><td>3px ring（不變）</td><td><code>box-shadow: 0 0 0 3px rgba(26,115,232,0.12)</code></td></tr>
+      <tr><td>過渡動畫</td><td>150ms</td><td>150ms（不變）</td><td><code>--transition-fast: 150ms ease</code></td></tr>
+    </table>
+  </div>
+
+  <!-- ══════════ 6. RWD 行為展示 ══════════ -->
+  <div class="frame">
+    <h2>6️⃣ RWD 行為展示</h2>
+    <p class="fsub">App Header 在不同斷點下的佈局與行為變化。</p>
+
+    <div class="anatomy">
+      <!-- Desktop -->
+      <div class="anat-card">
+        <h4>Desktop ≥ 768px <span class="tag">Desktop</span></h4>
+        <div class="anat-stage" style="flex-direction: column; gap: 0.5rem; padding: 1.5rem 1rem;">
+          <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+            <div style="padding-left: 4px; display: flex; align-items: center; gap: 0.4rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span style="font-weight: 600; font-size: 0.9rem;">StockPayDay++</span>
+            </div>
+            <div style="flex: 1;"></div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--muted);" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <div style="width: 180px; height: 32px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); display: flex; align-items: center; padding: 0 8px; gap: 6px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: var(--muted);" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span style="font-size: 0.78rem; color: var(--muted);">搜尋代號…</span>
+              </div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--muted);" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </div>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--muted); text-align: center;">高度 48px · Logo 顯示 · SearchBar 200px · 按鈕 40px</div>
+        </div>
+        <div class="anat-dims">
+          佈局：水平排列 · Logo 顯示文字 · SearchBar 固定寬度 · 按鈕 40×40px
+        </div>
+      </div>
+
+      <!-- Mobile -->
+      <div class="anat-card">
+        <h4>Mobile &lt; 768px <span class="tag">Mobile</span></h4>
+        <div class="anat-stage" style="flex-direction: column; gap: 0.5rem; padding: 1.5rem 0.5rem; max-width: 320px; margin: 0 auto;">
+          <div style="display: flex; align-items: center; gap: 8px; width: 100%;">
+            <div style="padding-left: 4px; display: flex; align-items: center; gap: 0.4rem;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span style="font-weight: 600; font-size: 0.9rem; display: none;">StockPayDay++</span>
+            </div>
+            <div style="flex: 1;"></div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--muted);" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </div>
+              <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--muted);" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              </div>
+            </div>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--muted); text-align: center;">高度 56px · Logo 文字隱藏 · 按鈕 44px · SearchBar 隱藏（展開後全屏）</div>
+        </div>
+        <div class="anat-dims">
+          佈局：水平排列 · Logo 隱藏文字（<code>title</code> tooltip）· 按鈕放大 44px · SearchBar 折疊
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      <b>RWD 斷點：</b><code>@media (max-width: 767px)</code> 切換至 mobile 模式。<br>
+      <b>Mobile SearchBar 展開：</b>點擊搜尋圖示後，<code>.search-bar.expanded</code> 類別觸發全屏模式：<code>position: fixed; width: 100vw; top: 56px; z-index: 50</code>，背景與 header 同色，底部帶輕微陰影。
+    </div>
+  </div>
+
+  <div class="footnote">
+    📄 設計文件：<b>docs/uiux/006-app-header-redesign.md</b> ・ 本文件：<b>docs/uiux/006-app-header-redesign-mockup.html</b><br>
+    實作範圍：<b>frontend/src/App.vue</b> + <b>frontend/src/style.css</b> · 元件：<b>app-header</b>（頂部導覽列）<br>
+    設計原則：最小改動、向後相容、WCAG 2.1 AA 無障礙合規、尊重 <code>prefers-reduced-motion</code>
+  </div>
+</div>
+
+<script>
+// ── 主題切換 ──
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', () => {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '🌙 切換深色' : '☀️ 切換淺色';
+  // 更新所有 aria-pressed
+  document.querySelectorAll('.theme-btn').forEach(btn => {
+    btn.setAttribute('aria-pressed', (!dark).toString());
+    // 切換圖示
+    const svg = btn.querySelector('svg');
+    if (!dark) {
+      // 切換到太陽
+      svg.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+      btn.setAttribute('aria-label', '切換為深色模式');
+    } else {
+      // 切換到月亮
+      svg.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+      btn.setAttribute('aria-label', '切換為深色模式');
+    }
+  });
+});
+
+// ── 裝置切換 ──
+const devSwitch = document.getElementById('devSwitch');
+devSwitch.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+  devSwitch.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  document.body.classList.toggle('view-mobile', b.dataset.dev === 'mobile');
+}));
+</script>
+</body>
+</html>
