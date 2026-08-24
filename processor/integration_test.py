@@ -33,6 +33,18 @@ def _write_moneydj(data_dir: Path, month: str, records: list) -> None:
     )
 
 
+def _load_all_dividends(api_dir: Path) -> list:
+    """輔助：讀取所有 dividends/*.json 並合併為一維列表"""
+    dividends_dir = api_dir / "dividends"
+    if not dividends_dir.exists():
+        return []
+    all_records = []
+    for f in sorted(dividends_dir.glob("*.json")):
+        with open(f) as fh:
+            all_records.extend(json.load(fh))
+    return all_records
+
+
 class TestProcessorIntegration:
     """處理器整合測試"""
 
@@ -59,7 +71,7 @@ class TestProcessorIntegration:
         run_processor("twses-mops")
 
         api_dir = tmp_path / "api"
-        assert (api_dir / "upcoming.json").exists()
+        assert (api_dir / "dividends").exists()
         assert (api_dir / "securities-index.json").exists()
         assert (api_dir / "securities").exists()
         assert (api_dir / "securities" / "2330.json").exists()
@@ -87,12 +99,10 @@ class TestProcessorIntegration:
             with open(json_file) as f:
                 data = json.load(f)  # 不拋出異常即為成功
 
-        # 驗證 upcoming.json 結構
-        with open(api_dir / "upcoming.json") as f:
-            upcoming = json.load(f)
-        assert isinstance(upcoming, list)
-        assert len(upcoming) == 1
-        item = upcoming[0]
+        # 驗證 dividends/*.json 結構
+        dividends = _load_all_dividends(api_dir)
+        assert len(dividends) == 1
+        item = dividends[0]
         assert "code" in item
         assert "name" in item
         assert "type" in item
@@ -175,10 +185,10 @@ class TestProcessorIntegration:
         run_processor("twses-mops")
 
         api_dir = tmp_path / "api"
-        assert (api_dir / "upcoming.json").exists()
+        assert (api_dir / "dividends").exists()
 
     def test_mops_merge_populates_pay_date(self, tmp_path, monkeypatch):
-        """MOPS（新 API）資料補充 pay_date 至 upcoming（twses-mops 來源）"""
+        """MOPS（新 API）資料補充 pay_date 至 dividends（twses-mops 來源）"""
         data_dir = tmp_path / "data"
         twses_dir = data_dir / "twses"
         mops_dir = data_dir / "mops_dividend"
@@ -207,13 +217,12 @@ class TestProcessorIntegration:
 
         run_processor("twses-mops")
 
-        with open(tmp_path / "api" / "upcoming.json") as f:
-            upcoming = json.load(f)
-        assert len(upcoming) == 1
-        assert upcoming[0]["pay_date"] == "2099-08-15"
+        dividends = _load_all_dividends(tmp_path / "api")
+        assert len(dividends) == 1
+        assert dividends[0]["pay_date"] == "2099-08-15"
 
     def test_moneydj_default_source(self, tmp_path, monkeypatch):
-        """預設來源 moneydj：data/moneydj 產生 upcoming"""
+        """預設來源 moneydj：data/moneydj 產生 dividends"""
         data_dir = tmp_path / "data"
         _write_moneydj(data_dir, "2026-08", [
             {
@@ -232,13 +241,12 @@ class TestProcessorIntegration:
         run_processor()
 
         api_dir = tmp_path / "api"
-        assert (api_dir / "upcoming.json").exists()
-        with open(api_dir / "upcoming.json") as f:
-            upcoming = json.load(f)
-        assert len(upcoming) == 1
-        assert upcoming[0]["code"] == "00679B"
-        assert upcoming[0]["pay_date"] == "2099-09-11"
-        assert upcoming[0]["cash_dividend"] == 0.28
+        assert (api_dir / "dividends").exists()
+        dividends = _load_all_dividends(api_dir)
+        assert len(dividends) == 1
+        assert dividends[0]["code"] == "00679B"
+        assert dividends[0]["pay_date"] == "2099-09-11"
+        assert dividends[0]["cash_dividend"] == 0.28
 
     def test_moneydj_source_switch(self, tmp_path, monkeypatch):
         """顯式切換到 twses-mops 來源：moneydj 資料不被使用"""
@@ -265,9 +273,10 @@ class TestProcessorIntegration:
 
         run_processor("twses-mops")
 
-        with open(tmp_path / "api" / "upcoming.json") as f:
-            upcoming = json.load(f)
-        assert [u["code"] for u in upcoming] == ["2330"]
+        dividends = _load_all_dividends(tmp_path / "api")
+        codes = [d["code"] for d in dividends]
+        assert "2330" in codes
+        assert "00679B" not in codes
 
     def test_unknown_source_raises(self):
         """未知來源名稱拋出 ValueError"""
