@@ -8,7 +8,8 @@
  * - 追蹤清單連結 + 徽章
  * - 深色模式切換
  */
-import { useRouter } from 'vue-router'
+import { computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useSearch } from './composables/useSearch'
 import { useWatchlist } from './composables/useWatchlist'
 import { useDarkMode } from './composables/useDarkMode'
@@ -16,6 +17,8 @@ import SearchBar from './components/SearchBar.vue'
 import WatchlistButton from './components/WatchlistButton.vue'
 
 const router = useRouter()
+const route = useRoute()
+const isLanding = computed(() => route.name === 'landing' || route.name === 'landing-alt')
 const { query, results } = useSearch()
 const { watchedCodes } = useWatchlist()
 const { isDark, toggle: toggleDark } = useDarkMode()
@@ -32,8 +35,8 @@ function goToWatchlist() {
 
 <template>
   <div class="app-root" :class="{ dark: isDark }">
-    <!-- Header -->
-    <header class="app-header">
+    <!-- Header (hidden on landing page) -->
+    <header v-if="!isLanding" class="app-header">
       <div class="header-inner">
       <div class="header-left">
         <a href="javascript:void(0)" @click="() => router.push('/')" class="app-logo" title="StockPayDay++">
@@ -86,7 +89,7 @@ function goToWatchlist() {
     </header>
 
     <!-- Router View -->
-    <main class="app-main">
+    <main :class="isLanding ? '' : 'app-main'">
       <router-view />
     </main>
   </div>
