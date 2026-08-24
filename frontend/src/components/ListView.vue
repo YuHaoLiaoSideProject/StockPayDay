@@ -19,7 +19,7 @@ const emit = defineEmits<{
   'stock-click': [code: string]
 }>()
 
-/** 按日期分組 */
+/** 按日期分組（從早到晚排序） */
 const groupedItems = computed(() => {
   const groups: Record<string, UpcomingDividend[]> = {}
   for (const item of props.items) {
@@ -27,7 +27,8 @@ const groupedItems = computed(() => {
     if (!groups[date]) groups[date] = []
     groups[date].push(item)
   }
-  return groups
+  // 按日期從早到晚排序
+  return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b))
 })
 
 /** 本地化日期格式 e.g. 8月25日（週二） */
@@ -49,9 +50,9 @@ function formatDate(dateStr: string): string {
       <div style="text-align: right;">金額</div>
       <div></div>
     </div>
-    <template v-for="(group, date) in groupedItems" :key="date">
+    <template v-for="[date, group] in groupedItems" :key="date">
       <div class="list-date-group">
-        <span>{{ formatDate(date as string) }}</span>
+        <span>{{ formatDate(date) }}</span>
         <span class="group-count">{{ group.length }} 支</span>
       </div>
       <ListItem
