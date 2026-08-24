@@ -1675,28 +1675,79 @@ body {
   opacity: 0.45;
 }
 
-/* RWD: compact layout on mobile */
-@media (max-width: 767px) {
-  .history-table {
-    font-size: 0.75rem;
-  }
-  .history-table th,
-  .history-table td {
-    padding: 0.5rem 0.5rem;
-  }
-  .history-table .col-date {
-    font-size: 0.6875rem;
-  }
-  /* 小螢幕隱藏配息日，保留除息日 */
-  .history-table .col-pay-date {
-    display: none;
-  }
+/* ============================================
+   History Cards (Mobile)
+   ============================================ */
+.history-cards--mobile {
+  display: none;
 }
 
-/* 極小螢幕：隱藏除息日，只顯示金額 */
-@media (max-width: 480px) {
-  .history-table .col-ex-date {
+.history-card {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  transition: background var(--transition-fast);
+}
+
+.history-card:hover {
+  background: var(--surface-2);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.card-amount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--amount-color);
+  white-space: nowrap;
+}
+
+.card-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--amount-color);
+  opacity: 0.25;
+  max-width: 120px;
+}
+
+.card-dates {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.card-date-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.card-label {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.card-value {
+  font-size: 0.875rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* RWD: Desktop table / Mobile cards */
+@media (max-width: 767px) {
+  .history-table--desktop {
     display: none;
+  }
+  .history-cards--mobile {
+    display: block;
   }
 }
 

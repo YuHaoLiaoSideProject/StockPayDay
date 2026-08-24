@@ -85,18 +85,19 @@ function barWidth(item: DividendHistory): number {
 
     <h2 class="section-title">配息歷史</h2>
 
-    <table class="history-table">
+    <!-- Desktop: Table -->
+    <table class="history-table history-table--desktop">
       <thead>
         <tr>
-          <th class="col-date col-ex-date">除息日</th>
-          <th class="col-date col-pay-date">配息日</th>
+          <th class="col-date">除息日</th>
+          <th class="col-date">配息日</th>
           <th class="col-amount">配息金額</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="item in sortedHistory" :key="item.ex_date" class="history-row">
-          <td class="col-date col-ex-date">{{ item.ex_date }}</td>
-          <td class="col-date col-pay-date">{{ item.pay_date || '-' }}</td>
+          <td class="col-date">{{ item.ex_date }}</td>
+          <td class="col-date">{{ item.pay_date || '-' }}</td>
           <td class="amount">
             ${{ getDividend(item).toFixed(2) }}
             <span class="amount-bar" :style="{ width: barWidth(item) + '%' }"></span>
@@ -104,5 +105,25 @@ function barWidth(item: DividendHistory): number {
         </tr>
       </tbody>
     </table>
+
+    <!-- Mobile: Cards -->
+    <div class="history-cards history-cards--mobile">
+      <div v-for="item in sortedHistory" :key="item.ex_date" class="history-card">
+        <div class="card-header">
+          <span class="card-amount">${{ getDividend(item).toFixed(2) }}</span>
+          <span class="card-bar" :style="{ width: barWidth(item) + '%' }"></span>
+        </div>
+        <div class="card-dates">
+          <div class="card-date-item">
+            <span class="card-label">除息日</span>
+            <span class="card-value">{{ item.ex_date }}</span>
+          </div>
+          <div class="card-date-item">
+            <span class="card-label">配息日</span>
+            <span class="card-value">{{ item.pay_date || '-' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
