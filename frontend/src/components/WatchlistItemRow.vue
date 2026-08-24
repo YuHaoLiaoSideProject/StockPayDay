@@ -55,23 +55,25 @@ function formatAmount(amount?: number | null): string {
   gap: 8px;
   align-items: center;
   padding: 10px 12px;
-  border-bottom: 1px solid var(--color-border, #eee);
+  border-bottom: 1px solid var(--border);
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
+  border-radius: 6px;
 }
 
 .watchlist-item-row:hover {
-  background-color: var(--color-hover, #f5f5f5);
+  background-color: var(--surface-2);
 }
 
 .item-code {
-  font-family: monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-weight: 600;
-  color: var(--color-text, #333);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
 }
 
 .item-name {
-  color: var(--color-text, #333);
+  color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -79,13 +81,14 @@ function formatAmount(amount?: number | null): string {
 
 .item-dividend {
   font-weight: 600;
-  color: var(--color-accent, #e74c3c);
+  color: var(--amount-color);
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .item-no-dividend {
-  color: var(--color-text-muted, #999);
-  font-size: 0.9em;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
   text-align: right;
 }
 </style>

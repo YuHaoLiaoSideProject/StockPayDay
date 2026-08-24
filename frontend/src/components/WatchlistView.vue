@@ -184,7 +184,7 @@ const selectedDividends = computed(() => {
 }
 
 .no-date {
-  color: var(--color-text-muted, #999);
+  color: var(--text-muted);
   font-style: italic;
 }
 </style>

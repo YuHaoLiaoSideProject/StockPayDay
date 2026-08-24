@@ -44,7 +44,6 @@ function formatDate(dateStr: string): string {
 <template>
   <div class="list-view">
     <div class="list-header">
-      <div>日期</div>
       <div>代號</div>
       <div>名稱</div>
       <div style="text-align: right;">金額</div>

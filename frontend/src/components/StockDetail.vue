@@ -42,6 +42,17 @@ function getDividend(item: DividendHistory): number {
   const rec = item as unknown as Record<string, unknown>
   return (item.dividend as number) ?? (rec['cash_dividend'] as number) ?? 0
 }
+
+/** 最大配息金額（用於 bar chart 比例） */
+const maxDividend = computed(() => {
+  const amounts = sortedHistory.value.map(h => getDividend(h))
+  return Math.max(...amounts, 1)
+})
+
+/** bar 寬度百分比 */
+function barWidth(item: DividendHistory): number {
+  return (getDividend(item) / maxDividend.value) * 100
+}
 </script>
 
 <template>
@@ -85,8 +96,11 @@ function getDividend(item: DividendHistory): number {
       <tbody>
         <tr v-for="item in sortedHistory" :key="`${item.year}-${item.ex_date}`" class="history-row">
           <td>{{ item.year }}</td>
-          <td>{{ item.ex_date }}</td>
-          <td class="amount">${{ getDividend(item).toFixed(2) }}</td>
+          <td class="col-date">{{ item.ex_date }}</td>
+          <td class="amount">
+            ${{ getDividend(item).toFixed(2) }}
+            <span class="amount-bar" :style="{ width: barWidth(item) + '%' }"></span>
+          </td>
         </tr>
       </tbody>
     </table>

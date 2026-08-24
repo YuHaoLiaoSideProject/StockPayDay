@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StockPayDay++ 全站操作流程 UI/UX 審計 — 009</title>
+<style>
+/* ════════════════════════════════════════════════════════════
+   設計 Token（對應前端 CSS 變數）
+   ════════════════════════════════════════════════════════════ */
+:root {
+  --accent: #1a73e8; --accent-hover: #1557b0; --accent-light: rgba(26,115,232,0.12);
+  --success: #188038; --success-light: #e6f4ea; --success-border: #a8dab5;
+  --danger: #c5221f; --danger-light: #fce8e6; --danger-border: #f5c6c2;
+  --warning: #e37400; --warning-light: #fff4e5;
+  --radius: 10px; --radius-sm: 6px; --transition: 0.2s ease;
+  --h: 36px; --h-mobile: 44px; --fs: 0.875rem;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+[data-theme="light"] {
+  --bg: #ffffff; --surface: #ffffff; --surface-2: #f6f7f9; --surface-3: #eef0f3;
+  --border: #e3e6ea; --text: #374151; --muted: #9ca3af;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08); --shadow-lg: 0 12px 32px rgba(0,0,0,0.16);
+  --frame: #eef0f3;
+  --app-bg: #ffffff; --app-surface: #f9fafb; --app-surface-2: #f3f4f6;
+  --app-border: #e5e7eb; --app-text: #111827; --app-muted: #6b7280;
+  --app-dividend-bg: rgba(26,115,232,0.12); --app-dividend-color: #1a73e8;
+  --app-watched-bg: rgba(220,38,38,0.1); --app-watched-color: #dc2626;
+  --app-accent: #1a73e8; --app-amount: #188038; --app-today-bg: #1a73e8;
+}
+[data-theme="dark"] {
+  --bg: #11191f; --surface: #181e25; --surface-2: #1e2530; --surface-3: #232c38;
+  --border: #262e38; --text: #c7c9ce; --muted: #7d8590;
+  --shadow: 0 2px 16px rgba(0,0,0,0.45); --shadow-lg: 0 12px 36px rgba(0,0,0,0.6);
+  --frame: #0d1318;
+  --app-bg: #111827; --app-surface: #1f2937; --app-surface-2: #374151;
+  --app-border: #4b5563; --app-text: #f9fafb; --app-muted: #9aa3ad;
+  --app-dividend-bg: rgba(96,165,250,0.18); --app-dividend-color: #60a5fa;
+  --app-watched-bg: rgba(248,113,113,0.18); --app-watched-color: #f87171;
+  --app-accent: #60a5fa; --app-amount: #34d399; --app-today-bg: #60a5fa;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background: var(--bg); color: var(--text); transition: background var(--transition), color var(--transition);
+  padding: 2rem 1.25rem 4rem;
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+.topbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+h1 { font-size: 1.35rem; margin: 0; }
+.sub { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+.controls { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.segmented { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 2px; }
+.segmented button { border: none; background: none; color: var(--muted); font-size: 0.85rem; padding: 0.45rem 0.9rem; border-radius: 7px; cursor: pointer; transition: all var(--transition); font-weight: 500; }
+.segmented button:hover { color: var(--text); }
+.segmented button.active { background: var(--surface); color: var(--accent); box-shadow: var(--shadow); }
+
+.frame { background: var(--frame); border: 1px solid var(--border); border-radius: 14px; padding: 1.6rem 1.5rem 1.8rem; margin-bottom: 1.5rem; }
+.frame h2 { margin: 0 0 0.25rem; font-size: 1.1rem; }
+.frame .fsub { color: var(--muted); font-size: 0.82rem; margin: 0 0 1rem; line-height: 1.6; }
+.browser-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 1rem; }
+.bdot { width: 11px; height: 11px; border-radius: 50%; }
+.bdot:nth-child(1){ background:#f87171 } .bdot:nth-child(2){ background:#fbbf24 } .bdot:nth-child(3){ background:#34d399 }
+.browser-url { flex: 1; max-width: 420px; margin-left: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.8rem; font-size: 0.75rem; color: var(--muted); }
+.elem-count { font-size: 0.72rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.2rem 0.7rem; white-space: nowrap; }
+.elem-count b { color: var(--accent); }
+
+.app-page { background: var(--app-bg); border: 1px solid var(--app-border); border-radius: 12px; box-shadow: var(--shadow); transition: background var(--transition); overflow: hidden; }
+.app-page.is-mobile { max-width: 390px; margin: 0 auto; }
+
+/* ── App 元件 ── */
+.app-header { display: flex; justify-content: center; height: 48px; border-bottom: 1px solid var(--app-border); background: var(--app-bg); }
+.header-inner { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 800px; padding: 0 1rem; gap: 0.5rem; }
+.header-left { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+.header-left::after { content: ''; width: 1px; height: 24px; background: var(--app-border); margin-left: 0.5rem; }
+.app-logo { font-size: 1rem; display: flex; align-items: center; gap: 0.4rem; color: var(--app-text); text-decoration: none; font-weight: 600; white-space: nowrap; }
+.app-logo svg { color: var(--app-accent); }
+.header-right { display: flex; align-items: center; gap: 0.5rem; }
+.icon-btn { width: 44px; height: 44px; border: none; background: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--app-muted); cursor: pointer; position: relative; }
+.icon-btn:hover { background: var(--app-surface-2); }
+.header-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 4px; font-size: 0.625rem; font-weight: 700; background: var(--app-accent); color: #fff; border-radius: 50%; line-height: 1; position: absolute; top: 6px; right: 6px; }
+.search-box { position: relative; }
+.search-input { width: 200px; height: 36px; padding: 0 2rem 0 2rem; border: 1px solid var(--app-border); border-radius: 8px; background: var(--app-surface); color: var(--app-text); font-size: 0.875rem; }
+.search-input::placeholder { color: var(--app-muted); }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--app-muted); pointer-events: none; }
+
+/* ViewSwitcher */
+.view-bar { display: flex; align-items: center; justify-content: space-between; margin: 0.75rem 0 0.5rem; }
+.view-switcher { display: inline-flex; background: var(--app-surface-2); border: 1px solid var(--app-border); border-radius: 18px; padding: 3px; gap: 2px; }
+.vs-btn { border: none; background: none; color: var(--app-muted); font-size: 0.8125rem; padding: 0.45rem 0.9rem; border-radius: 15px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 0.35rem; }
+.vs-btn.active { background: var(--app-accent); color: #fff; }
+
+/* Calendar */
+.cal { padding: 0 0.25rem; }
+.cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem; }
+.cal-header .month-label { font-size: 1rem; font-weight: 600; color: var(--app-text); }
+.cal-nav { background: none; border: none; font-size: 1.5rem; color: var(--app-text); cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }
+.cal-nav:hover { background: var(--app-surface-2); }
+.cal-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); border-bottom: 1px solid var(--app-border); margin-bottom: 0; }
+.cal-weekdays .wd { text-align: center; font-size: 0.75rem; font-weight: 500; color: var(--app-muted); padding: 0.4rem 0; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-day { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 0.25rem 0.2rem; min-height: 80px; border-bottom: 1px solid var(--app-border); cursor: pointer; transition: background var(--transition); }
+.cal-day:hover { background: var(--app-surface-2); }
+.cal-day.today .day-num { background: var(--app-today-bg); color: #fff; font-weight: 700; }
+.cal-day.other { opacity: 0.35; }
+.day-num { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; font-size: 0.82rem; border-radius: 50%; color: var(--app-text); }
+.div-labels { display: flex; flex-direction: column; gap: 2px; width: 100%; }
+.div-label { height: 18px; border-radius: 4px; padding: 0 5px; font-size: 0.68rem; font-weight: 500; display: flex; align-items: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; background: var(--app-dividend-bg); color: var(--app-dividend-color); }
+.div-label.watched { background: var(--app-watched-bg); color: var(--app-watched-color); font-weight: 600; }
+.div-more { font-size: 0.68rem; color: var(--app-accent); font-weight: 500; padding: 0 4px; }
+
+/* List */
+.list-view { font-size: 0.875rem; }
+.list-header { display: grid; grid-template-columns: 76px 1fr 80px 36px; gap: 8px; padding: 0.45rem 0.5rem; border-bottom: 2px solid var(--app-border); font-size: 0.75rem; color: var(--app-muted); font-weight: 700; }
+.list-date-group { position: sticky; top: 0; background: var(--app-surface-2); font-size: 0.78rem; font-weight: 700; color: var(--app-text); padding: 0.4rem 0.5rem; border-radius: 6px; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center; z-index: 1; }
+.group-count { font-size: 0.72rem; color: var(--app-muted); font-weight: 600; }
+.list-item { display: grid; grid-template-columns: 76px 1fr 80px 36px; gap: 8px; padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--app-border); align-items: center; cursor: pointer; min-height: 44px; }
+.list-item:hover { background: var(--app-surface-2); }
+.item-code { font-weight: 600; font-variant-numeric: tabular-nums; }
+.item-amount { color: var(--app-amount); font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.heart-btn { width: 32px; height: 32px; border: none; background: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--app-muted); cursor: pointer; }
+.heart-btn.watched { color: #ef4444; }
+.heart-btn:hover { background: var(--app-surface-2); }
+
+/* ── Issue Cards ── */
+.issue-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.1rem 1.1rem; margin-bottom: 0.75rem; }
+.issue-card h4 { margin: 0 0 0.5rem; font-size: 0.92rem; display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
+.issue-card p { margin: 0.25rem 0; font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+.issue-card code { background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 0.05rem 0.35rem; font-size: 0.72rem; font-family: var(--mono); }
+.tag { font-size: 0.62rem; font-weight: 700; border-radius: 20px; padding: 0.12rem 0.5rem; display: inline-block; }
+.tag-p1 { background: var(--danger-light); color: var(--danger); }
+.tag-p2 { background: var(--warning-light); color: var(--warning); }
+.tag-p3 { background: var(--surface-3); color: var(--muted); }
+.tag-fix { background: var(--success-light); color: var(--success); }
+.tag-area { background: var(--accent-light); color: var(--accent); }
+
+/* ── Highlight annotations ── */
+.highlight-box { border: 2px dashed var(--danger); border-radius: 8px; padding: 0.5rem; margin: 0.5rem 0; position: relative; }
+.highlight-box.warn { border-color: var(--warning); }
+.highlight-box.good { border-color: var(--success); }
+.hl-label { position: absolute; top: -10px; left: 8px; background: var(--danger); color: #fff; font-size: 0.62rem; font-weight: 700; padding: 0.1rem 0.4rem; border-radius: 4px; }
+.hl-label.warn { background: var(--warning); }
+.hl-label.good { background: var(--success); }
+
+/* ── Comparison ── */
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+@media (max-width: 760px) { .compare { grid-template-columns: 1fr; } }
+.compare-col { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+.compare-col h4 { margin: 0 0 0.5rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem; }
+.compare-col.before { border-top: 3px solid var(--danger); }
+.compare-col.after { border-top: 3px solid var(--success); }
+
+/* ── Audit Table ── */
+.audit-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 0.75rem; }
+.audit-table th, .audit-table td { border: 1px solid var(--border); padding: 0.55rem 0.75rem; text-align: left; vertical-align: top; }
+.audit-table th { background: var(--surface-2); font-size: 0.74rem; color: var(--muted); font-weight: 700; }
+.audit-table td:first-child { white-space: nowrap; font-weight: 600; }
+
+/* ── Tokens ── */
+.tokens { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+.tcard { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem 0.95rem; }
+.tcard .tk { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.4px; }
+.tcard .tv { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-top: 0.2rem; }
+.tcard .td { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; line-height: 1.5; }
+.tcard .tv.accent { color: var(--accent); }
+.tcard .tv.success { color: var(--success); }
+.tcard .tv.danger { color: var(--danger); }
+
+.note { font-size: 0.78rem; color: var(--muted); margin-top: 1rem; line-height: 1.7; background: var(--surface); border: 1px dashed var(--border); border-radius: 10px; padding: 0.6rem 0.9rem; }
+.note b { color: var(--accent); }
+
+.legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.5rem 1.5rem; margin-top: 1rem; }
+.anno { display: flex; gap: 0.55rem; font-size: 0.8rem; color: var(--muted); align-items: flex-start; line-height: 1.55; }
+.anno .num { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-size: 0.7rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+.anno b { color: var(--text); }
+
+.footnote { margin-top: 2rem; font-size: 0.72rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 0.75rem; line-height: 1.7; }
+
+/* ── Flow diagram ── */
+.flow { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0; }
+.flow-step { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.6rem 1rem; font-size: 0.82rem; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 0.4rem; }
+.flow-step .step-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; }
+.flow-arrow { color: var(--muted); font-size: 1.2rem; flex-shrink: 0; }
+.flow-branch { display: flex; flex-direction: column; gap: 0.35rem; }
+.flow-sub { font-size: 0.72rem; color: var(--muted); padding-left: 2.4rem; }
+
+/* ── Status indicator ── */
+.status-badge { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 20px; }
+.status-pass { background: var(--success-light); color: var(--success); }
+.status-warn { background: var(--warning-light); color: var(--warning); }
+.status-fail { background: var(--danger-light); color: var(--danger); }
+
+/* ── Mobile ── */
+.frame.mobile-frame { display: none; }
+body.view-mobile .frame.mobile-frame { display: block; }
+body.view-mobile .frame.desktop-frame { display: none; }
+.mobile-frame .app-page { max-width: 390px; margin: 0 auto; }
+.mobile-frame .header-inner { padding: 0 16px; }
+.mobile-frame .header-logo-text { display: none; }
+.mobile-frame .header-left::after { display: none; }
+.mobile-frame .search-input { width: 44px; padding: 0; background: none; border: none; cursor: pointer; }
+.mobile-frame .search-input::placeholder { color: transparent; }
+</style>
+</head>
+<body data-theme="light">
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <h1>🔍 StockPayDay++ 全站操作流程 UI/UX 審計</h1>
+      <div class="sub">009 — 全旅程走查（Landing → Home → Stock → Watchlist）＋ 無障礙 + 一致性 + 建議</div>
+    </div>
+    <div class="controls">
+      <div class="segmented" id="devSwitch">
+        <button data-dev="desktop" class="active">🖥 Desktop</button>
+        <button data-dev="mobile">📱 Mobile</button>
+      </div>
+      <button class="segmented" id="themeToggle" style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:3px;">🌙 切換深色</button>
+    </div>
+  </div>
+
+  <!-- ══════════ 1. 使用者旅程 Flow ══════════ -->
+  <div class="frame">
+    <h2>🗺️ 1. 使用者旅程 Flow</h2>
+    <p class="fsub">從 Landing 到追蹤清單的完整操作路徑，每個節點標註審計結果。</p>
+
+    <div class="flow">
+      <div class="flow-step"><span class="step-icon">1</span> Landing</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="step-icon">2</span> Home 行事曆/列表</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="step-icon">3</span> DayDetail Modal</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="step-icon">4</span> StockView</div>
+    </div>
+    <div class="flow" style="margin-top:0.25rem;">
+      <div style="width:2.4rem;"></div>
+      <span class="flow-arrow" style="visibility:hidden;">→</span>
+      <div style="width:7rem;"></div>
+      <span class="flow-arrow" style="visibility:hidden;">→</span>
+      <div style="width:10rem;"></div>
+      <span class="flow-arrow">↘</span>
+      <div class="flow-step"><span class="step-icon">5</span> Watchlist</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-step"><span class="step-icon">6</span> Sync Settings</div>
+    </div>
+    <div class="flow-sub">搜尋 → 結果下拉 → 點股票代號 ↗</div>
+
+    <div class="note" style="margin-top:1rem;">
+      <b>審計方法：</b>程式碼全量走查（17 個 Vue 組件 + 7 個 composables + 1 個全域 CSS），對照 initial audit（Phase 4-5）+ 006/007/008 設計文件。
+    </div>
+  </div>
+
+  <!-- ══════════ 2. 設計 Token 現況 ══════════ -->
+  <div class="frame">
+    <h2>🎨 2. Design Token 現況</h2>
+    <p class="fsub">專案已建立的 CSS 變數體系，審計是否一致使用。</p>
+    <div class="tokens">
+      <div class="tcard"><div class="tk">Header 高度</div><div class="tv accent">48px</div><div class="td">--header-height<br>Landing / App 一致</div></div>
+      <div class="tcard"><div class="tk">搜尋框高度</div><div class="tv">36px</div><div class="td">.search-input<br>desktop 專用</div></div>
+      <div class="tcard"><div class="tk">Icon Button</div><div class="tv accent">44×44px</div><div class="td">.header-icon-btn<br>WCAG 2.5.5 ✓</div></div>
+      <div class="tcard"><div class="tk">行事曆格子</div><div class="tv">min 80px</div><div class="td">.calendar-day<br>無固定高度 ⚠️</div></div>
+      <div class="tcard"><div class="tk">列表列高度</div><div class="tv">min 44px</div><div class="td">.list-item<br>觸控友好 ✓</div></div>
+      <div class="tcard"><div class="tk">配息 Label</div><div class="tv danger">0.68rem</div><div class="td">≈10.9px 偏小 ⚠️</div></div>
+      <div class="tcard"><div class="tk">Muted 色</div><div class="tv success">#6b7280</div><div class="td">對比 ≈4.7:1 ✓<br>(初版 #9ca3af 已修正)</div></div>
+      <div class="tcard"><div class="tk">Focus Ring</div><div class="tv accent">3px</div><div class="td">rgba(26,115,232,0.4)<br>所有互動元素 ✓</div></div>
+    </div>
+    <div class="note"><b>WatchlistItemRow 注意：</b>使用 scoped CSS 自定義變數（<code>--color-border</code>、<code>--color-accent</code> 等），與專案統一的 <code>--border</code>、<code>--tab-active-bg</code> 不同，深色模式可能色彩不協調。</div>
+  </div>
+
+  <!-- ══════════ 3. Landing Page ══════════ -->
+  <div class="frame desktop-frame">
+    <h2>🏠 3. Landing Page</h2>
+    <p class="fsub">Hero → How It Works → CTA → Footer。審計結果：<span class="status-badge status-pass">整體良好</span></p>
+    <div class="browser-bar">
+      <span class="bdot"></span><span class="bdot"></span><span class="bdot"></span>
+      <span class="browser-url">https://yuhaochiaodave.github.io/StockPayDay++/#/</span>
+      <span class="elem-count">審計：<b>4 項 P2-P3</b></span>
+    </div>
+    <div class="app-page">
+      <!-- Landing Header -->
+      <div class="app-header">
+        <div class="header-inner">
+          <div class="header-left">
+            <a class="app-logo" href="#">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              StockPayDay++
+            </a>
+          </div>
+          <div class="header-right">
+            <button class="icon-btn" aria-label="深色模式切換">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Hero -->
+      <div style="background: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 50%, #fff 100%); padding: 48px 24px; text-align: center;">
+        <div style="width:64px;height:64px;background:rgba(26,115,232,0.1);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h2 style="font-size:2rem;font-weight:700;margin:0 0 8px;">你的股利，不再錯過。</h2>
+        <p style="font-size:1.1rem;color:var(--app-muted);margin:0 0 24px;">StockPayDay 幫你掌握每一筆配息時程。</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+          <a href="#/app" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 32px;border-radius:12px;font-size:1rem;font-weight:600;background:#1a73e8;color:#fff;text-decoration:none;">立即查看配息行事曆</a>
+          <a href="#how-it-works" style="display:inline-flex;align-items:center;gap:8px;height:48px;padding:0 32px;border-radius:12px;font-size:1rem;font-weight:600;background:transparent;color:var(--app-muted);border:1px solid var(--app-border);text-decoration:none;">了解更多 ↓</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight-box warn" style="margin-top:1rem;">
+      <span class="hl-label warn">L-1 P2</span>
+      <p style="margin:0.25rem 0 0;font-size:0.82rem;color:var(--muted);"><b>Landing Header 缺少 CTA：</b>滾動至頁尾後需回頂端才能找到入口。建議在 landing-header-actions 加入「開始使用」按鈕。</p>
+    </div>
+  </div>
+
+  <!-- ══════════ 4. Home — Calendar Mode ══════════ -->
+  <div class="frame desktop-frame">
+    <h2>📅 4. Home — 行事曆模式</h2>
+    <p class="fsub">月份導覽 + 7×5 行事曆格子 + 配息標示。審計結果：<span class="status-badge status-warn">有改善空間</span></p>
+    <div class="browser-bar">
+      <span class="bdot"></span><span class="bdot"></span><span class="bdot"></span>
+      <span class="browser-url">https://…/#/app — 行事曆模式</span>
+      <span class="elem-count">審計：<b>4 項 P2-P3</b></span>
+    </div>
+    <div class="app-page">
+      <!-- App Header -->
+      <div class="app-header">
+        <div class="header-inner">
+          <div class="header-left">
+            <a class="app-logo" href="#">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>StockPayDay++</span>
+            </a>
+            <button class="icon-btn" aria-label="追蹤清單">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span class="header-badge">3</span>
+            </button>
+          </div>
+          <div class="header-right">
+            <div class="search-box">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input class="search-input" type="text" placeholder="搜尋股票代號或名稱..." />
+            </div>
+            <button class="icon-btn" aria-label="深色模式">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- Content -->
+      <div style="max-width:800px;margin:0 auto;padding:0.75rem 1rem;">
+        <div class="view-bar">
+          <div class="view-switcher">
+            <button class="vs-btn active">📅 行事曆</button>
+            <button class="vs-btn">📋 列表</button>
+          </div>
+        </div>
+        <div class="cal">
+          <div class="cal-header">
+            <button class="cal-nav" aria-label="上個月">‹</button>
+            <span class="month-label">2026 年 8 月</span>
+            <button class="cal-nav" aria-label="下個月">›</button>
+          </div>
+          <div class="cal-weekdays">
+            <div class="wd">日</div><div class="wd">一</div><div class="wd">二</div><div class="wd">三</div><div class="wd">四</div><div class="wd">五</div><div class="wd">六</div>
+          </div>
+          <div class="cal-grid">
+            <!-- Week 1 -->
+            <div class="cal-day other"><span class="day-num">26</span></div>
+            <div class="cal-day other"><span class="day-num">27</span></div>
+            <div class="cal-day other"><span class="day-num">28</span></div>
+            <div class="cal-day other"><span class="day-num">29</span></div>
+            <div class="cal-day other"><span class="day-num">30</span></div>
+            <div class="cal-day other"><span class="day-num">31</span></div>
+            <div class="cal-day"><span class="day-num">1</span></div>
+            <!-- Week 2 -->
+            <div class="cal-day"><span class="day-num">2</span></div>
+            <div class="cal-day"><span class="day-num">3</span></div>
+            <div class="cal-day"><span class="day-num">4</span></div>
+            <div class="cal-day"><span class="day-num">5</span></div>
+            <div class="cal-day"><span class="day-num">6</span></div>
+            <div class="cal-day"><span class="day-num">7</span></div>
+            <div class="cal-day"><span class="day-num">8</span></div>
+            <!-- Week 3 -->
+            <div class="cal-day"><span class="day-num">9</span></div>
+            <div class="cal-day"><span class="day-num">10</span></div>
+            <div class="cal-day"><span class="day-num">11</span></div>
+            <div class="cal-day"><span class="day-num">12</span></div>
+            <div class="cal-day"><span class="day-num">13</span></div>
+            <div class="cal-day"><span class="day-num">14</span></div>
+            <div class="cal-day"><span class="day-num">15</span></div>
+            <!-- Week 4 -->
+            <div class="cal-day"><span class="day-num">16</span></div>
+            <div class="cal-day"><span class="day-num">17</span></div>
+            <div class="cal-day"><span class="day-num">18</span></div>
+            <div class="cal-day"><span class="day-num">19</span></div>
+            <div class="cal-day today"><span class="day-num">20</span></div>
+            <div class="cal-day"><span class="day-num">21</span></div>
+            <div class="cal-day"><span class="day-num">22</span></div>
+            <!-- Week 5 — with dividends -->
+            <div class="cal-day"><span class="day-num">23</span></div>
+            <div class="cal-day">
+              <span class="day-num" style="font-weight:600;">24</span>
+              <div class="div-labels">
+                <span class="div-label">1216 統一</span>
+                <span class="div-label">2330 台積電</span>
+                <span class="div-label watched">♥ 2317 鴻海</span>
+                <span class="div-more">+2</span>
+              </div>
+            </div>
+            <div class="cal-day">
+              <span class="day-num" style="font-weight:600;">25</span>
+              <div class="div-labels">
+                <span class="div-label watched">♥ 2882 國泰金</span>
+                <span class="div-label">2884 玉山金</span>
+                <span class="div-label">2891 中信金</span>
+              </div>
+            </div>
+            <div class="cal-day"><span class="day-num">26</span></div>
+            <div class="cal-day"><span class="day-num">27</span></div>
+            <div class="cal-day"><span class="day-num">28</span></div>
+            <div class="cal-day"><span class="day-num">29</span></div>
+            <!-- Week 6 -->
+            <div class="cal-day"><span class="day-num">30</span></div>
+            <div class="cal-day"><span class="day-num">31</span></div>
+            <div class="cal-day other"><span class="day-num">1</span></div>
+            <div class="cal-day other"><span class="day-num">2</span></div>
+            <div class="cal-day other"><span class="day-num">3</span></div>
+            <div class="cal-day other"><span class="day-num">4</span></div>
+            <div class="cal-day other"><span class="day-num">5</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Issue annotations -->
+    <div class="legend">
+      <div class="anno"><span class="num">1</span><span><b>H-1 格子高度不均：</b>無配息日 80px；有 3+ 支配息時膨脹至 ~120px。建議 <code>max-height: 96px</code></span></div>
+      <div class="anno"><span class="num">2</span><span><b>H-2 Label 字級偏小：</b><code>0.68rem</code> ≈10.9px，建議提升至 <code>0.75rem</code>（12px）</span></div>
+      <div class="anno"><span class="num">3</span><span><b>H-3 導覽按鈕缺 aria-label：</b>‹/› 符號辨識度低，加 <code>aria-label="上個月"</code></span></div>
+      <div class="anno"><span class="num">4</span><span><b>H-4 無「回到今天」：</b>翻到其他月份後需手動翻回</span></div>
+    </div>
+
+    <div class="highlight-box" style="margin-top:0.75rem;">
+      <span class="hl-label">A1 P1</span>
+      <p style="margin:0.25rem 0 0;font-size:0.82rem;color:var(--muted);"><b>CalendarDay 無鍵盤可操作：</b><code>.calendar-day</code> 為 div+@click，無 <code>tabindex</code>/<code>role</code>，鍵盤使用者無法操作行事曆。建議改為 <code>&lt;button&gt;</code> 或加 <code>tabindex="0"</code> + <code>@keydown.enter</code>。</p>
+    </div>
+  </div>
+
+  <!-- ══════════ 5. Home — List Mode ══════════ -->
+  <div class="frame desktop-frame">
+    <h2>📋 5. Home — 列表模式</h2>
+    <p class="fsub">日期分組 + sticky header + 配息金額。審計結果：<span class="status-badge status-pass">整體良好</span></p>
+    <div class="browser-bar">
+      <span class="bdot"></span><span class="bdot"></span><span class="bdot"></span>
+      <span class="browser-url">https://…/#/app — 列表模式</span>
+      <span class="elem-count">審計：<b>3 項 P2-P3</b></span>
+    </div>
+    <div class="app-page">
+      <div class="app-header">
+        <div class="header-inner">
+          <div class="header-left">
+            <a class="app-logo" href="#">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>StockPayDay++</span>
+            </a>
+          </div>
+          <div class="header-right">
+            <button class="icon-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span class="header-badge">3</span>
+            </button>
+            <button class="icon-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div style="max-width:800px;margin:0 auto;padding:0.75rem 1rem;">
+        <div class="view-bar">
+          <div class="view-switcher">
+            <button class="vs-btn">📅 行事曆</button>
+            <button class="vs-btn active">📋 列表</button>
+          </div>
+        </div>
+        <div class="list-view">
+          <div class="list-header">
+            <div>代號</div>
+            <div>名稱</div>
+            <div style="text-align:right;">金額</div>
+            <div></div>
+          </div>
+          <!-- Date Group 1 -->
+          <div class="list-date-group">
+            <span>8月24日（週一）</span>
+            <span class="group-count">5 支</span>
+          </div>
+          <div class="list-item">
+            <span class="item-code">2330</span>
+            <span>台積電</span>
+            <span class="item-amount">$4.50</span>
+            <button class="heart-btn watched" aria-label="移除追蹤">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
+            </button>
+          </div>
+          <div class="list-item">
+            <span class="item-code">2317</span>
+            <span>鴻海</span>
+            <span class="item-amount">$2.80</span>
+            <button class="heart-btn" aria-label="加入追蹤">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+            </button>
+          </div>
+          <div class="list-item">
+            <span class="item-code">1216</span>
+            <span>統一</span>
+            <span class="item-amount">$1.80</span>
+            <button class="heart-btn" aria-label="加入追蹤">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+            </button>
+          </div>
+          <!-- Date Group 2 -->
+          <div class="list-date-group">
+            <span>8月25日（週二）</span>
+            <span class="group-count">3 支</span>
+          </div>
+          <div class="list-item">
+            <span class="item-code">2882</span>
+            <span>國泰金</span>
+            <span class="item-amount">$1.20</span>
+            <button class="heart-btn watched" aria-label="移除追蹤">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
+            </button>
+          </div>
+          <div class="list-item">
+            <span class="item-code">2884</span>
+            <span>玉山金</span>
+            <span class="item-amount">$0.80</span>
+            <button class="heart-btn" aria-label="加入追蹤">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="anno"><span class="num">1</span><span><b>LV-1 愛心按鈕面積：</b>32×32px，低於 WCAG 2.5.5 建議的 44px。且 <code>@click.stop</code> 與列 <code>@click</code> 衝突風險</span></div>
+      <div class="anno"><span class="num">2</span><span><b>LV-2 日期欄浪費空間：</b>list-header 有「日期」欄但 list-item 第一欄為空 span</span></div>
+      <div class="anno"><span class="num">3</span><span><b>LV-3 無快速定位：</b>長列表缺少「回到今天」錨點</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 6. StockView ══════════ -->
+  <div class="frame desktop-frame">
+    <h2>📈 6. StockView — 單股歷史</h2>
+    <p class="fsub">返回按鈕 + 追蹤 + 歷史配息表格。審計結果：<span class="status-badge status-warn">有改善空間</span></p>
+    <div class="browser-bar">
+      <span class="bdot"></span><span class="bdot"></span><span class="bdot"></span>
+      <span class="browser-url">https://…/#/stock/2330 — 台積電</span>
+      <span class="elem-count">審計：<b>3 項 P2-P3</b></span>
+    </div>
+    <div class="app-page">
+      <div class="app-header">
+        <div class="header-inner">
+          <div class="header-left">
+            <a class="app-logo" href="#">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>StockPayDay++</span>
+            </a>
+          </div>
+          <div class="header-right">
+            <button class="icon-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div style="max-width:800px;margin:0 auto;padding:0.75rem 1rem;">
+        <!-- Top bar -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+          <button style="background:none;border:none;color:#1a73e8;cursor:pointer;font-size:0.875rem;">← 返回</button>
+          <button class="heart-btn watched" style="width:40px;height:40px;" aria-label="移除追蹤">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
+          </button>
+        </div>
+        <!-- Stock header -->
+        <div style="margin-bottom:1.5rem;">
+          <div style="display:flex;align-items:baseline;gap:0.5rem;margin-top:0.75rem;">
+            <span style="font-size:1.125rem;font-weight:700;">2330</span>
+            <span style="font-size:0.875rem;color:var(--app-muted);">台積電</span>
+          </div>
+        </div>
+        <!-- History table -->
+        <h3 style="font-size:1rem;font-weight:600;margin:0 0 0.75rem;">配息歷史</h3>
+        <table style="width:100%;border-collapse:collapse;font-size:0.8125rem;">
+          <thead>
+            <tr>
+              <th style="font-size:0.75rem;color:var(--app-muted);font-weight:600;text-align:left;padding:0.5rem 0.75rem;border-bottom:1px solid var(--app-border);">年份</th>
+              <th class="col-date" style="font-size:0.75rem;color:var(--app-muted);font-weight:600;text-align:left;padding:0.5rem 0.75rem;border-bottom:1px solid var(--app-border);">除權息日</th>
+              <th style="font-size:0.75rem;color:var(--app-muted);font-weight:600;text-align:right;padding:0.5rem 0.75rem;border-bottom:1px solid var(--app-border);">配息金額</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="cursor:pointer;" onmouseover="this.style.background='var(--app-surface-2)'" onmouseout="this.style.background=''">
+              <td style="padding:0.625rem 0.75rem;border-bottom:1px solid var(--app-border);">2026</td>
+              <td class="col-date" style="padding:0.625rem 0.75rem;border-bottom:1px solid var(--app-border);">08-25</td>
+              <td style="padding:0.625rem 0.75rem;border-bottom:1px solid var(--app-border);text-align:right;color:var(--app-amount);font-weight:600;">$4.50</td>
+            </tr>
+            <tr style="cursor:pointer;" onmouseover="this.style.background='var(--app-surface-2)'" onmouseout="this.style.background=''">
+              <td style="padding:0.625rem 0.75rem;border-bottom:1px solid var(--app-border);">2025</td>
+              <td class="col-date" style="padding:0.625rem 0.75rem;border-bottom:1px solid var(--app-border);">08-20</td>
+              <td style="padding:0.625rem 0.75rem;border-bottom:1px solid var(--app-border);text-align:right;color:var(--app-amount);font-weight:600;">$3.90</td>
+            </tr>
+            <tr style="cursor:pointer;" onmouseover="this.style.background='var(--app-surface-2)'" onmouseout="this.style.background=''">
+              <td style="padding:0.625rem 0.75rem;border-bottom:1px solid var(--app-border);">2024</td>
+              <td class="col-date" style="padding:0.625rem 0.75rem;border-bottom:1px solid var(--app-border);">08-15</td>
+              <td style="padding:0.625rem 0.75rem;border-bottom:1px solid var(--app-border);text-align:right;color:var(--app-amount);font-weight:600;">$3.50</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Comparison: Back button duplication -->
+    <div class="compare">
+      <div class="compare-col before">
+        <h4>⚠️ 現況 SV-1</h4>
+        <p style="font-size:0.82rem;color:var(--muted);margin:0;">StockView 頂部已有「← 返回」；StockDetail error/empty 各再放一個。<b>最多 3 個返回按鈕</b>同時出現。</p>
+      </div>
+      <div class="compare-col after">
+        <h4>✅ 建議修正</h4>
+        <p style="font-size:0.82rem;color:var(--muted);margin:0;">StockView 統一提供一個返回按鈕（頂部左側）；StockDetail 內部移除多餘返回鈕，error/empty 狀態僅顯示訊息 + 圖示。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 7. Watchlist ══════════ -->
+  <div class="frame desktop-frame">
+    <h2>❤️ 7. Watchlist — 追蹤清單</h2>
+    <p class="fsub">同步設定 + 行事曆/列表 + 所有追蹤概覽。審計結果：<span class="status-badge status-warn">有改善空間</span></p>
+    <div class="browser-bar">
+      <span class="bdot"></span><span class="bdot"></span><span class="bdot"></span>
+      <span class="browser-url">https://…/#/watchlist</span>
+      <span class="elem-count">審計：<b>4 項 P2-P3</b></span>
+    </div>
+    <div class="app-page">
+      <div class="app-header">
+        <div class="header-inner">
+          <div class="header-left">
+            <a class="app-logo" href="#">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <span>StockPayDay++</span>
+            </a>
+          </div>
+          <div class="header-right">
+            <button class="icon-btn" aria-label="追蹤清單" style="color:#1a73e8;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span class="header-badge">3</span>
+            </button>
+            <button class="icon-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div style="max-width:800px;margin:0 auto;padding:0.75rem 1rem;">
+        <!-- Title -->
+        <div style="margin-bottom:1rem;">
+          <h1 style="font-size:1.25rem;font-weight:700;margin:0;">❤️ 我的追蹤清單</h1>
+          <p style="font-size:0.875rem;color:var(--app-muted);margin:0.25rem 0 0;">追蹤感興趣的證券，掌握配息時程</p>
+        </div>
+        <!-- Sync Settings -->
+        <div style="border:1px solid var(--app-border);border-radius:10px;background:var(--app-surface);padding:0.875rem 1rem;margin-bottom:1rem;">
+          <div style="font-size:0.9375rem;font-weight:600;margin:0 0 0.25rem;">🔄 跨裝置同步（選配）</div>
+          <p style="font-size:0.8125rem;color:var(--app-muted);margin:0 0 0.5rem;">一鍵建立雲端同步空間，取得同步碼後分享到其他裝置即可同步追蹤清單。</p>
+          <button style="width:100%;padding:0.5rem;border:none;border-radius:8px;background:#1a73e8;color:#fff;font-size:0.875rem;font-weight:600;cursor:pointer;">建立同步空間</button>
+          <div style="margin-top:0.5rem;">
+            <button style="border:none;background:none;color:var(--app-muted);cursor:pointer;font-size:0.75rem;text-decoration:underline;">已有同步碼？直接貼上</button>
+          </div>
+        </div>
+        <!-- View Switcher -->
+        <div class="view-bar">
+          <div class="view-switcher">
+            <button class="vs-btn active">📅 行事曆</button>
+            <button class="vs-btn">📋 列表</button>
+          </div>
+        </div>
+        <!-- Calendar (simplified) -->
+        <div class="cal">
+          <div class="cal-header">
+            <button class="cal-nav">‹</button>
+            <span class="month-label">2026 年 8 月</span>
+            <button class="cal-nav">›</button>
+          </div>
+          <div class="cal-weekdays">
+            <div class="wd">日</div><div class="wd">一</div><div class="wd">二</div><div class="wd">三</div><div class="wd">四</div><div class="wd">五</div><div class="wd">六</div>
+          </div>
+          <div class="cal-grid">
+            <div class="cal-day other"><span class="day-num">26</span></div>
+            <div class="cal-day other"><span class="day-num">27</span></div>
+            <div class="cal-day other"><span class="day-num">28</span></div>
+            <div class="cal-day other"><span class="day-num">29</span></div>
+            <div class="cal-day other"><span class="day-num">30</span></div>
+            <div class="cal-day other"><span class="day-num">31</span></div>
+            <div class="cal-day"><span class="day-num">1</span></div>
+            <div class="cal-day"><span class="day-num">2</span></div>
+            <div class="cal-day"><span class="day-num">3</span></div>
+            <div class="cal-day"><span class="day-num">4</span></div>
+            <div class="cal-day"><span class="day-num">5</span></div>
+            <div class="cal-day"><span class="day-num">6</span></div>
+            <div class="cal-day"><span class="day-num">7</span></div>
+            <div class="cal-day"><span class="day-num">8</span></div>
+            <div class="cal-day"><span class="day-num">9</span></div>
+            <div class="cal-day"><span class="day-num">10</span></div>
+            <div class="cal-day"><span class="day-num">11</span></div>
+            <div class="cal-day"><span class="day-num">12</span></div>
+            <div class="cal-day"><span class="day-num">13</span></div>
+            <div class="cal-day"><span class="day-num">14</span></div>
+            <div class="cal-day"><span class="day-num">15</span></div>
+            <div class="cal-day"><span class="day-num">16</span></div>
+            <div class="cal-day"><span class="day-num">17</span></div>
+            <div class="cal-day"><span class="day-num">18</span></div>
+            <div class="cal-day"><span class="day-num">19</span></div>
+            <div class="cal-day today"><span class="day-num">20</span></div>
+            <div class="cal-day"><span class="day-num">21</span></div>
+            <div class="cal-day"><span class="day-num">22</span></div>
+            <div class="cal-day"><span class="day-num">23</span></div>
+            <div class="cal-day">
+              <span class="day-num" style="font-weight:600;">24</span>
+              <div class="div-labels">
+                <span class="div-label watched">♥ 2330 台積電</span>
+                <span class="div-label watched">♥ 2317 鴻海</span>
+              </div>
+            </div>
+            <div class="cal-day">
+              <span class="day-num" style="font-weight:600;">25</span>
+              <div class="div-labels">
+                <span class="div-label watched">♥ 2882 國泰金</span>
+              </div>
+            </div>
+            <div class="cal-day"><span class="day-num">26</span></div>
+            <div class="cal-day"><span class="day-num">27</span></div>
+            <div class="cal-day"><span class="day-num">28</span></div>
+            <div class="cal-day"><span class="day-num">29</span></div>
+            <div class="cal-day"><span class="day-num">30</span></div>
+            <div class="cal-day"><span class="day-num">31</span></div>
+            <div class="cal-day other"><span class="day-num">1</span></div>
+            <div class="cal-day other"><span class="day-num">2</span></div>
+            <div class="cal-day other"><span class="day-num">3</span></div>
+            <div class="cal-day other"><span class="day-num">4</span></div>
+            <div class="cal-day other"><span class="day-num">5</span></div>
+          </div>
+        </div>
+        <!-- All tracked items -->
+        <div style="margin-top:1rem;">
+          <h3 style="font-size:0.9375rem;font-weight:600;margin:0 0 0.5rem;">所有追蹤（3 支）</h3>
+          <!-- WatchlistItemRow items -->
+          <div style="display:grid;grid-template-columns:80px 1fr auto auto;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--app-border);cursor:pointer;">
+            <span style="font-family:monospace;font-weight:600;">2330</span>
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">台積電</span>
+            <span style="font-weight:600;color:var(--app-amount);text-align:right;">$4.50</span>
+            <button class="heart-btn watched" style="width:32px;height:32px;" aria-label="移除追蹤">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
+            </button>
+          </div>
+          <div style="display:grid;grid-template-columns:80px 1fr auto auto;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--app-border);cursor:pointer;">
+            <span style="font-family:monospace;font-weight:600;">2317</span>
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">鴻海</span>
+            <span style="font-weight:600;color:var(--app-amount);text-align:right;">$2.80</span>
+            <button class="heart-btn watched" style="width:32px;height:32px;" aria-label="移除追蹤">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
+            </button>
+          </div>
+          <div style="display:grid;grid-template-columns:80px 1fr auto auto;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--app-border);cursor:pointer;">
+            <span style="font-family:monospace;font-weight:600;">2882</span>
+            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">國泰金</span>
+            <span style="font-weight:600;color:var(--app-amount);text-align:right;">$1.20</span>
+            <button class="heart-btn watched" style="width:32px;height:32px;" aria-label="移除追蹤">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z"/></svg>
+            </button>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:0.8125rem;color:var(--app-muted);margin-top:1rem;">已追蹤 3 支證券</div>
+      </div>
+    </div>
+
+    <div class="highlight-box warn" style="margin-top:1rem;">
+      <span class="hl-label warn">WL-1 P2</span>
+      <p style="margin:0.25rem 0 0;font-size:0.82rem;color:var(--muted);"><b>WatchlistItemRow CSS 變數不一致：</b>使用 scoped <code>--color-border</code>、<code>--color-accent</code>、<code>--color-text</code> 等未定義變數，fallback 為硬編碼色值（#eee、#e74c3c），與專案 design token（<code>--border</code>、<code>--tab-active-bg</code>）不一致。深色模式下可能出現色彩不協調。</p>
+    </div>
+  </div>
+
+  <!-- ══════════ 8. Cross-page Consistency ══════════ -->
+  <div class="frame">
+    <h2>🔄 8. 跨頁面一致性問題</h2>
+    <p class="fsub"> Design Token / 字級 / 圓角 / 返回按鈕位置的跨頁面不一致。</p>
+    <table class="audit-table">
+      <tr><th style="width:60px;">#</th><th style="width:120px;">問題</th><th>嚴重度</th><th>說明</th></tr>
+      <tr><td>X-1</td><td>Design Token 不一致</td><td><span class="tag tag-p2">P2</span></td><td>WatchlistItemRow 用自定義 <code>--color-*</code> 變數，與專案 <code>--border</code>/<code>--tab-active-bg</code> 不同</td></tr>
+      <tr><td>X-2</td><td>字級不一致</td><td><span class="tag tag-p3">P3</span></td><td>label 0.68rem / 列表 0.875rem / 描述 0.8125rem / landing 副標 1.25rem — 缺統一 typography scale</td></tr>
+      <tr><td>X-3</td><td>圓角不一致</td><td><span class="tag tag-p3">P3</span></td><td>按鈕 8px / Modal 12px / SyncSettings 10px / Calendar 6px — 缺統一圓角 token</td></tr>
+      <tr><td>X-4</td><td>返回按鈕位置不一致</td><td><span class="tag tag-p3">P3</span></td><td>StockView 頂部左側 vs StockDetail error/empty 內容中央</td></tr>
+    </table>
+  </div>
+
+  <!-- ══════════ 9. Accessibility ══════════ -->
+  <div class="frame">
+    <h2>♿ 9. 無障礙（WCAG）審計</h2>
+    <p class="fsub">逐條 WCAG 準則檢查，標註通過/部分通過/未通過。</p>
+    <table class="audit-table">
+      <tr><th style="width:160px;">WCAG 準則</th><th style="width:100px;">狀態</th><th>說明</th></tr>
+      <tr><td>1.3.1 Info & Relationships</td><td><span class="status-badge status-warn">部分通過</span></td><td>ViewSwitcher <code>role=tablist</code> ✓ · SearchBar <code>role=combobox</code> ✓ · <b>CalendarDay 無 role=button</b>（div+@click）</td></tr>
+      <tr><td>1.4.1 Use of Color</td><td><span class="status-badge status-pass">通過</span></td><td>追蹤/非追蹤不只靠顏色，有 ♥ 符號 + 背景色差異</td></tr>
+      <tr><td>1.4.3 Contrast (Min)</td><td><span class="status-badge status-pass">通過</span></td><td><code>--text-muted: #6b7280</code> 對白底 ≈4.7:1 ✓</td></tr>
+      <tr><td>2.1.1 Keyboard</td><td><span class="status-badge status-warn">部分通過</span></td><td>Modal focus trap ✓ · ViewSwitcher Tab ✓ · <b>CalendarDay div+@click 無 tabindex</b></td></tr>
+      <tr><td>2.4.7 Focus Visible</td><td><span class="status-badge status-pass">通過</span></td><td>所有互動元素有 <code>:focus-visible</code> 樣式（box-shadow ring）</td></tr>
+      <tr><td>2.5.5 Target Size</td><td><span class="status-badge status-warn">部分通過</span></td><td>Header icon 44px ✓ · <b>WatchlistButton--sm 32px</b>、WatchlistItemRow 內愛心 32px</td></tr>
+      <tr><td>4.1.2 Name, Role, Value</td><td><span class="status-badge status-pass">通過</span></td><td>SearchBar aria-expanded ✓ · WatchlistButton aria-pressed ✓ · Modal aria-modal ✓</td></tr>
+    </table>
+    <div class="note"><b>重點：</b>CalendarDay 的鍵盤可操作性是最高優先無障礙問題（WCAG 2.1.1 + 1.3.1）。建議將 <code>.calendar-day</code> 改為 <code>&lt;button&gt;</code> 或加 <code>tabindex="0"</code> + <code>role="gridcell"</code> + <code>@keydown.enter</code>。</div>
+  </div>
+
+  <!-- ══════════ 10. Priority Recommendations ══════════ -->
+  <div class="frame">
+    <h2>📋 10. 優化建議（依優先級）</h2>
+    <p class="fsub">所有發現彙整為可執行的建議清單。</p>
+
+    <h3 style="font-size:0.95rem;margin:1rem 0 0.5rem;">🔴 P1 — 建議立即處理</h3>
+    <table class="audit-table">
+      <tr><th style="width:50px;">#</th><th>建議</th><th style="width:180px;">影響範圍</th></tr>
+      <tr><td>A1</td><td><b>CalendarDay 加入鍵盤可操作性：</b>改為 <code>&lt;button&gt;</code> 或加 <code>tabindex="0"</code> + <code>@keydown.enter</code> + <code>role="gridcell"</code></td><td><code>CalendarDay.vue</code></td></tr>
+      <tr><td>A2</td><td><b>WatchlistItemRow 統一 Design Token：</b>移除 scoped CSS 自定義變數，改用專案 <code>--border</code>、<code>--tab-active-bg</code>、<code>--text</code></td><td><code>WatchlistItemRow.vue</code></td></tr>
+    </table>
+
+    <h3 style="font-size:0.95rem;margin:1rem 0 0.5rem;">🟡 P2 — 建議近期處理</h3>
+    <table class="audit-table">
+      <tr><th style="width:50px;">#</th><th>建議</th><th style="width:180px;">影響範圍</th></tr>
+      <tr><td>B1</td><td><b>行事曆格子高度統一：</b>設定 <code>min-height: 80px; max-height: 96px</code>，超過 2 支顯示前 2 支 +「+N」</td><td><code>CalendarDay.vue</code> + <code>style.css</code></td></tr>
+      <tr><td>B2</td><td><b>配息 label 字級提升：</b><code>.dividend-label</code> 從 0.68rem → 0.75rem（12px）</td><td><code>style.css</code></td></tr>
+      <tr><td>B3</td><td><b>月份導覽加 aria-label：</b><code>&lt;button aria-label="上個月"&gt;‹&lt;/button&gt;</code></td><td><code>Calendar.vue</code></td></tr>
+      <tr><td>B4</td><td><b>StockDetail 移除多餘返回按鈕：</b>error/empty 狀態的返回由 StockView 統一提供</td><td><code>StockDetail.vue</code></td></tr>
+      <tr><td>B5</td><td><b>Modal 列表加 hover 樣式：</b><code>.modal-list li:hover { background: var(--surface-2); cursor: pointer; }</code></td><td><code>style.css</code></td></tr>
+      <tr><td>B6</td><td><b>WatchlistItemRow 深色模式驗證：</b>確認 scoped CSS 在 dark mode 下色彩正確</td><td><code>WatchlistItemRow.vue</code></td></tr>
+    </table>
+
+    <h3 style="font-size:0.95rem;margin:1rem 0 0.5rem;">🟢 P3 — 建議後續處理</h3>
+    <table class="audit-table">
+      <tr><th style="width:50px;">#</th><th>建議</th><th style="width:180px;">影響範圍</th></tr>
+      <tr><td>C1</td><td>Landing Header 加「開始使用」CTA 按鈕</td><td><code>LandingView.vue</code></td></tr>
+      <tr><td>C2</td><td>搜尋加 loading 狀態（indexLoaded=false 時顯示）</td><td><code>SearchBar.vue</code></td></tr>
+      <tr><td>C3</td><td>追蹤清單加排序控制（依加入時間/代號/名稱/下次配息）</td><td><code>WatchlistView.vue</code></td></tr>
+      <tr><td>C4</td><td>行事曆加「回到今天」快速按鈕</td><td><code>Calendar.vue</code></td></tr>
+      <tr><td>C5</td><td>建立統一 Typography Scale（0.75/0.8125/0.875/1/1.125/1.25rem）</td><td><code>style.css</code></td></tr>
+      <tr><td>C6</td><td>匯出 textarea 加「全選」按鈕</td><td><code>WatchlistSyncSettings.vue</code></td></tr>
+      <tr><td>C7</td><td>停用同步加確認對話框</td><td><code>WatchlistSyncSettings.vue</code></td></tr>
+      <tr><td>C8</td><td>Footer GitHub 連結指向實際 repo URL</td><td><code>LandingView.vue</code></td></tr>
+    </table>
+  </div>
+
+  <!-- ══════════ 11. Verification Checklist ══════════ -->
+  <div class="frame">
+    <h2>✅ 11. 驗收清單</h2>
+    <p class="fsub">修復後必測項目。</p>
+    <table class="audit-table">
+      <tr><th style="width:40px;">✓</th><th>驗收項目</th><th>測試方法</th></tr>
+      <tr><td>☐</td><td>CalendarDay 可用 Tab 到達 + Enter/Space 觸發</td><td>鍵盤操作實測</td></tr>
+      <tr><td>☐</td><td>WatchlistItemRow 在深色模式下色彩正確</td><td>Dark mode 視覺檢查</td></tr>
+      <tr><td>☐</td><td>行事曆格子高度差異 ≤16px</td><td>Playwright getBoundingClientRect</td></tr>
+      <tr><td>☐</td><td>配息 label 在一般螢幕上清晰可讀（≥12px）</td><td>CSS 計算 + 視覺檢查</td></tr>
+      <tr><td>☐</td><td>月份導覽按鈕有 aria-label</td><td>Chrome DevTools Accessibility</td></tr>
+      <tr><td>☐</td><td>StockDetail error/empty 狀態最多 1 個返回按鈕</td><td>視覺檢查</td></tr>
+      <tr><td>☐</td><td>Modal 列表項有 hover 背景反饋</td><td>Hover 實測</td></tr>
+      <tr><td>☐</td><td>全站 console error = 0（desktop + mobile、light + dark）</td><td>Playwright console 監聽</td></tr>
+    </table>
+  </div>
+
+  <div class="footnote">
+    📄 設計文件：<b>docs/uiux/009-full-ux-flow-audit.md</b> ・ 本文件：<b>docs/uiux/009-full-ux-flow-audit-mockup.html</b><br>
+    審計範圍：<b>Landing → Home（行事曆/列表）→ DayDetail Modal → StockView → Watchlist → SyncSettings</b><br>
+    參考基線：<b>docs/uiux/現況UIUX審計與優化建議.md</b>（Phase 4-5）・ <b>006/007/008</b> 設計文件<br>
+    審計方法：<b>程式碼全量走查</b>（17 Vue 組件 + 7 composables + 1 全域 CSS）
+  </div>
+</div>
+
+<script>
+// Theme toggle
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', () => {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '🌙 切換深色' : '☀️ 切換淺色';
+});
+// Device switch
+const devSwitch = document.getElementById('devSwitch');
+devSwitch.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+  devSwitch.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  document.body.classList.toggle('view-mobile', b.dataset.dev === 'mobile');
+}));
+</script>
+</body>
+</html>

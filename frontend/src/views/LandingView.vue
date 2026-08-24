@@ -34,9 +34,36 @@
           <a href="#how-it-works" class="landing-btn landing-btn-secondary">了解更多 ↓</a>
         </div>
         <p class="social-proof">
-          <span class="star" aria-hidden="true">★</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="#f59e0b" stroke="none" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           已追蹤超過 2,000 支股票的配息時程
         </p>
+      </div>
+
+      <!-- Hero Visual: Calendar Mockup -->
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-mockup">
+          <div class="mockup-header">
+            <div class="mockup-dots"><span></span><span></span><span></span></div>
+            <span class="mockup-title">StockPayDay++</span>
+          </div>
+          <div class="mockup-calendar">
+            <div class="mockup-month">2026 年 8 月</div>
+            <div class="mockup-weekdays">
+              <span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span>
+            </div>
+            <div class="mockup-grid">
+              <div class="mockup-day"><span>18</span></div>
+              <div class="mockup-day"><span>19</span></div>
+              <div class="mockup-day today"><span>20</span></div>
+              <div class="mockup-day"><span>21</span></div>
+              <div class="mockup-day"><span>22</span></div>
+              <div class="mockup-day div-day"><span>23</span><div class="mockup-div"></div></div>
+              <div class="mockup-day div-day watched"><span>24</span><div class="mockup-div w"></div><div class="mockup-div"></div></div>
+              <div class="mockup-day div-day"><span>25</span><div class="mockup-div w"></div></div>
+              <div class="mockup-day"><span>26</span></div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 

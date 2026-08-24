@@ -23,7 +23,6 @@ function formatAmount(amount?: number | null): string {
 
 <template>
   <div class="list-item" @click="$emit('stock-click', dividend.code)">
-    <span></span>
     <span class="item-code">{{ dividend.code }}</span>
     <span class="item-name">{{ dividend.name }}</span>
     <span

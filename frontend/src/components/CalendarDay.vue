@@ -15,7 +15,7 @@ const props = defineProps<{ day: CalendarDay }>()
 
 const { watchedCodes } = useWatchlist()
 
-const MAX_DISPLAY = 3
+const MAX_DISPLAY = 2
 
 // 該日是否有追蹤股票的配息
 const hasWatchedDividend = computed(() => {

@@ -37,6 +37,7 @@ const creating = ref(false)  // createSyncSpace 進行中
 const createError = ref('')  // createSyncSpace 錯誤訊息
 const createdToken = ref('')  // createSyncSpace 成功後的 sync token
 const copied = ref(false)
+const syncOpen = ref(false)
 const backupOpen = ref(false)
 const exportText = ref('')
 const importText = ref('')
@@ -132,9 +133,25 @@ function handleImport() {
 
 <template>
   <section class="watchlist-sync-settings" data-testid="watchlist-sync-settings">
+    <!-- Accordion toggle -->
+    <button
+      type="button"
+      class="sync-accordion-toggle"
+      @click="syncOpen = !syncOpen"
+      :aria-expanded="syncOpen"
+      data-testid="sync-accordion-toggle"
+    >
+      <span class="sync-accordion-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </span>
+      <span>🔄 跨裝置同步（選配）</span>
+      <span v-if="syncActive" class="sync-status-dot"></span>
+    </button>
+
+    <div v-show="syncOpen" class="sync-accordion-body">
     <!-- 未配對：建立同步空間（主要）+ 同步碼備援 -->
     <div v-if="!bucketId && !createdToken" class="sync-pairing">
-      <h3 class="sync-title">🔄 跨裝置同步（選配）</h3>
+      <h3 class="sync-title">開始同步</h3>
       <p class="sync-desc">
         一鍵建立雲端同步空間，取得同步碼後分享到其他裝置即可同步追蹤清單。不設定則完全不影響現有功能。
       </p>
@@ -278,6 +295,7 @@ function handleImport() {
         </div>
       </div>
     </div>
+    </div><!-- sync-accordion-body -->
   </section>
 </template>
 
@@ -287,7 +305,54 @@ function handleImport() {
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
+  overflow: hidden;
+}
+
+.sync-accordion-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   padding: 0.875rem 1rem;
+  border: none;
+  background: none;
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--transition-fast);
+}
+
+.sync-accordion-toggle:hover {
+  background: var(--surface-2);
+}
+
+.sync-accordion-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sync-accordion-toggle[aria-expanded="true"] .sync-accordion-icon {
+  transform: rotate(180deg);
+}
+
+.sync-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amount-color);
+  flex-shrink: 0;
+}
+
+.sync-accordion-body {
+  padding: 0 1rem 0.875rem;
+  border-top: 1px solid var(--border);
 }
 
 .sync-title {
