@@ -243,9 +243,12 @@ describe('createAccount（直連 kvdb.io）', () => {
     expect(result.bucketId).toBe('new-bucket-abc')
     expect(localStorage.getItem(BUCKET_ID_KEY)).toBe('new-bucket-abc')
 
-    // 建 bucket 後直接啟動同步（無需等待 email 驗證）
-    expect(sync.bucketId.value).toBe('new-bucket-abc')
-    expect(sync.syncActive.value).toBe(true)
+    // 建 bucket 後不設 bucketId、不啟動同步（等待 email 驗證）
+    expect(sync.bucketId.value).toBe('') // 尚未 confirmVerification
+    expect(sync.syncActive.value).toBe(false)
+    // 沒有發起任何同步請求
+    const syncCalls = kvdb.calls.filter(c => c.url !== 'https://kvdb.io/' && c.url !== 'https://kvdb.io')
+    expect(syncCalls).toHaveLength(0)
   })
 
   it('POST kvdb.io/ 失敗 → status=error、lastError 含錯誤訊息、bucket_id 未寫入', async () => {
@@ -300,6 +303,48 @@ describe('createAccount（直連 kvdb.io）', () => {
 })
 
 // ============================================================
+// confirmVerification（驗證後啟動同步）
+// ============================================================
+describe('confirmVerification', () => {
+  let kvdb: KvdbMock
+
+  beforeEach(() => {
+    resetAll()
+    kvdb = createKvdbMock()
+    vi.stubGlobal('fetch', kvdb.fn)
+  })
+
+  afterEach(() => {
+    resetAll()
+  })
+
+  it('confirmVerification 啟動同步：syncActiveRef=true、發起 pull + push', async () => {
+    kvdb.state.createdBucketId = 'verify-bucket'
+    const sync = useWatchlistSync()
+    await sync.createAccount('user@example.com')
+
+    // 建 bucket 後無同步請求
+    expect(kvdb.calls.filter(c => c.url !== 'https://kvdb.io/' && c.url !== 'https://kvdb.io')).toHaveLength(0)
+
+    // 確認驗證 → 啟動同步
+    sync.confirmVerification()
+    await flushMicrotasks()
+
+    expect(syncActiveRef.value).toBe(true)
+    expect(sync.status.value).toBe('synced')
+    // 發起 pull（GET 404）+ push（POST）
+    const syncCalls = kvdb.calls.filter(c => c.url !== 'https://kvdb.io/' && c.url !== 'https://kvdb.io')
+    expect(syncCalls.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('confirmVerification 在未建立 bucket 時不執行', () => {
+    const sync = useWatchlistSync()
+    sync.confirmVerification() // 無 bucket_id，不應崩潰
+    expect(syncActiveRef.value).toBe(false)
+  })
+})
+
+// ============================================================
 // syncActive 語意 / setToken / clearToken（需求 2、7）
 // ============================================================
 describe('syncActive 語意與對外 API', () => {
@@ -326,7 +371,7 @@ describe('syncActive 語意與對外 API', () => {
     expect(sync.status.value).toBe('disabled')
   })
 
-  it('對外 API 形狀：回傳 { bucketId, status, lastSyncedAt, lastError, syncActive, createAccount, setToken, clearToken, syncOnce }', () => {
+  it('對外 API 形狀：回傳 { bucketId, status, lastSyncedAt, lastError, syncActive, createAccount, confirmVerification, setToken, clearToken, syncOnce }', () => {
     const sync = useWatchlistSync()
     expect(Object.keys(sync)).toEqual([
       'bucketId',
@@ -335,6 +380,7 @@ describe('syncActive 語意與對外 API', () => {
       'lastError',
       'syncActive',
       'createAccount',
+      'confirmVerification',
       'setToken',
       'clearToken',
       'syncOnce',

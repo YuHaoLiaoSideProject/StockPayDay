@@ -237,10 +237,10 @@ function removeListeners(): void {
 // ── 建立帳號（直連 kvdb.io）──
 
 /**
- * createAccount — 輸入 email → POST kvdb.io 建立 bucket → 直接啟動同步
+ * createAccount — 輸入 email → POST kvdb.io 建立 bucket
  *
- * kvdb.io 的 email 僅用於 bucket 恢復/通知，不影響讀寫權限。
- * 建立 bucket 後立即啟動同步，無需等待 email 驗證。
+ * kvdb.io 回傳純文字 bucket_id；email 未驗證前寫入會 403，
+ * 因此建完 bucket 後不立即啟動同步，需呼叫 confirmVerification()。
  */
 async function createAccount(email: string): Promise<{ bucketId: string }> {
   if (!email.trim()) throw new Error('Email required')
@@ -268,19 +268,25 @@ async function createAccount(email: string): Promise<{ bucketId: string }> {
       throw new Error(lastError.value)
     }
 
-    // 直接啟動同步（無需等待 email 驗證）
-    bucketId.value = newBucketId
-    syncActiveRef.value = true
-    ensureListeners()
-    startPolling()
-    void syncOnce()
-
+    // 不設 bucketId.value（等待 confirmVerification 才啟動同步）
     return { bucketId: newBucketId }
   } catch (err) {
     status.value = 'error'
     lastError.value = err instanceof Error ? err.message : '建立帳號失敗'
     throw err
   }
+}
+
+/** confirmVerification — email 驗證完成後呼叫，從 localStorage 讀取 bucket_id 並啟動同步 */
+function confirmVerification(): void {
+  // 從 localStorage 讀取 createAccount 儲存的 bucket_id
+  const savedBucketId = readBucketId()
+  if (!savedBucketId) return
+  bucketId.value = savedBucketId
+  syncActiveRef.value = true
+  ensureListeners()
+  startPolling()
+  void syncOnce()
 }
 
 // ── 對外 API（配對 / 停用）──
@@ -370,7 +376,7 @@ export function useWatchlistSync() {
     ensureListeners()
     startPolling()
   }
-  return { bucketId, status, lastSyncedAt, lastError, syncActive, createAccount, setToken, clearToken, syncOnce }
+  return { bucketId, status, lastSyncedAt, lastError, syncActive, createAccount, confirmVerification, setToken, clearToken, syncOnce }
 }
 
 /** 測試用：重置引擎 module 狀態（token/計時器/監聽器/快照） */

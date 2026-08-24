@@ -22,7 +22,9 @@ const {
   status,
   lastSyncedAt,
   lastError,
+  syncActive,
   createAccount,
+  confirmVerification,
   setToken,
   clearToken,
   syncOnce,
@@ -34,6 +36,8 @@ const tokenInput = ref('')
 const showTokenInput = ref(false)
 const creating = ref(false)  // createAccount 進行中
 const createError = ref('')  // createAccount 錯誤訊息
+const createdBucketId = ref('')  // createAccount 成功後的 bucket ID
+const copied = ref(false)
 const backupOpen = ref(false)
 const exportText = ref('')
 const importText = ref('')
@@ -52,19 +56,46 @@ function formatTime(ts: number | null): string | null {
   return ts ? new Date(ts).toLocaleTimeString() : null
 }
 
-/** Email 啟動：直連 kvdb.io 建立 bucket → 直接開始同步 */
+/** Email 啟動：直連 kvdb.io 建立 bucket */
 async function onEmailSubmit() {
   if (!emailInput.value.trim() || creating.value) return
   creating.value = true
   createError.value = ''
   try {
-    await createAccount(emailInput.value)
+    const result = await createAccount(emailInput.value)
+    createdBucketId.value = result.bucketId
     emailInput.value = ''
   } catch (err) {
     createError.value = err instanceof Error ? err.message : '建立失敗，請檢查網路連線'
   } finally {
     creating.value = false
   }
+}
+
+/** 複製 bucket ID 到剪貼簿 */
+async function onCopyBucketId() {
+  try {
+    await navigator.clipboard.writeText(createdBucketId.value)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  } catch {
+    // fallback: textarea 選取複製
+    const ta = document.createElement('textarea')
+    ta.value = createdBucketId.value
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  }
+}
+
+/** 確認 email 已驗證，啟動同步 */
+function onConfirmVerification() {
+  confirmVerification()
 }
 
 /** 配對碼直接輸入（備援：使用者已有 token 時可直接貼上） */
@@ -108,10 +139,10 @@ function handleImport() {
 <template>
   <section class="watchlist-sync-settings" data-testid="watchlist-sync-settings">
     <!-- 未配對：email 輸入（主要）+ 配對碼備援 -->
-    <div v-if="!bucketId" class="sync-pairing">
+    <div v-if="!bucketId && !createdBucketId" class="sync-pairing">
       <h3 class="sync-title">🔄 跨裝置同步（選配）</h3>
       <p class="sync-desc">
-        輸入 email 後，系統自動建立雲端空間並開始同步。不設定則完全不影響現有功能。
+        輸入 email 後，系統自動建立雲端空間。驗證 email 後即可跨裝置同步。不設定則完全不影響現有功能。
       </p>
 
       <!-- Email 啟動（主要方式） -->
@@ -132,7 +163,7 @@ function handleImport() {
           :disabled="creating || !emailInput.trim()"
           data-testid="sync-email-submit"
         >
-          {{ creating ? '建立中…' : '啟動' }}
+          {{ creating ? '建立中…' : '建立' }}
         </button>
       </form>
 
@@ -149,20 +180,43 @@ function handleImport() {
           data-testid="sync-token-toggle"
           @click="showTokenInput = !showTokenInput"
         >
-          {{ showTokenInput ? '收起配對碼輸入' : '已有配對碼？直接貼上' }}
+          {{ showTokenInput ? '收起配對碼輸入' : '已有同步碼？直接貼上' }}
         </button>
         <form v-if="showTokenInput" class="sync-token-form" @submit.prevent="onTokenSubmit">
           <input
             v-model="tokenInput"
             class="sync-input"
             type="text"
-            placeholder="貼上配對碼（access token）"
-            aria-label="配對碼"
+            placeholder="貼上同步碼（Bucket ID）"
+            aria-label="同步碼"
             required
             data-testid="sync-token-input"
           />
           <button class="btn-primary" type="submit" data-testid="sync-token-submit">啟動</button>
         </form>
+      </div>
+    </div>
+
+    <!-- Bucket 已建立：顯示 ID + 驗證提示 -->
+    <div v-else-if="createdBucketId && !syncActive" class="sync-pairing">
+      <h3 class="sync-title">✅ 同步空間已建立</h3>
+
+      <div class="bucket-id-display">
+        <label class="bucket-label">同步碼（Bucket ID）：</label>
+        <div class="bucket-id-row">
+          <code class="bucket-id-code" data-testid="bucket-id-display">{{ createdBucketId }}</code>
+          <button class="btn-copy" @click="onCopyBucketId" data-testid="copy-bucket-id">
+            {{ copied ? '已複製 ✓' : '複製' }}
+          </button>
+        </div>
+        <p class="sync-desc">請將此同步碼貼到其他裝置的設定區，即可跨裝置同步追蹤清單。</p>
+      </div>
+
+      <div class="verify-notice">
+        <p>📧 <strong>重要</strong>：請到 <a href="https://kvdb.io/login" target="_blank" rel="noopener">kvdb.io/login</a> 用此 email 登入以啟用帳號。啟用後點下方按鈕開始同步。</p>
+        <button class="btn-primary" @click="onConfirmVerification" data-testid="confirm-verification">
+          我已完成啟用，開始同步
+        </button>
       </div>
     </div>
 
