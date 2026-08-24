@@ -1,167 +1,187 @@
 <script setup lang="ts">
 /**
- * LandingView — 首頁（README 風格）
+ * LandingView — 商業化首頁
  *
- * 顯示專案介紹，引導用戶進入股票配息行事曆。
+ * Hero → Features → How It Works → CTA → Footer
  */
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
-function goToApp() {
-  router.push('/app')
-}
 </script>
 
 <template>
   <div class="landing">
-    <div class="landing-container">
-      <h1>📅 StockPayDay++</h1>
-      <p class="subtitle">提醒投資人股利發放日期的工具。</p>
+    <!-- Header (matching App.vue header style) -->
+    <header class="landing-header">
+      <div class="landing-header-inner">
+        <a href="#/" class="landing-logo" title="StockPayDay++">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span class="landing-logo-text">StockPayDay++</span>
+        </a>
+        <div class="landing-header-actions">
+          <a href="#/watchlist" class="landing-icon-btn" aria-label="追蹤清單">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </header>
 
-      <section>
-        <h2>✨ 功能</h2>
-        <ul>
-          <li><strong>Crawler</strong>：從臺灣證券交易所（TWSE）抓取股利發放資料</li>
-          <li><strong>Processor</strong>：處理原始資料、產生靜態 JSON API</li>
-          <li><strong>Frontend</strong>：Vue 3 + Vite 靜態站台</li>
-        </ul>
-      </section>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-icon" aria-hidden="true">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+        </div>
+        <h1>你的股利，不再錯過。</h1>
+        <p class="hero-subtitle">StockPayDay 幫你掌握每一筆配息時程。<br class="hero-br-desktop">一目了然的行事曆，讓你精準掌握投資節奏。</p>
+        <div class="hero-actions">
+          <a href="#/app" class="landing-btn landing-btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            立即查看配息行事曆
+          </a>
+          <a href="#features" class="landing-btn landing-btn-secondary">了解更多 ↓</a>
+        </div>
+        <p class="social-proof">
+          <span class="star" aria-hidden="true">★</span>
+          已追蹤超過 2,000 支股票的配息時程
+        </p>
+      </div>
+    </section>
 
-      <section>
-        <h2>🚀 立即使用</h2>
-        <button class="cta" @click="goToApp">進入股票配息行事曆 →</button>
-      </section>
+    <!-- Features Section -->
+    <section id="features" class="features">
+      <div class="section-header">
+        <h2>為什麼選擇 StockPayDay</h2>
+        <p>專為台灣投資人設計的配息管理工具</p>
+      </div>
+      <div class="features-grid">
+        <!-- Feature 1: Calendar -->
+        <div class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div class="feature-text">
+            <h3>配息行事曆</h3>
+            <p>一目了然的行事曆視圖，所有配息日期清楚標示，再也不會錯過任何股利發放。</p>
+          </div>
+        </div>
+        <!-- Feature 2: Search -->
+        <div class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+          <div class="feature-text">
+            <h3>即時搜尋</h3>
+            <p>輸入股票代號或名稱，快速找到你關注的標的，即時查看配息資訊。</p>
+          </div>
+        </div>
+        <!-- Feature 3: Watchlist -->
+        <div class="feature-card">
+          <div class="feature-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </div>
+          <div class="feature-text">
+            <h3>追蹤清單</h3>
+            <p>建立你的個人追蹤清單，跨裝置同步，隨時掌握投資動態。</p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-      <section>
-        <h2>⚙️ 快速開始</h2>
-        <p><strong>後端</strong></p>
-        <pre><code>python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt</code></pre>
-        <p><strong>前端</strong></p>
-        <pre><code>cd frontend
-npm install
-npm run dev</code></pre>
-      </section>
+    <!-- How It Works -->
+    <section class="how-it-works">
+      <div class="section-header">
+        <h2>使用方式超簡單</h2>
+        <p>三個步驟，開始掌握你的配息</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>搜尋股票</h3>
+          <p>輸入代號或名稱，快速找到標的</p>
+        </div>
+        <div class="step-arrow" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>加入追蹤</h3>
+          <p>點擊愛心，加入你的追蹤清單</p>
+        </div>
+        <div class="step-arrow" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>掌握時程</h3>
+          <p>行事曆自動標示配息日期</p>
+        </div>
+      </div>
+    </section>
 
-      <section>
-        <h2>🔄 自動部署</h2>
-        <ul>
-          <li>Push 到 <code>master</code> → 自動建構並部署至 GitHub Pages</li>
-          <li>每日排程（UTC 08:00）→ 自動爬取最新資料</li>
-        </ul>
-      </section>
+    <!-- CTA Section -->
+    <section class="cta-section">
+      <h2>準備好掌握了嗎？</h2>
+      <a href="#/app" class="landing-btn landing-btn-primary landing-btn-large">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        開始使用 StockPayDay
+      </a>
+      <p class="cta-note">免費使用 · 無需註冊 · 資料每日更新</p>
+    </section>
 
-      <footer>
-        StockPayDay++ &copy; 2026 · MIT License
-      </footer>
-    </div>
+    <!-- Footer -->
+    <footer class="landing-footer">
+      <div class="footer-brand">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span>StockPayDay++</span>
+      </div>
+      <p class="footer-desc">提醒投資人股利發放日期的工具</p>
+      <div class="footer-links">
+        <a href="#features">功能介紹</a>
+        <a href="#/app">開始使用</a>
+        <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </div>
+      <p class="footer-copy">© 2026 StockPayDay++ · MIT License</p>
+    </footer>
   </div>
 </template>
-
-<style scoped>
-.landing {
-  min-height: calc(100vh - 60px);
-  background: var(--color-bg, #0d1117);
-  color: var(--color-text, #e6edf3);
-}
-
-.landing-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 3rem 1.5rem;
-}
-
-h1 {
-  font-size: 2.2rem;
-  margin-bottom: 0.5rem;
-}
-
-.subtitle {
-  color: var(--color-text-muted, #8b949e);
-  font-size: 1.1rem;
-  margin-bottom: 2.5rem;
-}
-
-h2 {
-  font-size: 1.4rem;
-  margin-top: 2.5rem;
-  margin-bottom: 1rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--color-border, #30363d);
-}
-
-ul {
-  list-style: none;
-  margin-bottom: 1rem;
-}
-
-ul li {
-  padding: 0.3rem 0;
-  padding-left: 1.5rem;
-  position: relative;
-}
-
-ul li::before {
-  content: "▸";
-  position: absolute;
-  left: 0;
-  color: var(--color-green, #3fb950);
-}
-
-strong {
-  color: var(--color-text, #e6edf3);
-}
-
-code {
-  background: var(--color-code-bg, #1c2128);
-  padding: 0.15em 0.4em;
-  border-radius: 4px;
-  font-size: 0.9em;
-  font-family: "SFMono-Regular", Consolas, monospace;
-}
-
-pre {
-  background: var(--color-code-bg, #1c2128);
-  border: 1px solid var(--color-border, #30363d);
-  border-radius: 6px;
-  padding: 1rem 1.2rem;
-  overflow-x: auto;
-  margin-bottom: 1rem;
-  font-size: 0.88em;
-  line-height: 1.5;
-}
-
-pre code {
-  background: none;
-  padding: 0;
-}
-
-.cta {
-  display: inline-block;
-  margin-top: 1rem;
-  padding: 0.75rem 2rem;
-  background: var(--color-accent, #58a6ff);
-  color: var(--color-bg, #0d1117);
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.cta:hover {
-  background: var(--color-accent-hover, #79c0ff);
-}
-
-footer {
-  margin-top: 4rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--color-border, #30363d);
-  color: var(--color-text-muted, #8b949e);
-  font-size: 0.85rem;
-  text-align: center;
-}
-</style>

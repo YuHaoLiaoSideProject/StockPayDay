@@ -36,7 +36,7 @@ function goToWatchlist() {
     <header class="app-header">
       <div class="header-inner">
       <div class="header-left">
-        <a href="javascript:void(0)" @click="() => router.push('/')" class="app-logo">
+        <a href="javascript:void(0)" @click="() => router.push('/')" class="app-logo" title="StockPayDay++">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
             <line x1="16" y1="2" x2="16" y2="6"/>
@@ -64,7 +64,7 @@ function goToWatchlist() {
               />
             </template>
           </SearchBar>
-          <button class="theme-toggle" @click="toggleDark" :aria-label="isDark ? '切換為淺色模式' : '切換為深色模式'">
+          <button class="theme-toggle" @click="toggleDark" :aria-pressed="isDark" :aria-label="isDark ? '切換為淺色模式' : '切換為深色模式'">
             <svg v-if="isDark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="5"/>
               <line x1="12" y1="1" x2="12" y2="3"/>

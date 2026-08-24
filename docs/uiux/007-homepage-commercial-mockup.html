@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>007 — 首頁商業化重設計 Mockup</title>
+<style>
+/* ============================================
+   Design Tokens
+   ============================================ */
+[data-theme="light"] {
+  --bg: #ffffff;
+  --surface: #f9fafb;
+  --surface-2: #f3f4f6;
+  --border: #e5e7eb;
+  --text: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+  --accent: #1a73e8;
+  --accent-hover: #1557b0;
+  --accent-light: rgba(26,115,232,0.08);
+  --success: #188038;
+  --danger: #c5221f;
+  --hero-bg: #f0f7ff;
+  --hero-gradient: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 50%, #ffffff 100%);
+  --feature-icon-bg: rgba(26,115,232,0.1);
+  --feature-icon-color: #1a73e8;
+  --step-circle-bg: #1a73e8;
+  --cta-section-bg: #f9fafb;
+  --footer-bg: #111827;
+  --footer-text: #9ca3af;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  --card-shadow-hover: 0 8px 24px rgba(0,0,0,0.1);
+  --focus-ring: rgba(26,115,232,0.4);
+  --frame-bg: #f3f4f6;
+  --browser-bar-bg: #e5e7eb;
+}
+
+[data-theme="dark"] {
+  --bg: #111827;
+  --surface: #1f2937;
+  --surface-2: #374151;
+  --border: #4b5563;
+  --text: #f9fafb;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --accent: #60a5fa;
+  --accent-hover: #93bbfd;
+  --accent-light: rgba(96,165,250,0.12);
+  --success: #34d399;
+  --danger: #f87171;
+  --hero-bg: #0f172a;
+  --hero-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #111827 100%);
+  --feature-icon-bg: rgba(96,165,250,0.15);
+  --feature-icon-color: #60a5fa;
+  --step-circle-bg: #60a5fa;
+  --cta-section-bg: #1f2937;
+  --footer-bg: #0f172a;
+  --footer-text: #6b7280;
+  --card-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  --card-shadow-hover: 0 8px 24px rgba(0,0,0,0.4);
+  --focus-ring: rgba(96,165,250,0.4);
+  --frame-bg: #0f172a;
+  --browser-bar-bg: #1e293b;
+}
+
+/* ============================================
+   Reset & Base
+   ============================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background: var(--frame-bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ============================================
+   Tool Panel (Theme / Device Switch)
+   ============================================ */
+.tool-panel {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tool-panel h2 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.tool-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.tool-btn:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.tool-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.tool-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+}
+
+/* ============================================
+   Frame Container
+   ============================================ */
+.frame-wrapper {
+  max-width: 1200px;
+  margin: 24px auto;
+  padding: 0 24px;
+}
+
+.browser-frame {
+  background: var(--bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.browser-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--browser-bar-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.browser-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.browser-dots span {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.browser-dots span:nth-child(1) { background: #ff5f57; }
+.browser-dots span:nth-child(2) { background: #febc2e; }
+.browser-dots span:nth-child(3) { background: #28c840; }
+
+.browser-url {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.browser-url svg {
+  width: 12px;
+  height: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.browser-badge {
+  padding: 2px 8px;
+  background: var(--accent-light);
+  color: var(--accent);
+  border-radius: 10px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Page Content Area */
+.page-content {
+  min-height: 600px;
+  overflow-y: auto;
+}
+
+/* ============================================
+   Landing Page Styles
+   ============================================ */
+.landing {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 600px;
+}
+
+/* --- App Header (Simulated) --- */
+.landing-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.landing-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.landing-logo svg {
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+}
+
+.landing-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.header-icon-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.header-icon-btn:hover {
+  background: var(--surface-2);
+}
+
+.header-icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* --- Hero Section --- */
+.hero {
+  background: var(--hero-gradient);
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.hero-content {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.hero-icon {
+  width: 72px;
+  height: 72px;
+  background: var(--feature-icon-bg);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.hero-icon svg {
+  width: 36px;
+  height: 36px;
+  color: var(--feature-icon-color);
+}
+
+.hero h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+
+.hero .hero-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  margin-bottom: 32px;
+  line-height: 1.6;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 32px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 4px 16px rgba(26,115,232,0.3);
+  transform: translateY(-1px);
+}
+
+.btn-primary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 32px;
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-secondary:hover {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.btn-secondary:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.social-proof {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.social-proof .star {
+  color: #f59e0b;
+}
+
+/* --- Features Section --- */
+.features {
+  padding: 80px 24px;
+  background: var(--bg);
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.section-header h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.section-header p {
+  font-size: 1rem;
+  color: var(--text-secondary);
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.feature-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--feature-icon-bg);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.feature-icon svg {
+  width: 28px;
+  height: 28px;
+  color: var(--feature-icon-color);
+}
+
+.feature-card h3 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.feature-card p {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* --- How It Works --- */
+.how-it-works {
+  padding: 80px 24px;
+  background: var(--surface);
+}
+
+.steps {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 16px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.step {
+  flex: 1;
+  text-align: center;
+  max-width: 220px;
+}
+
+.step-number {
+  width: 56px;
+  height: 56px;
+  background: var(--step-circle-bg);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 auto 16px;
+}
+
+.step h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.step p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.step-arrow {
+  display: flex;
+  align-items: center;
+  padding-top: 16px;
+  color: var(--text-muted);
+}
+
+.step-arrow svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* --- CTA Section --- */
+.cta-section {
+  padding: 80px 24px;
+  background: var(--cta-section-bg);
+  text-align: center;
+}
+
+.cta-section h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+
+.cta-section .btn-primary {
+  height: 56px;
+  padding: 0 40px;
+  font-size: 1.125rem;
+  border-radius: 14px;
+}
+
+.cta-note {
+  margin-top: 16px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+/* --- Footer --- */
+.landing-footer {
+  padding: 48px 24px 32px;
+  background: var(--footer-bg);
+  text-align: center;
+}
+
+.footer-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.footer-brand svg {
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+}
+
+.footer-brand span {
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+}
+
+.footer-desc {
+  font-size: 0.875rem;
+  color: var(--footer-text);
+  margin-bottom: 24px;
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.footer-links a {
+  font-size: 0.875rem;
+  color: var(--footer-text);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.footer-links a:hover {
+  color: white;
+}
+
+.footer-copy {
+  font-size: 0.75rem;
+  color: var(--footer-text);
+  padding-top: 24px;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ============================================
+   Anatomy Cards
+   ============================================ */
+.anatomy-section {
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 0 24px;
+}
+
+.anatomy-section h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.anat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.anat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.anat-card h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.anat-card h4 .tag {
+  display: inline-flex;
+  padding: 2px 8px;
+  background: var(--accent-light);
+  color: var(--accent);
+  border-radius: 6px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.anat-preview {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.anat-dims {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ============================================
+   States Table
+   ============================================ */
+.states-section {
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 0 24px;
+}
+
+.states-section h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.states-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.states-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.states-table td {
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.states-table tr:last-child td {
+  border-bottom: none;
+}
+
+.state-preview {
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ============================================
+   Token Summary
+   ============================================ */
+.token-section {
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 0 24px;
+}
+
+.token-section h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.token-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.token-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.token-card .token-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  margin-bottom: 4px;
+}
+
+.token-card .token-value {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.token-card .token-swatch {
+  width: 100%;
+  height: 32px;
+  border-radius: 6px;
+  margin-top: 8px;
+  border: 1px solid var(--border);
+}
+
+/* ============================================
+   Legend
+   ============================================ */
+.legend-section {
+  max-width: 1200px;
+  margin: 32px auto;
+  padding: 0 24px 48px;
+}
+
+.legend-section h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.legend-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.legend-num {
+  width: 24px;
+  height: 24px;
+  background: var(--accent);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.legend-text {
+  font-size: 0.875rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* ============================================
+   Footnote
+   ============================================ */
+.footnote {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+/* ============================================
+   Mobile Styles (body.view-mobile)
+   ============================================ */
+body.view-mobile .hero h1 { font-size: 1.75rem; }
+body.view-mobile .hero .hero-subtitle { font-size: 1rem; }
+body.view-mobile .hero { padding: 48px 16px; }
+body.view-mobile .hero-actions { flex-direction: column; }
+body.view-mobile .hero-actions .btn-primary,
+body.view-mobile .hero-actions .btn-secondary { width: 100%; }
+body.view-mobile .features { padding: 48px 16px; }
+body.view-mobile .features-grid {
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+body.view-mobile .feature-card {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  gap: 16px;
+  padding: 20px;
+}
+body.view-mobile .feature-icon {
+  margin: 0;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+}
+body.view-mobile .feature-icon svg { width: 24px; height: 24px; }
+body.view-mobile .how-it-works { padding: 48px 16px; }
+body.view-mobile .steps {
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+body.view-mobile .step-arrow { transform: rotate(90deg); padding-top: 0; }
+body.view-mobile .cta-section { padding: 48px 16px; }
+body.view-mobile .cta-section h2 { font-size: 1.25rem; }
+body.view-mobile .cta-section .btn-primary {
+  height: 48px;
+  padding: 0 32px;
+  font-size: 1rem;
+  width: 100%;
+}
+body.view-mobile .section-header h2 { font-size: 1.25rem; }
+body.view-mobile .landing-header { padding: 0 16px; }
+
+/* ============================================
+   Reduced Motion
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .feature-card,
+  .btn-primary,
+  .btn-secondary {
+    transition: none;
+  }
+  .feature-card:hover {
+    transform: none;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================
+     Tool Panel
+     ============================================ -->
+<div class="tool-panel">
+  <h2>007 — 首頁商業化重設計 Mockup</h2>
+  <div class="tool-controls">
+    <button class="tool-btn active" id="btn-light" onclick="setTheme('light')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      Light
+    </button>
+    <button class="tool-btn" id="btn-dark" onclick="setTheme('dark')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      Dark
+    </button>
+    <div class="tool-divider"></div>
+    <button class="tool-btn active" id="btn-desktop" onclick="setDevice('desktop')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Desktop
+    </button>
+    <button class="tool-btn" id="btn-mobile" onclick="setDevice('mobile')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      Mobile
+    </button>
+  </div>
+</div>
+
+<!-- ============================================
+     Frame: Desktop / Mobile
+     ============================================ -->
+<div class="frame-wrapper">
+  <div class="browser-frame">
+    <!-- Browser Bar -->
+    <div class="browser-bar">
+      <div class="browser-dots"><span></span><span></span><span></span></div>
+      <div class="browser-url">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        stockpayday.example.com/#/
+      </div>
+      <span class="browser-badge">Landing Page</span>
+    </div>
+
+    <!-- Page Content -->
+    <div class="page-content">
+      <div class="landing">
+        <!-- App Header (Simulated) -->
+        <div class="landing-header">
+          <a href="#" class="landing-logo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            StockPayDay++
+          </a>
+          <div class="landing-header-actions">
+            <button class="header-icon-btn" aria-label="追蹤清單">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <button class="header-icon-btn" aria-label="切換深色模式">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Hero Section -->
+        <section class="hero">
+          <div class="hero-content">
+            <div class="hero-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <h1>你的股利，不再錯過。</h1>
+            <p class="hero-subtitle">StockPayDay 幫你掌握每一筆配息時程。<br>一目了然的行事曆，讓你精準掌握投資節奏。</p>
+            <div class="hero-actions">
+              <a href="#/app" class="btn-primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                立即查看配息行事曆
+              </a>
+              <a href="#features" class="btn-secondary">了解更多 ↓</a>
+            </div>
+            <p class="social-proof">
+              <span class="star">★</span>
+              已追蹤超過 2,000 支股票的配息時程
+            </p>
+          </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features" id="features">
+          <div class="section-header">
+            <h2>為什麼選擇 StockPayDay</h2>
+            <p>專為台灣投資人設計的配息管理工具</p>
+          </div>
+          <div class="features-grid">
+            <!-- Feature 1: Calendar -->
+            <div class="feature-card">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <h3>配息行事曆</h3>
+              <p>一目了然的行事曆視圖，所有配息日期清楚標示，再也不会錯過任何股利發放。</p>
+            </div>
+            <!-- Feature 2: Search -->
+            <div class="feature-card">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              </div>
+              <h3>即時搜尋</h3>
+              <p>輸入股票代號或名稱，快速找到你關注的標的，即時查看配息資訊。</p>
+            </div>
+            <!-- Feature 3: Watchlist -->
+            <div class="feature-card">
+              <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              </div>
+              <h3>追蹤清單</h3>
+              <p>建立你的個人追蹤清單，跨裝置同步，隨時掌握投資動態。</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="how-it-works">
+          <div class="section-header">
+            <h2>使用方式超簡單</h2>
+            <p>三個步驟，開始掌握你的配息</p>
+          </div>
+          <div class="steps">
+            <div class="step">
+              <div class="step-number">1</div>
+              <h3>搜尋股票</h3>
+              <p>輸入代號或名稱，快速找到標的</p>
+            </div>
+            <div class="step-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+            <div class="step">
+              <div class="step-number">2</div>
+              <h3>加入追蹤</h3>
+              <p>點擊愛心，加入你的追蹤清單</p>
+            </div>
+            <div class="step-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+            <div class="step">
+              <div class="step-number">3</div>
+              <h3>掌握時程</h3>
+              <p>行事曆自動標示配息日期</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+          <h2>準備好掌握了嗎？</h2>
+          <a href="#/app" class="btn-primary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            開始使用 StockPayDay
+          </a>
+          <p class="cta-note">免費使用 · 無需註冊 · 資料每日更新</p>
+        </section>
+
+        <!-- Footer -->
+        <footer class="landing-footer">
+          <div class="footer-brand">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>StockPayDay++</span>
+          </div>
+          <p class="footer-desc">提醒投資人股利發放日期的工具</p>
+          <div class="footer-links">
+            <a href="#features">功能介紹</a>
+            <a href="#/app">開始使用</a>
+            <a href="https://github.com" target="_blank">GitHub</a>
+          </div>
+          <p class="footer-copy">© 2026 StockPayDay++ · MIT License</p>
+        </footer>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     Anatomy Section
+     ============================================ -->
+<div class="anatomy-section">
+  <h3>元件解剖（Component Anatomy）</h3>
+  <div class="anat-grid">
+    <!-- Hero CTA -->
+    <div class="anat-card">
+      <h4>Primary CTA Button <span class="tag">Interactive</span></h4>
+      <div class="anat-preview">
+        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+          <a href="#" class="btn-primary" style="height:48px; padding:0 32px; font-size:1rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            立即查看
+          </a>
+        </div>
+      </div>
+      <div class="anat-dims">height: 48px · padding: 0 32px · border-radius: 12px · font-weight: 600</div>
+    </div>
+
+    <!-- Secondary CTA -->
+    <div class="anat-card">
+      <h4>Secondary CTA Button <span class="tag">Interactive</span></h4>
+      <div class="anat-preview">
+        <a href="#" class="btn-secondary" style="height:48px; padding:0 32px;">了解更多 ↓</a>
+      </div>
+      <div class="anat-dims">height: 48px · padding: 0 32px · border: 1px solid · border-radius: 12px</div>
+    </div>
+
+    <!-- Feature Card -->
+    <div class="anat-card">
+      <h4>Feature Card <span class="tag">Layout</span></h4>
+      <div class="anat-preview">
+        <div class="feature-card" style="margin:0; text-align:left; display:flex; align-items:center; gap:16px; padding:20px;">
+          <div class="feature-icon" style="margin:0; flex-shrink:0; width:48px; height:48px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px; height:24px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div>
+            <h3 style="font-size:1rem; margin-bottom:4px;">即時搜尋</h3>
+            <p style="font-size:0.875rem; color:var(--text-secondary); margin:0;">快速找到你關注的股票配息</p>
+          </div>
+        </div>
+      </div>
+      <div class="anat-dims">padding: 20px · border-radius: 16px · hover: translateY(-4px) + shadow</div>
+    </div>
+
+    <!-- Step Circle -->
+    <div class="anat-card">
+      <h4>Step Number Circle <span class="tag">Visual</span></h4>
+      <div class="anat-preview" style="display:flex; gap:16px; align-items:center; justify-content:center;">
+        <div class="step-number" style="width:48px; height:48px; font-size:1.125rem;">1</div>
+        <div class="step-number" style="width:48px; height:48px; font-size:1.125rem;">2</div>
+        <div class="step-number" style="width:48px; height:48px; font-size:1.125rem;">3</div>
+      </div>
+      <div class="anat-dims">width: 56px · height: 56px · border-radius: 50% · background: --step-circle-bg</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     States Table
+     ============================================ -->
+<div class="states-section">
+  <h3>狀態矩陣（States Matrix）</h3>
+  <table class="states-table">
+    <thead>
+      <tr>
+        <th style="width:120px;">狀態</th>
+        <th style="width:200px;">Primary CTA</th>
+        <th style="width:200px;">Feature Card</th>
+        <th>互動行為</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Idle</strong></td>
+        <td>
+          <div class="state-preview">
+            <span class="btn-primary" style="height:36px; padding:0 20px; font-size:0.8125rem; pointer-events:none;">按鈕</span>
+          </div>
+        </td>
+        <td>
+          <div class="state-preview" style="width:100%;">
+            <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:0.75rem; width:100%;">卡片</div>
+          </div>
+        </td>
+        <td style="color:var(--text-secondary); font-size:0.8125rem;">預設顯示</td>
+      </tr>
+      <tr>
+        <td><strong>Hover</strong></td>
+        <td>
+          <div class="state-preview">
+            <span class="btn-primary" style="height:36px; padding:0 20px; font-size:0.8125rem; pointer-events:none; box-shadow:0 4px 16px rgba(26,115,232,0.3); transform:translateY(-1px);">按鈕</span>
+          </div>
+        </td>
+        <td>
+          <div class="state-preview" style="width:100%;">
+            <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:0.75rem; width:100%; box-shadow:0 8px 24px rgba(0,0,0,0.1); transform:translateY(-2px);">卡片</div>
+          </div>
+        </td>
+        <td style="color:var(--text-secondary); font-size:0.8125rem;">background darkens + shadow</td>
+      </tr>
+      <tr>
+        <td><strong>Focus</strong></td>
+        <td>
+          <div class="state-preview">
+            <span class="btn-primary" style="height:36px; padding:0 20px; font-size:0.8125rem; pointer-events:none; box-shadow:0 0 0 3px var(--focus-ring);">按鈕</span>
+          </div>
+        </td>
+        <td>
+          <div class="state-preview" style="width:100%;">
+            <div style="background:var(--surface); border:1px solid var(--accent); border-radius:8px; padding:8px 12px; font-size:0.75rem; width:100%;">卡片</div>
+          </div>
+        </td>
+        <td style="color:var(--text-secondary); font-size:0.8125rem;">3px focus ring (var(--focus-ring))</td>
+      </tr>
+      <tr>
+        <td><strong>Active</strong></td>
+        <td>
+          <div class="state-preview">
+            <span class="btn-primary" style="height:36px; padding:0 20px; font-size:0.8125rem; pointer-events:none; opacity:0.85;">按鈕</span>
+          </div>
+        </td>
+        <td>
+          <div class="state-preview" style="width:100%;">
+            <div style="background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:0.75rem; width:100%; opacity:0.8;">卡片</div>
+          </div>
+        </td>
+        <td style="color:var(--text-secondary); font-size:0.8125rem;">background darkens 15%</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ============================================
+     Token Summary
+     ============================================ -->
+<div class="token-section">
+  <h3>Design Token 摘要</h3>
+  <div class="token-grid">
+    <div class="token-card">
+      <div class="token-name">--accent</div>
+      <div class="token-value">Light: #1a73e8 · Dark: #60a5fa</div>
+      <div class="token-swatch" style="background: linear-gradient(90deg, #1a73e8 50%, #60a5fa 50%);"></div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">--hero-gradient</div>
+      <div class="token-value">Light: #f0f7ff → #ffffff</div>
+      <div class="token-swatch" style="background: linear-gradient(135deg, #f0f7ff, #ffffff);"></div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">--feature-icon-bg</div>
+      <div class="token-value">Light: rgba(26,115,232,0.1)</div>
+      <div class="token-swatch" style="background: rgba(26,115,232,0.1); border: 1px dashed var(--border);"></div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">--step-circle-bg</div>
+      <div class="token-value">Light: #1a73e8 · Dark: #60a5fa</div>
+      <div class="token-swatch" style="background: linear-gradient(90deg, #1a73e8 50%, #60a5fa 50%);"></div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">--card-radius</div>
+      <div class="token-value">16px</div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">--section-padding</div>
+      <div class="token-value">Desktop: 80px · Mobile: 48px</div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">Font: Hero H1</div>
+      <div class="token-value">Desktop: 2.5rem (40px) · Mobile: 1.75rem (28px)</div>
+    </div>
+    <div class="token-card">
+      <div class="token-name">Font: CTA Button</div>
+      <div class="token-value">1rem (16px) · weight: 600</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     Legend
+     ============================================ -->
+<div class="legend-section">
+  <h3>設計重點說明</h3>
+  <div class="legend-list">
+    <div class="legend-item">
+      <div class="legend-num">1</div>
+      <div class="legend-text"><strong>Hero Section</strong> — 以用戶利益為核心的價值主張，取代 README 風格的技術描述。漸層背景增加視覺層次。</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-num">2</div>
+      <div class="legend-text"><strong>Social Proof</strong> — 「已追蹤超過 2,000 支股票」建立信任感，星號圖示增加視覺吸引力。</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-num">3</div>
+      <div class="legend-text"><strong>Feature Cards</strong> — 三欄卡片佈局，hover 效果增加互動感。每個功能回答「這對你有什麼好處」。</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-num">4</div>
+      <div class="legend-text"><strong>How It Works</strong> — 三步驟流程圖，降低使用門檻認知。圓圈 + 箭頭視覺引導。</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-num">5</div>
+      <div class="legend-text"><strong>CTA Section</strong> — 底部再次呼籲行動，大按鈕 + 補充文字（免費、無需註冊）降低決策阻力。</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-num">6</div>
+      <div class="legend-text"><strong>Footer</strong> — 深色背景 footer，品牌 + 連結 + 版權，建立專業形象。</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-num">7</div>
+      <div class="legend-text"><strong>RWD</strong> — Mobile: Hero 縮小、CTA 全寬、Features 改横排卡片、Steps 縱排。所有觸控目標 ≥ 44px。</div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-num">8</div>
+      <div class="legend-text"><strong>Theme</strong> — 完整 Light/Dark 雙主題，所有色彩使用 CSS 變數，無硬編碼色值。</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================
+     Footnote
+     ============================================ -->
+<div class="footnote">
+  關聯文件：<code>docs/uiux/007-homepage-commercial-redesign.md</code> ｜ 設計日期：2025-08-24 ｜ 狀態：Draft
+</div>
+
+<!-- ============================================
+     JavaScript
+     ============================================ -->
+<script>
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('btn-light').classList.toggle('active', theme === 'light');
+  document.getElementById('btn-dark').classList.toggle('active', theme === 'dark');
+}
+
+function setDevice(device) {
+  document.body.classList.toggle('view-mobile', device === 'mobile');
+  document.getElementById('btn-desktop').classList.toggle('active', device === 'desktop');
+  document.getElementById('btn-mobile').classList.toggle('active', device === 'mobile');
+}
+</script>
+
+</body>
+</html>

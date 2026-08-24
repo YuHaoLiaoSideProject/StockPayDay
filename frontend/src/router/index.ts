@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
+import LandingView from '../views/LandingView.vue'
 import HomeView from '../views/HomeView.vue'
 import StockView from '../views/StockView.vue'
 import WatchlistPage from '../views/WatchlistView.vue'
@@ -9,6 +10,16 @@ const router = createRouter({
   routes: [
     {
       path: '/',
+      name: 'landing',
+      component: LandingView,
+    },
+    {
+      path: '/landing',
+      name: 'landing-alt',
+      component: LandingView,
+    },
+    {
+      path: '/app',
       name: 'home',
       component: HomeView,
     },
