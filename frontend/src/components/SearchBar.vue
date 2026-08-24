@@ -89,6 +89,7 @@ defineExpose({ toggleExpand })
       </svg>
       <input
         ref="inputRef"
+        id="stock-search"
         type="text"
         :value="modelValue"
         @input="onInput"

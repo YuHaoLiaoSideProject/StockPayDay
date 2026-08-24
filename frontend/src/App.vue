@@ -54,16 +54,7 @@ function goToWatchlist() {
             </svg>
             <span v-if="watchedCodes.size > 0" class="watchlist-badge">{{ watchedCodes.size }}</span>
           </button>
-          <SearchBar v-model="query" :results="results" @select="onStockSelect">
-            <template #result-actions="{ result }">
-              <WatchlistButton
-                :code="result.code"
-                :name="result.name"
-                type="stock"
-                size="sm"
-              />
-            </template>
-          </SearchBar>
+
           <button class="theme-toggle" @click="toggleDark" :aria-label="isDark ? '切換為淺色模式' : '切換為深色模式'">
             <svg v-if="isDark" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="5"/>
@@ -87,6 +78,16 @@ function goToWatchlist() {
 
     <!-- Router View -->
     <main class="app-main">
+      <SearchBar v-model="query" :results="results" @select="onStockSelect">
+        <template #result-actions="{ result }">
+          <WatchlistButton
+            :code="result.code"
+            :name="result.name"
+            type="stock"
+            size="sm"
+          />
+        </template>
+      </SearchBar>
       <router-view />
     </main>
   </div>

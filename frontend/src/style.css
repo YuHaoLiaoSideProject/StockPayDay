@@ -632,7 +632,11 @@ body {
   .watchlist-btn,
   .search-results,
   .search-input,
-  .back-button {
+  .back-button,
+  .view-fade-enter-active,
+  .view-fade-leave-active,
+  .modal-fade-enter-active,
+  .modal-fade-leave-active {
     transition: none;
   }
   .calendar-day:active,
@@ -980,42 +984,6 @@ body {
   .history-table td:nth-child(2) {
     display: none;
   }
-  /* Search: mobile full-width */
-  .header-icon-group .search-bar {
-    width: 0;
-    position: static;
-  }
-  .header-icon-group .search-bar.expanded {
-    width: 100vw;
-    position: fixed;
-    top: 56px;
-    left: 0;
-    right: 0;
-    z-index: 50;
-    padding: 0.5rem 0.75rem;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  }
-  .header-icon-group .search-bar.expanded .search-input-wrapper {
-    max-width: 100%;
-  }
-  .header-icon-group .search-bar.expanded .search-input {
-    height: 44px;
-    font-size: 1rem;
-  }
-  .header-icon-group .search-bar.expanded .search-results,
-  .header-icon-group .search-bar.expanded .no-results {
-    position: static;
-    margin-top: 4px;
-    box-shadow: none;
-    border: 1px solid var(--border);
-  }
-  /* 功能 001：搜尋結果列 ❤️ 觸控目標 ≥ 44×44px（Tech Decision 005） */
-  .search-result-item .watchlist-btn--sm {
-    width: 44px;
-    height: 44px;
-  }
 }
 
 /* ============================================
@@ -1231,4 +1199,37 @@ body {
 
 .btn-secondary:hover {
   background: var(--surface-2);
+}
+
+/* ============================================
+   View Switch Transition (calendar ↔ list)
+   ============================================ */
+.view-fade-enter-active,
+.view-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.view-fade-enter-from,
+.view-fade-leave-to {
+  opacity: 0;
+}
+
+/* ============================================
+   Modal Transition (DayDetail open/close)
+   ============================================ */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+.modal-fade-enter-active .modal-content,
+.modal-fade-leave-active .modal-content {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.modal-fade-enter-from .modal-content,
+.modal-fade-leave-to .modal-content {
+  transform: scale(0.95);
+  opacity: 0;
 }

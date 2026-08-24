@@ -70,30 +70,36 @@ const selectedDividends = computed(() => {
       <div class="content-container">
         <ViewSwitcher :current-view="currentView" @view-change="handleViewChange" />
 
-        <Calendar
-          v-if="currentView === 'calendar'"
-          :month-label="monthLabel"
-          :days="days"
-          @prev-month="prevMonth"
-          @next-month="nextMonth"
-          @date-click="handleDateClick"
-        />
+        <transition name="view-fade" mode="out-in">
+          <Calendar
+            v-if="currentView === 'calendar'"
+            :key="'calendar'"
+            :month-label="monthLabel"
+            :days="days"
+            @prev-month="prevMonth"
+            @next-month="nextMonth"
+            @date-click="handleDateClick"
+          />
 
-        <ListView
-          v-else
-          :items="sortedUpcoming"
-          @stock-click="handleStockClick"
-        />
+          <ListView
+            v-else
+            :key="'list'"
+            :items="sortedUpcoming"
+            @stock-click="handleStockClick"
+          />
+        </transition>
       </div>
 
       <!-- 日期明細 Modal -->
-      <DayDetail
-        v-if="selectedDate"
-        :date="selectedDate"
-        :dividends="selectedDividends"
-        @close="handleCloseDetail"
-        @stock-click="handleStockClick"
-      />
+      <transition name="modal-fade">
+        <DayDetail
+          v-if="selectedDate"
+          :date="selectedDate"
+          :dividends="selectedDividends"
+          @close="handleCloseDetail"
+          @stock-click="handleStockClick"
+        />
+      </transition>
     </template>
   </div>
 </template>
