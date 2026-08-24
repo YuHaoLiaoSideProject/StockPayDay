@@ -8,8 +8,8 @@
 import { computed } from 'vue'
 
 interface DividendHistory {
-  year: number
   ex_date: string
+  pay_date?: string
   dividend?: number
   cash_dividend?: number
   stock_dividend?: number
@@ -31,10 +31,10 @@ const emit = defineEmits<{
   'back-click': []
 }>()
 
-/** 歷史資料依年份降序排列 */
+/** 歷史資料依除息日降序排列（新的在前） */
 const sortedHistory = computed(() => {
   if (!props.stock?.history) return []
-  return [...props.stock.history].sort((a, b) => b.year - a.year)
+  return [...props.stock.history].sort((a, b) => b.ex_date.localeCompare(a.ex_date))
 })
 
 /** 取得配息金額（相容不同欄位名稱） */
@@ -88,15 +88,15 @@ function barWidth(item: DividendHistory): number {
     <table class="history-table">
       <thead>
         <tr>
-          <th class="col-year">年份</th>
-          <th class="col-date">除權息日</th>
+          <th class="col-date">除息日</th>
+          <th class="col-date">配息日</th>
           <th class="col-amount">配息金額</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in sortedHistory" :key="`${item.year}-${item.ex_date}`" class="history-row">
-          <td>{{ item.year }}</td>
+        <tr v-for="item in sortedHistory" :key="item.ex_date" class="history-row">
           <td class="col-date">{{ item.ex_date }}</td>
+          <td class="col-date">{{ item.pay_date || '-' }}</td>
           <td class="amount">
             ${{ getDividend(item).toFixed(2) }}
             <span class="amount-bar" :style="{ width: barWidth(item) + '%' }"></span>

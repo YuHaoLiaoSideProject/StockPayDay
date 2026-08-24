@@ -2,8 +2,8 @@ import { ref, watch, type Ref } from 'vue'
 
 /** 單筆歷史配息紀錄 */
 interface DividendHistory {
-  year: number
   ex_date: string
+  pay_date?: string
   cash_dividend?: number
   stock_dividend?: number
 }

@@ -765,15 +765,16 @@ def generate_securities_history(
             except (ValueError, IndexError):
                 year = 0
 
+            pay_date = rec.get("pay_date", "")
             history.append({
-                "year": year,
                 "ex_date": ex_date,
+                "pay_date": pay_date,
                 "cash_dividend": rec.get("cash_dividend", 0),
                 "stock_dividend": rec.get("stock_dividend", 0),
             })
 
-        # 依年份降冪排序
-        history.sort(key=lambda x: x["year"] or 0, reverse=True)
+        # 依 ex_date 降冪排序（新的在前）
+        history.sort(key=lambda x: x["ex_date"], reverse=True)
 
         data = {
             "code": code,

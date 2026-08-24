@@ -256,9 +256,9 @@ class TestGenerateSecuritiesHistory:
         assert data["code"] == "2330"
         assert data["name"] == "台積電"
         assert len(data["history"]) == 2
-        # 應依年份降冪
-        assert data["history"][0]["year"] == 2026
-        assert data["history"][1]["year"] == 2025
+        # 應依 ex_date 降冪（新的在前）
+        assert data["history"][0]["ex_date"] == "2026-07-25"
+        assert data["history"][1]["ex_date"] == "2025-07-18"
 
     def test_history_sorted_descending(self, tmp_path):
         """歷史依年份降冪排序"""
@@ -274,8 +274,8 @@ class TestGenerateSecuritiesHistory:
         generate_securities_history(records, output_dir=tmp_path)
         with open(tmp_path / "0050.json") as f:
             data = json.load(f)
-        years = [h["year"] for h in data["history"]]
-        assert years == [2026, 2025, 2024]
+        ex_dates = [h["ex_date"] for h in data["history"]]
+        assert ex_dates == ["2026-07-20", "2025-07-15", "2024-06-12"]
 
     def test_multiple_securities(self, tmp_path):
         """多支證券各自產生獨立檔案"""
