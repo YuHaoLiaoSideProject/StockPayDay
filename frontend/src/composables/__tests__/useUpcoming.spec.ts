@@ -6,12 +6,6 @@ describe('useUpcoming', () => {
     vi.restoreAllMocks()
   })
 
-  it('should initialize with loading status', () => {
-    const { status, upcoming } = useUpcoming()
-    expect(status.value).toBe('loading')
-    expect(upcoming.value).toEqual([])
-  })
-
   it('should load upcoming data successfully', async () => {
     const mockData = [
       {

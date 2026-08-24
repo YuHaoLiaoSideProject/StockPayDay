@@ -16,7 +16,6 @@ import { ref, computed, watchEffect, onBeforeUnmount, getCurrentInstance } from 
 import type { WatchlistItem, WatchlistSyncDoc, SyncStatus } from '../types/watchlist'
 import { useWatchlist, syncActiveRef } from './useWatchlist'
 
-const TOKEN_KEY = 'stockpayday-sync-token'
 const BUCKET_ID_KEY = 'stockpayday-sync-bucket-id'
 const KVDB_BASE = 'https://kvdb.io'
 const POLL_INTERVAL_MS = 60_000

@@ -125,7 +125,6 @@ function setVisibility(state: 'visible' | 'hidden'): void {
 }
 
 const BUCKET_ID_KEY = 'stockpayday-sync-bucket-id'
-const KVDB_URL_BASE = 'https://kvdb.io'
 
 // ============================================================
 // merge 合併規則（F-04 / F-11b / F-12 / F-27b）
