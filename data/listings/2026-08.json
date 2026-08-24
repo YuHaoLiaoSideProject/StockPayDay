@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-23",
+  "last_updated": "2026-08-24",
   "source": "TWSE",
   "records": [
     {
@@ -5370,6 +5370,11 @@
     {
       "code": "6168",
       "name": "宏齊",
+      "market": "TWSE"
+    },
+    {
+      "code": "6176",
+      "name": "瑞儀",
       "market": "TWSE"
     },
     {

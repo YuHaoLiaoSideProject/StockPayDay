@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-23",
+  "last_updated": "2026-08-24",
   "source": "moneydj",
   "records": [
     {
@@ -835,6 +835,19 @@
       "type": "息"
     },
     {
+      "code": "7738",
+      "name": "東聯互動",
+      "earnings_dividend": 10.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 10.0,
+      "pay_date": "2026-09-24",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-07",
+      "type": "息"
+    },
+    {
       "code": "8099",
       "name": "大世科",
       "earnings_dividend": 2.1,
@@ -900,6 +913,19 @@
       "type": "息"
     },
     {
+      "code": "3622",
+      "name": "洋華",
+      "earnings_dividend": 1.6,
+      "reserve_dividend": 1.6,
+      "cash_dividend": 3.2,
+      "pay_date": "2026-10-07",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-08",
+      "type": "息"
+    },
+    {
       "code": "4549",
       "name": "桓達",
       "ex_date": "2026-09-08",
@@ -928,13 +954,13 @@
     {
       "code": "8473",
       "name": "山林水",
-      "earnings_dividend": 0.79977991,
+      "earnings_dividend": 0.78234504,
       "reserve_dividend": 0.0,
-      "cash_dividend": 0.79977991,
+      "cash_dividend": 0.78234504,
       "pay_date": "2026-09-24",
-      "earnings_stock": 1.08290112,
+      "earnings_stock": 1.05929433,
       "reserve_stock": 0.0,
-      "stock_dividend": 1.08290112,
+      "stock_dividend": 1.05929433,
       "ex_date": "2026-09-08",
       "type": "權息"
     },
@@ -1043,6 +1069,19 @@
       "type": "息"
     },
     {
+      "code": "6971",
+      "name": "惠民實業",
+      "earnings_dividend": 1.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.5,
+      "pay_date": "2026-10-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-09",
+      "type": "息"
+    },
+    {
       "code": "8096",
       "name": "擎亞",
       "earnings_dividend": 0.5,
@@ -1062,6 +1101,19 @@
       "reserve_dividend": 0.0,
       "cash_dividend": 1.0,
       "pay_date": "2026-10-08",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-10",
+      "type": "息"
+    },
+    {
+      "code": "4912",
+      "name": "聯德控股-KY",
+      "earnings_dividend": 0.8,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.8,
+      "pay_date": "2026-10-15",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
