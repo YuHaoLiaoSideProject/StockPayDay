@@ -34,6 +34,11 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT_DIR / "data"
 API_DIR = ROOT_DIR / "frontend" / "public" / "api"
 
+
+def round_dividend(value: float, decimals: int = 3) -> float:
+    """四捨五入配息金額到指定小數位數"""
+    return round(value, decimals)
+
 # 證券基底資料子目錄（phase-3 規格）
 DATA_SUBDIRS = ["stocks", "etfs", "preferred"]
 
@@ -597,8 +602,8 @@ def generate_upcoming(records: List[Dict], today: Optional[str] = None) -> List[
                 "type": rec.get("type", "息"),
                 "ex_date": ex_date,
                 "pay_date": rec.get("pay_date", ""),
-                "cash_dividend": rec.get("cash_dividend", 0),
-                "stock_dividend": rec.get("stock_dividend", 0),
+                "cash_dividend": round_dividend(rec.get("cash_dividend", 0)),
+                "stock_dividend": round_dividend(rec.get("stock_dividend", 0)),
             })
 
     # 依 ex_date 升冪排序
@@ -769,8 +774,8 @@ def generate_securities_history(
             history.append({
                 "ex_date": ex_date,
                 "pay_date": pay_date,
-                "cash_dividend": rec.get("cash_dividend", 0),
-                "stock_dividend": rec.get("stock_dividend", 0),
+                "cash_dividend": round_dividend(rec.get("cash_dividend", 0)),
+                "stock_dividend": round_dividend(rec.get("stock_dividend", 0)),
             })
 
         # 依 ex_date 降冪排序（新的在前）
@@ -817,8 +822,8 @@ def generate_monthly_dividends(records: List[Dict]) -> Dict[str, List[Dict]]:
             "type": rec.get("type", "息"),
             "ex_date": ex_date,
             "pay_date": rec.get("pay_date", ""),
-            "cash_dividend": rec.get("cash_dividend", 0),
-            "stock_dividend": rec.get("stock_dividend", 0),
+            "cash_dividend": round_dividend(rec.get("cash_dividend", 0)),
+            "stock_dividend": round_dividend(rec.get("stock_dividend", 0)),
         }
         by_month.setdefault(month_key, []).append(entry)
 

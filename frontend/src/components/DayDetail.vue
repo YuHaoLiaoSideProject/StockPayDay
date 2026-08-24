@@ -17,6 +17,12 @@ const emit = defineEmits<{
   'stock-click': [code: string]
 }>()
 
+/** 格式化金額：去除尾端多餘的 0，最多顯示 3 位小數 */
+function formatAmount(value: number): string {
+  const rounded = Math.round(value * 1000) / 1000
+  return rounded.toFixed(3).replace(/\.?0+$/, '')
+}
+
 // 本地化日期 e.g. 8月21日
 const formattedDate = computed(() => {
   const d = new Date(props.date + 'T00:00:00')
@@ -97,7 +103,7 @@ onUnmounted(() => {
             <span class="code">{{ item.code }}</span>
             <span class="name">{{ item.name }}</span>
           </span>
-          <span class="amount">${{ (item.dividend ?? item.cash_dividend ?? 0).toFixed(2) }}</span>
+          <span class="amount">${{ formatAmount(item.dividend ?? item.cash_dividend ?? 0) }}</span>
         </li>
       </ul>
     </div>

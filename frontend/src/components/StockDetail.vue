@@ -43,6 +43,14 @@ function getDividend(item: DividendHistory): number {
   return (item.dividend as number) ?? (rec['cash_dividend'] as number) ?? 0
 }
 
+/** 格式化金額：去除尾端多餘的 0，最多顯示 3 位小數 */
+function formatAmount(value: number): string {
+  // 先四捨五入到 3 位確保精度
+  const rounded = Math.round(value * 1000) / 1000
+  // 轉字串後去掉尾端的 0 和小數點
+  return rounded.toFixed(3).replace(/\.?0+$/, '')
+}
+
 /** 最大配息金額（用於 bar chart 比例） */
 const maxDividend = computed(() => {
   const amounts = sortedHistory.value.map(h => getDividend(h))
@@ -99,7 +107,7 @@ function barWidth(item: DividendHistory): number {
           <td class="col-date">{{ item.ex_date }}</td>
           <td class="col-date">{{ item.pay_date || '-' }}</td>
           <td class="amount">
-            ${{ getDividend(item).toFixed(2) }}
+            ${{ formatAmount(getDividend(item)) }}
             <span class="amount-bar" :style="{ width: barWidth(item) + '%' }"></span>
           </td>
         </tr>
@@ -110,7 +118,7 @@ function barWidth(item: DividendHistory): number {
     <div class="history-cards history-cards--mobile">
       <div v-for="item in sortedHistory" :key="item.ex_date" class="history-card">
         <div class="card-header">
-          <span class="card-amount">${{ getDividend(item).toFixed(2) }}</span>
+          <span class="card-amount">${{ formatAmount(getDividend(item)) }}</span>
           <span class="card-bar" :style="{ width: barWidth(item) + '%' }"></span>
         </div>
         <div class="card-dates">

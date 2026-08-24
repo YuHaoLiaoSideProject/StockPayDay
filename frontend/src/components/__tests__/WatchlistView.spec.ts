@@ -101,6 +101,6 @@ describe('components/WatchlistView（追蹤清單視圖）— 功能 001 無配�
     await useUpcoming().load()
     await flushPromises()
 
-    expect(wrapper.text()).toContain('$3.50')
+    expect(wrapper.text()).toContain('$3.5')
   })
 })

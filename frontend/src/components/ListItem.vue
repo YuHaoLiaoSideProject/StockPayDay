@@ -13,11 +13,12 @@ defineEmits<{
   'stock-click': [code: string]
 }>()
 
-/** 金額顯示：0 → "—" */
+/** 金額顯示：去除尾端多餘的 0，最多顯示 3 位小數 */
 function formatAmount(amount?: number | null): string {
   const val = amount ?? 0
   if (val === 0) return '—'
-  return `$${val.toFixed(2)}`
+  const rounded = Math.round(val * 1000) / 1000
+  return `$${rounded.toFixed(3).replace(/\.?0+$/, '')}`
 }
 </script>
 
