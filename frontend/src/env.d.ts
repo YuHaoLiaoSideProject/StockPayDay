@@ -6,10 +6,7 @@ declare module '*.vue' {
   export default component
 }
 
-interface ImportMetaEnv {
-  /** Cloudflare Worker URL（kvdb-proxy）；未設定時使用預設 placeholder */
-  readonly VITE_SYNC_WORKER_URL: string
-}
+interface ImportMetaEnv {}
 
 interface ImportMeta {
   readonly env: ImportMetaEnv

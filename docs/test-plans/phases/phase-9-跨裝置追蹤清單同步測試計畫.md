@@ -145,9 +145,10 @@ import { Page } from '@playwright/test'
 export function installKvdbMock(page: Page, store: Map<string, any>) {
   return page.route('https://kvdb.io/**', async (route) => {
     const url = new URL(route.request().url())
-    const key = url.pathname.split('/').pop() ?? ''
-    const token = url.searchParams.get('access_token') ?? ''
-    const behavior = mockByToken.get(token) // { mode: 'ok' | '404' | '429' | 'fail' | 401 }
+    const key = segments[1] ?? ''
+    const segments = url.pathname.split('/').filter(Boolean)
+    const bucketId = segments[0] ?? ''
+    const behavior = mockByBucket.get(bucketId) // { mode: 'ok' | '404' | '429' | 'fail' | 401 }
     if (behavior?.mode === 'fail') return route.abort('failed')
     if (behavior?.mode === '429') return route.fulfill({ status: 429 })
     if (behavior?.mode === '401') return route.fulfill({ status: 401 })
@@ -168,7 +169,7 @@ export function installKvdbMock(page: Page, store: Map<string, any>) {
 要點：
 
 - **多裝置語意**：同一 `Map` 傳給兩個 page 的 mock → tab A 寫回、tab B 拉取，模擬兩台裝置共用雲端。
-- **行為切換**：測試中途改 `mockByToken.get(token).mode`（如 fail→ok）即可模擬「恢復連線」「離線期間→正常」。
+- **行為切換**：測試中途改 `mockByBucket.get(bucketId).mode`（如 fail→ok）即可模擬「恢復連線」「離線期間→正常」。
 - **計時器**：60s 輪詢、429 退避、1.5s debounce 使用 `page.clock.install()`（`fastForward('01:00')` 等），避免真實等待造成測試不穩定。
 - **請求計數**：E2E-02/05/19 透過 route 內計數器驗證「零請求／停止請求」。
 

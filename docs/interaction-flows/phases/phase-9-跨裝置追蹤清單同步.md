@@ -4,7 +4,7 @@
 > **功能名稱**：跨裝置追蹤清單同步
 > **核心價值**：讓使用者的追蹤清單可跨裝置自動同步（免登入、保持純靜態站），且完全不影響未啟用的裝置
 > **前置文件**：`docs/development/phases/phase-9-跨裝置追蹤清單同步.md`、`docs/roadmaps/phases.md`（Phase 9 一節）、`docs/development/phases/phase-9-npoint-io-評估.md`
-> **同步方案**：Cloudflare Worker Proxy（免費）+ kvdb.io（免費雲端 JSON 存取）
+> **同步方案**：kvdb.io（免費雲端 JSON 存取）；前端直連 kvdb.io，無後端 proxy
 
 ---
 
@@ -15,17 +15,17 @@
 ### 技術架構
 
 ```
-┌─────────────────┐     ┌──────────────────────┐     ┌──────────┐
-│     前端         │────▶│  Cloudflare Worker    │────▶│ kvdb.io  │
-│                 │◀────│                      │◀────│          │
-│ email → token   │     │  SECRET_KEY (env)     │     │  bucket  │
-│ token → sync    │     │  SIGNING_KEY (env)    │     │          │
-└─────────────────┘     └──────────────────────┘     └──────────┘
+┌─────────────────┐                        ┌──────────┐
+│     前端         │───── GET / POST ─────▶│ kvdb.io  │
+│                 │◀──────────────────────│          │
+│ email → bucket  │                        │  bucket  │
+│ bucket → sync   │                        │          │
+└─────────────────┘                        └──────────┘
 ```
 
-- **使用者操作**：輸入 email → 自動建 bucket → 取得 token → 存入 localStorage → 開始同步
-- **secret_key 安全**：僅存在 Cloudflare Worker 環境變數中，前端永遠看不到
-- **免費方案**：Cloudflare Worker（100,000 次/天免費）+ kvdb.io（免費雲端 JSON）
+- **使用者操作**：輸入 email → 前端直連 kvdb.io 建立 bucket → 取得 bucket_id → 存入 localStorage → 開始同步
+- **安全性**：bucket_id 為隨機字串，難以猜測（透過 obscurity 保護）
+- **免費方案**：kvdb.io（免費雲端 JSON）
 
 ---
 
@@ -36,7 +36,7 @@
 | 角色 | 說明 |
 |------|------|
 | 一般使用者 | 訪客即可使用，無需登入；輸入 email 即可自動產生同步金鑰 |
-| 網站擁有者 | 維護 Cloudflare Worker 及 kvdb.io bucket（僅初始設定，使用者無感知） |
+| 網站擁有者 | 維護 kvdb.io bucket（僅初始設定，使用者無感知） |
 
 ### 觸發入口
 
@@ -57,7 +57,7 @@
 
 | 情境 | 說明 |
 |------|------|
-| 首次啟用 | 在手機輸入 email，系統自動建立雲端空間並產生 token，與電腦的追蹤清單開始同步 |
+| 首次啟用 | 在手機輸入 email，系統自動建立雲端空間並產生 bucket_id，與電腦的追蹤清單開始同步 |
 | 未啟用裝置 | 僅在一台裝置使用，不看設定區塊，行為與先前完全一樣 |
 | 日常跨裝置同步 | 手機新增股票，回到電腦切回頁面即可看到 |
 | 移除跨裝置傳播 | 手機刪除股票，電腦上的清單同步移除 |
@@ -79,8 +79,8 @@ flowchart TD
     Paired -->|否| Explain[閱讀說明<br/>「不設定不影響現有功能」]
     Explain --> EnterEmail[輸入 email]
     EnterEmail --> ClickStart[點擊「啟動」]
-    ClickStart --> Worker[POST Cloudflare Worker<br/>自動建 bucket + 產生 token]
-    Worker --> Store[Token 存入 localStorage]
+    ClickStart --> Kvdb[POST kvdb.io<br/>自動建 bucket]
+    Kvdb --> Store[bucket_id 存入 localStorage]
     Store --> Syncing([狀態顯示「同步中…」])
     Syncing --> Remote{雲端已有追蹤清單?}
     Remote -->|無（首次）| Upload[本機清單上傳<br/>建立雲端清單]
@@ -93,7 +93,7 @@ flowchart TD
     style Syncing fill:#e3f2fd,stroke:#2196f3
     style Synced fill:#e8f5e9,stroke:#4caf50
     style Upload fill:#e8f5e9,stroke:#4caf50
-    style Worker fill:#fff3e0,stroke:#ff9800
+    style Kvdb fill:#fff3e0,stroke:#ff9800
 ```
 
 ### 主流程 B：已配對裝置的日常同步
@@ -172,8 +172,8 @@ flowchart TD
 |---|------|
 | **觸發** | 使用者在 email 輸入框輸入 email，點擊「啟動」 |
 | **操作前** | 輸入框為空，區塊說明「不設定則完全不影響現有功能」 |
-| **系統回應** | 前端 POST Cloudflare Worker（帶 email）→ Worker 自動建立 kvdb bucket + 產生 access token → 回傳 token → 存入 localStorage → 狀態列顯示「同步中…」 |
-| **操作後** | 該裝置已啟用同步；token 記住於本機，重新整理頁面後仍維持已啟用 |
+| **系統回應** | 前端 POST kvdb.io（帶 email）→ 自動建立 bucket → 回傳 bucket_id → 存入 localStorage → 狀態列顯示「同步中…」 |
+| **操作後** | 該裝置已啟用同步；bucket_id 記住於本機，重新整理頁面後仍維持已啟用 |
 | **下一步** | 步驟 3 或步驟 4：等待首次同步完成 |
 
 ### 步驟 3：首次啟用——雲端尚無清單（上傳建立）
@@ -272,7 +272,7 @@ flowchart TD
 |---|------|
 | **觸發** | 使用者再次在同步設定區塊輸入 email 並點「啟動」（或系統偵測到 localStorage 已有 token） |
 | **操作前** | 同步已停用，本地清單保留 |
-| **系統回應** | 若 localStorage 已有 token → 直接使用；若無 → 重新呼叫 Worker 產生 token。狀態列再次出現並顯示「同步中…」，隨後依雲端狀態進行合併（同步步驟 3/4） |
+| **系統回應** | 若 localStorage 已有 bucket_id → 直接使用；若無 → 重新呼叫 kvdb.io 產生 bucket_id。狀態列再次出現並顯示「同步中…」，隨後依雲端狀態進行合併（同步步驟 3/4） |
 | **操作後** | 該裝置重新納入跨裝置同步 |
 | **下一步** | 步驟 5：確認同步狀態 |
 
@@ -302,8 +302,7 @@ flowchart TD
 
 | 異常情境 | 使用者看到的回饋 | 恢復路徑 |
 |----------|-----------------|----------|
-| Worker 呼叫失敗 | 狀態顯示「同步失敗」與錯誤訊息；本地清單不受影響 | 確認網路連線後重新輸入 email |
-| Token 過期（TTL 90 天） | 同步持續失敗 | 重新輸入 email 產生新 token |
+| kvdb.io 呼叫失敗 | 狀態顯示「同步失敗」與錯誤訊息；本地清單不受影響 | 確認網路連線後重新輸入 email |
 | 離線（無網路） | 本地增刪追蹤正常；狀態列顯示「同步失敗」，附錯誤訊息 | 恢復連線後自動重試（切回頁面／回到前景／輪詢），無需手動操作 |
 | 429 速率限制 | 狀態列顯示「速率限制（429），N 秒後重試」；N 依 30→60→120 秒退避遞增 | 退避結束自動重試；期間本地操作完全正常 |
 | 雲端服務停擺／改條款 | 同步失敗、無法恢復；本地追蹤清單一切正常 | 使用「匯出/匯入」備援手動搬移；等待服務恢復後自動回到同步 |
@@ -332,8 +331,7 @@ flowchart TD
 | 追蹤數量上限 | 沿用既有建議（100 支內），不因開啟同步而改變 |
 | 匯出內容 | 為目前追蹤中的股票（含 ETF／特別股），不包含已移除項目 |
 | 同步狀態 | 可顯示：未啟用同步／已啟用（尚未同步）／同步中…／已同步（附上次同步時間）／同步失敗（附錯誤訊息） |
-| 免費方案限制 | Cloudflare Worker 100,000 次/天；kvdb.io 1,000 req/IP/hr |
-| secret_key 安全性 | 僅存在 Cloudflare Worker 環境變數中，前端永遠看不到 |
+| 免費方案限制 | kvdb.io 1,000 req/IP/hr |
 
 ---
 
@@ -343,7 +341,7 @@ flowchart TD
 - [ ] 未啟用時，追蹤清單頁顯示「🔄 跨裝置同步（選配）」區塊與 email 輸入框
 - [ ] 未啟用時，區塊說明「不設定則完全不影響現有功能」
 - [ ] email 輸入框為空時無法送出
-- [ ] 輸入 email 並點「啟動」後，系統自動呼叫 Worker 建 bucket + 產生 token
+- [ ] 輸入 email 並點「啟動」後，系統自動呼叫 kvdb.io 建 bucket
 - [ ] 啟動後狀態顯示「同步中…」
 - [ ] 首次啟用（雲端無資料）完成後狀態顯示「已同步」，本機清單內容不變
 - [ ] 首次啟用（雲端有資料）完成後，清單為本機與雲端並集
@@ -391,11 +389,10 @@ flowchart TD
 - [ ] 未啟用同步的裝置不發送任何同步請求
 - [ ] 舊版追蹤資料（無新增欄位）可正常載入並沿用
 
-### Worker Proxy
-- [ ] Cloudflare Worker 正確接收 email 並建立 bucket
-- [ ] Worker 正確產生 access token 並回傳前端
-- [ ] Token 正確存入 localStorage
-- [ ] 前端看不到 secret_key（僅存在 Worker 環境變數）
+### kvdb.io 直連
+- [ ] 前端正確呼叫 kvdb.io 建立 bucket
+- [ ] kvdb.io 正確回傳 bucket_id
+- [ ] bucket_id 正確存入 localStorage
 
 ---
 
@@ -403,5 +400,5 @@ flowchart TD
 
 - 本功能以「使用者操作」為中心：輸入 email → 自動產生 token → 看狀態 → 增刪自動同步 → 手動立即同步 → 停用；匯出/匯入是自動同步不可用時的手動逃生門
 - 使用者只需輸入 email 即可啟用同步，無需向擁有者索取配對碼
-- Cloudflare Worker 負責建立 bucket + 產生 token，secret_key 只存在 Worker 環境變數中，前端永遠看不到
+- 前端直連 kvdb.io 建立 bucket，bucket_id 為隨機字串保護安全性
 - 與 Phase 5a 的整合：❤️ 追蹤／移除、導覽列徽章、行事曆／列表顯示均不變；同步僅在背景補上「寫回→拉取→合併」

@@ -18,11 +18,13 @@ import {
 } from '../composables/useWatchlistExport'
 
 const {
-  token,
+  bucketId,
   status,
   lastSyncedAt,
   lastError,
+  syncActive,
   createAccount,
+  confirmVerification,
   setToken,
   clearToken,
   syncOnce,
@@ -34,6 +36,8 @@ const tokenInput = ref('')
 const showTokenInput = ref(false)
 const creating = ref(false)  // createAccount 進行中
 const createError = ref('')  // createAccount 錯誤訊息
+const createdBucketId = ref('')  // createAccount 成功後的 bucket ID
+const copied = ref(false)
 const backupOpen = ref(false)
 const exportText = ref('')
 const importText = ref('')
@@ -52,25 +56,46 @@ function formatTime(ts: number | null): string | null {
   return ts ? new Date(ts).toLocaleTimeString() : null
 }
 
-/** Email 啟動：透過 Worker 建立帳號 + 取得 token */
+/** Email 啟動：直連 kvdb.io 建立 bucket */
 async function onEmailSubmit() {
   if (!emailInput.value.trim() || creating.value) return
   creating.value = true
   createError.value = ''
   try {
-    await createAccount(emailInput.value)
-    // 成功後 createAccount 會設 token → v-if 切換到已配對區塊
-    // 若失敗（token 仍為空），留在 email 表單並顯示錯誤
-    if (!token.value && !lastError.value) {
-      createError.value = '建立失敗，請稍後再試'
-    } else if (!token.value && lastError.value) {
-      createError.value = lastError.value
-    }
-  } catch {
-    createError.value = '建立失敗，請檢查網路連線'
+    const result = await createAccount(emailInput.value)
+    createdBucketId.value = result.bucketId
+    emailInput.value = ''
+  } catch (err) {
+    createError.value = err instanceof Error ? err.message : '建立失敗，請檢查網路連線'
   } finally {
     creating.value = false
   }
+}
+
+/** 複製 bucket ID 到剪貼簿 */
+async function onCopyBucketId() {
+  try {
+    await navigator.clipboard.writeText(createdBucketId.value)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  } catch {
+    // fallback: textarea 選取複製
+    const ta = document.createElement('textarea')
+    ta.value = createdBucketId.value
+    ta.style.position = 'fixed'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+    copied.value = true
+    setTimeout(() => { copied.value = false }, 2000)
+  }
+}
+
+/** 確認 email 已驗證，啟動同步 */
+function onConfirmVerification() {
+  confirmVerification()
 }
 
 /** 配對碼直接輸入（備援：使用者已有 token 時可直接貼上） */
@@ -114,7 +139,7 @@ function handleImport() {
 <template>
   <section class="watchlist-sync-settings" data-testid="watchlist-sync-settings">
     <!-- 未配對：email 輸入（主要）+ 配對碼備援 -->
-    <div v-if="!token" class="sync-pairing">
+    <div v-if="!bucketId && !createdBucketId" class="sync-pairing">
       <h3 class="sync-title">🔄 跨裝置同步（選配）</h3>
       <p class="sync-desc">
         輸入 email 後，系統自動建立雲端空間並產生同步金鑰。不設定則完全不影響現有功能。
@@ -169,6 +194,29 @@ function handleImport() {
           />
           <button class="btn-primary" type="submit" data-testid="sync-token-submit">啟動</button>
         </form>
+      </div>
+    </div>
+
+    <!-- Bucket 已建立：顯示 ID + 驗證提示 -->
+    <div v-else-if="createdBucketId && !syncActive" class="sync-pairing">
+      <h3 class="sync-title">✅ 同步空間已建立</h3>
+
+      <div class="bucket-id-display">
+        <label class="bucket-label">同步碼（Bucket ID）：</label>
+        <div class="bucket-id-row">
+          <code class="bucket-id-code" data-testid="bucket-id-display">{{ createdBucketId }}</code>
+          <button class="btn-copy" @click="onCopyBucketId" data-testid="copy-bucket-id">
+            {{ copied ? '已複製 ✓' : '複製' }}
+          </button>
+        </div>
+        <p class="sync-desc">請將此同步碼貼到其他裝置的設定頁面，即可跨裝置同步追蹤清單。</p>
+      </div>
+
+      <div class="verify-notice">
+        <p>📧 請檢查 email 並點擊驗證連結，完成後點下方按鈕開始同步。</p>
+        <button class="btn-primary" @click="onConfirmVerification" data-testid="confirm-verification">
+          我已完成驗證，開始同步
+        </button>
       </div>
     </div>
 
@@ -430,5 +478,76 @@ function handleImport() {
 
 .sync-fallback-toggle:hover {
   color: var(--tab-active-bg);
+}
+
+.bucket-id-display {
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  background: var(--surface-2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.bucket-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text);
+  display: block;
+  margin-bottom: 0.375rem;
+}
+
+.bucket-id-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bucket-id-code {
+  flex: 1;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--tab-active-bg);
+  padding: 0.5rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  word-break: break-all;
+  user-select: all;
+}
+
+.btn-copy {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+}
+
+.btn-copy:hover {
+  background: var(--surface-2);
+  border-color: var(--tab-active-bg);
+}
+
+.verify-notice {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 8px;
+}
+
+.verify-notice p {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+}
+
+.verify-notice .btn-primary {
+  width: 100%;
 }
 </style>

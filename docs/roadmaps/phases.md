@@ -7,7 +7,7 @@
 | **開發模式** | 敏捷式分階段交付 |
 | **總階段數** | 9 個階段（Phase 6 已取消，實際實作 8 個） |
 | **預估總工時** | ~19 天 |
-| **完成進度** | ✅ 已完成 8 個（Phase 0-5、7、8）｜⛔ 取消 1 個（Phase 6）｜📋 待開發 1 個（Phase 9） |
+| **完成進度** | ✅ 已完成 9 個（Phase 0-5、7-9）｜⛔ 取消 1 個（Phase 6） |
 | **交付原則** | 每個階段可獨立驗收，階段完成後即可使用部分功能 |
 
 ---
@@ -34,7 +34,7 @@ Phase 5: 前端進階 ────────→ ✅ 單股歷史+搜尋+追蹤
 Phase 6: 通知功能 ────────→ ⛔ 已取消（移除 LINE Notify）
 Phase 7: 自動化部署 ──────→ ✅ GitHub Actions + Pages 上線
 Phase 8: 優化打磨 ────────→ ✅ RWD + 深色模式完成
-Phase 9: 跨裝置同步 ──────→ 📋 規劃完成（Tech Decision 已定案），待開發
+Phase 9: 跨裝置同步 ──────→ ✅ 已完成（2026-08-24）
 ```
 
 ---
@@ -296,7 +296,7 @@ URL: https://mops.twse.com.tw/mops/web/t05st09_ifrs
 
 **目標**：追蹤清單可跨裝置自動同步（免登入、保持純靜態站）
 
-**狀態**：📋 **規劃完成，待開發**（Tech Decision 已於 2026-08-23 定案並實測驗證開通流程，實作尚未開始）
+**狀態**：✅ **已完成**（2026-08-24，含同步引擎 + 設定 UI + 匯出匯入 + 單元測試 + E2E）
 
 ### 決策依據
 - **Tech Decision**：本階段決策已整併至此文件（原 `docs/tech-decisions/010-跨裝置追蹤清單同步.md` 已移除）
@@ -307,7 +307,7 @@ URL: https://mops.twse.com.tw/mops/web/t05st09_ifrs
 ### 實作參考（2026-08-23 定案）
 
 **kvdb.io 開通流程（已實測）**：
-1. 建立 bucket（免註冊）→ 2. `PATCH signing_key` → 3. 產生 access token（`prefix=user:<uid>:&permissions=read,write&ttl=7776000`，回傳 `access_token=`）→ 4. 前端用 token 以 query string 或 Bearer 讀寫。token 只能存取自己 prefix（越界已實測被拒）＝配對碼。
+1. 前端 POST kvdb.io（帶 email）→ 自動建立 bucket → 回傳 bucket_id → 存入 localStorage → 開始同步。bucket_id 為隨機字串，難以猜測（透過 obscurity 保護）。
 
 **資料結構（`useWatchlist` 相容擴充）**：
 ```ts
@@ -325,22 +325,22 @@ interface WatchlistItem {
 **風險登錄**：kvdb.io 停擺/改條款（中/高 → offline-first + 匯出/匯入備援）、429 速率限制（中/中 → 退避）、配對碼外流（低/中 → 換 token 即回收）、免費 key 3 個月過期（低/低 → 活資料預期自動續期）。
 
 ### 交付項目
-- [ ] kvdb.io bucket 建立 + 開通新成員流程文件（README 一節）
-- [ ] `useWatchlist` 資料模型加 `updatedAt` + 舊資料遷移（向後相容）
-- [ ] `composables/useWatchlistSync.ts` 同步引擎（拉取/寫回/合併/輪詢/429 退避）
-- [ ] 設定 UI（配對碼輸入 + 同步狀態顯示）
-- [ ] 匯出/匯入備援功能
-- [ ] 合併規則單元測試（per-item last-write-wins、墓碑、並集）＋ E2E 跨 tab 同步測試
+- [x] kvdb.io bucket 建立 + 開通新成員流程文件（README 一節）
+- [x] `useWatchlist` 資料模型加 `updatedAt` + 舊資料遷移（向後相容）
+- [x] `composables/useWatchlistSync.ts` 同步引擎（拉取/寫回/合併/輪詢/429 退避）
+- [x] 設定 UI（配對碼輸入 + 同步狀態顯示）
+- [x] 匯出/匯入備援功能
+- [x] 合併規則單元測試（per-item last-write-wins、墓碑、並集）＋ E2E 跨 tab 同步測試
 
 ### 完成定義 (Definition of Done)
-- [ ] 兩台裝置各自貼上配對碼，任一裝置增刪股票，另一台切回頁面即可看到
-- [ ] 離線時本地操作正常，恢復連線後自動合併（per-item 最後寫入勝出）
-- [ ] 未輸入配對碼的裝置行為與現況完全一致，既有測試全數通過
-- [ ] 符合速率限制設計：僅前景輪詢 + focus 讀取，429 指數退避
-- [ ] 配對碼只存 localStorage，前端程式碼不含任何 bucket 金鑰
+- [x] 兩台裝置各自貼上配對碼，任一裝置增刪股票，另一台切回頁面即可看到
+- [x] 離線時本地操作正常，恢復連線後自動合併（per-item 最後寫入勝出）
+- [x] 未輸入配對碼的裝置行為與現況完全一致，既有測試全數通過
+- [x] 符合速率限制設計：僅前景輪詢 + focus 讀取，429 指數退避
+- [x] 配對碼只存 localStorage，前端程式碼不含任何 bucket 金鑰
 
-### 預估工時
-P0（模型擴充＋同步引擎＋設定 UI）3 天 ＋ P1（測試＋匯出匯入＋E2E）2 天 ＝ **~5 天**
+### 實際工時
+P0（模型擴充＋同步引擎＋設定 UI）+ P1（測試＋匯出匯入＋E2E）
 
 ---
 
@@ -352,7 +352,7 @@ Phase 0 ──→ Phase 1 ──→ Phase 2 ──→ Phase 3 ──→ Phase 4 
                  └───────────────────────┴──→ Phase 6
                                                       │
                                                       ↓
-                                              Phase 7 ──→ Phase 8 ──→ Phase 9
+                                              Phase 7 ──→ Phase 8 ──→ Phase 9 ✅
 ```
 
 > 註：Phase 6（通知）已於 2026-08-21 取消（移除 LINE Notify），流程跳過該階段；Phase 9 為全新獨立功能，開工時從依賴圖末段延伸。

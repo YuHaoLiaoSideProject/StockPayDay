@@ -6,23 +6,23 @@
 > **測試計畫**：`docs/test-plans/phases/phase-9-跨裝置追蹤清單同步測試計畫.md`
 > **技術棧**：Vue 3.x (Composition API) · Vite 5.x · Tailwind CSS 3.x · Vitest · Vue Test Utils · Playwright
 > **前置階段**：Phase 4（前端基礎）、Phase 5（前端進階）、Phase 5a（追蹤清單）
-> **外部依賴**：Cloudflare Worker（免費 proxy）+ kvdb.io（免費雲端 JSON 文件）
+> **外部依賴**：kvdb.io（免費雲端 JSON 文件）；前端直連，無後端 proxy
 > **狀態**：設計完成，待開發
 
 ### 技術架構
 
 ```
-┌─────────────────┐     ┌──────────────────────┐     ┌──────────┐
-│     前端         │────▶│  Cloudflare Worker    │────▶│ kvdb.io  │
-│                 │◀────│                      │◀────│          │
-│ email → token   │     │  SECRET_KEY (env)     │     │  bucket  │
-│ token → sync    │     │  SIGNING_KEY (env)    │     │          │
-└─────────────────┘     └──────────────────────┘     └──────────┘
+┌─────────────────┐                        ┌──────────┐
+│     前端         │───── GET / POST ─────▶│ kvdb.io  │
+│                 │◀──────────────────────│          │
+│ email → bucket  │                        │  bucket  │
+│ bucket → sync   │                        │          │
+└─────────────────┘                        └──────────┘
 ```
 
-- **使用者操作**：輸入 email → 自動建 bucket → 取得 token → 存入 localStorage → 開始同步
-- **secret_key 安全**：僅存在 Cloudflare Worker 環境變數中，前端永遠看不到
-- **免費方案**：Cloudflare Worker（100,000 次/天免費）+ kvdb.io（免費雲端 JSON）
+- **使用者操作**：輸入 email → 前端直連 kvdb.io 建立 bucket → 取得 bucket_id → 存入 localStorage → 開始同步
+- **安全性**：bucket_id 為隨機字串，難以猜測（透過 obscurity 保護）
+- **免費方案**：kvdb.io（免費雲端 JSON）
 
 ---
 
@@ -49,10 +49,10 @@ frontend/src/
 │   └── watchlist.ts                  ← 修改：WatchlistItem 加 updatedAt / deleted
 ├── composables/
 │   ├── useWatchlist.ts               ← 修改：remove() 改墓碑語意；add() 帶 updatedAt
-│   └── useWatchlistSync.ts           ← 修改：token 來源改為 Worker 回傳；新增 createAccount()
+│   └── useWatchlistSync.ts           ← 修改：bucket_id 來源改為 kvdb.io 直連回傳；新增 createAccount()
 ├── components/
 │   ├── WatchlistView.vue             ← 修改：加入同步狀態列
-│   └── WatchlistSyncSettings.vue     ← 修改：配對碼輸入 → email 輸入 + Worker 呼叫
+│   └── WatchlistSyncSettings.vue     ← 修改：配對碼輸入 → email 輸入 + kvdb.io 直連
 ├── views/
 │   └── Watchlist.vue                 ← 修改：整合設定 UI（或獨立設定入口）
 └── e2e/
@@ -66,12 +66,7 @@ docs/
 │   └── phase-9-跨裝置追蹤清單同步.feature   ← ✅ 已產出（27 情境）
 ├── test-plans/phases/
 │   └── phase-9-跨裝置追蹤清單同步測試計畫.md ← ✅ 已產出（57 案例）
-└── README（Cloudflare Worker 部署 + kvdb bucket 建立）← 交付時新增
-
-workers/
-└── kvdb-proxy/                         ← 新增：Cloudflare Worker（建 bucket + 產生 token）
-    ├── wrangler.toml                   ← Worker 設定
-    └── src/index.ts                    ← Worker 程式碼
+└── README（kvdb bucket 建立說明）← 交付時新增
 ```
 
 ### 1.2 型別定義 — `types/watchlist.ts`（擴充）
@@ -178,33 +173,32 @@ import { ref, computed, watchEffect, onBeforeUnmount } from 'vue'
 import type { WatchlistItem, WatchlistSyncDoc, SyncStatus } from '../types/watchlist'
 import { useWatchlist } from './useWatchlist'
 
-const TOKEN_KEY = 'stockpayday-sync-token'
+const BUCKET_ID_KEY = 'stockpayday-sync-bucket-id'
 const KVDB_BASE = 'https://kvdb.io'
 const POLL_INTERVAL_MS = 60_000               // 前景輪詢 60s（僅 tab visible）
 const WRITE_DEBOUNCE_MS = 1_500               // 本地變更 → 1.5s debounce 後寫回
 const BACKOFF_BASE_MS = 30_000                // 429 指數退避起點：30s → 60s → 120s
-const WORKER_URL = 'https://kvdb-proxy.your-domain.workers.dev' // Cloudflare Worker URL
 
-const token = ref(localStorage.getItem(TOKEN_KEY) ?? '')
+const bucketId = ref(localStorage.getItem(BUCKET_ID_KEY) ?? '')
 const status = ref<SyncStatus>('disabled')
 const lastSyncedAt = ref<number | null>(null)
 const lastError = ref<string | null>(null)
 
-const syncActive = computed(() => token.value.length > 0)
+const syncActive = computed(() => bucketId.value.length > 0)
 
-// ── 新增：透過 Worker 建立帳號 + 取得 token ──
+// ── 新增：直連 kvdb.io 建立帳號 + 取得 bucket_id ──
 async function createAccount(email: string): Promise<void> {
   status.value = 'syncing'
   try {
-    const res = await fetch(WORKER_URL, {
+    const res = await fetch(KVDB_BASE, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
+      body: new URLSearchParams({ email })
     })
     if (!res.ok) throw new Error(`建立帳號失敗: ${res.status}`)
-    const { access_token } = await res.json()
-    token.value = access_token
-    localStorage.setItem(TOKEN_KEY, access_token)
+    const newBucketId = (await res.text()).trim()
+    if (!newBucketId) throw new Error('kvdb.io 未回傳 bucket_id')
+    bucketId.value = newBucketId
+    localStorage.setItem(BUCKET_ID_KEY, newBucketId)
     syncOnce()
     startPolling()
   } catch (err) {
@@ -222,7 +216,7 @@ function kvKey(): string {
 async function push(localItems: WatchlistItem[]): Promise<void> {
   const now = Date.now()
   const doc: WatchlistSyncDoc = { updatedAt: now, items: localItems }
-  const res = await fetch(`${KVDB_BASE}/${bucketId.value}/${kvKey()}?access_token=${token.value}`, {
+  const res = await fetch(`${KVDB_BASE}/${bucketId.value}/${kvKey()}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(doc),
@@ -233,7 +227,7 @@ async function push(localItems: WatchlistItem[]): Promise<void> {
 
 // ── 拉取 ──
 async function pull(): Promise<WatchlistSyncDoc | null> {
-  const res = await fetch(`${KVDB_BASE}/${bucketId.value}/${kvKey()}?access_token=${token.value}`)
+  const res = await fetch(`${KVDB_BASE}/${bucketId.value}/${kvKey()}`)
   if (res.status === 404) return null          // 尚未有雲端文件 → 首次推上
   if (res.status === 429) throw new SyncRateLimitedError()
   if (!res.ok) throw new Error(`pull failed: ${res.status}`)
@@ -432,63 +426,21 @@ function onEmailSubmit() {
 
 ## 2. API 合約
 
-本階段新增一個 Cloudflare Worker 作為 proxy，前端不直接接觸 kvdb.io 的管理金鑰。
+前端直連 kvdb.io，無後端 proxy。帳號建立與同步讀寫均由前端直接呼叫 kvdb.io API。
 
-### 2.1 Cloudflare Worker API
+### 2.1 建立帳號（前端直連 kvdb.io）
 
 | 方法 | 路徑 | Request | Response | 說明 |
 |------|------|---------|----------|------|
-| POST | `/` | `{ "email": "user@example.com" }` | `{ "access_token": "...", "bucket_id": "..." }` | 建立帳號 + 產生 token |
+| POST | `https://kvdb.io` | `email=user@example.com`（form data） | 純文字 `bucket_id` | 建立 bucket，回傳 bucket_id |
 
-#### Worker 程式碼（~30 行）
-
-```javascript
-// workers/kvdb-proxy/src/index.ts
-
-export default {
-  async fetch(request, env) {
-    if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 })
-    }
-
-    const { email } = await request.json()
-    if (!email) {
-      return new Response('Email required', { status: 400 })
-    }
-
-    // 1. 建 bucket
-    const bucketRes = await fetch('https://kvdb.io', {
-      method: 'POST',
-      body: new URLSearchParams({ email })
-    })
-    const bucket = await bucketRes.json()
-
-    // 2. 設 signing_key
-    await fetch(`https://kvdb.io/${bucket.id}`, {
-      method: 'PATCH',
-      headers: { 'Authorization': `Basic ${btoa(env.SECRET_KEY + ':')}` },
-      body: new URLSearchParams({ signing_key: env.SIGNING_KEY })
-    })
-
-    // 3. 產生 access token
-    const tokenRes = await fetch(`https://kvdb.io/${bucket.id}/tokens/`, {
-      method: 'POST',
-      headers: { 'Authorization': `Basic ${btoa(env.SECRET_KEY + ':')}` },
-      body: new URLSearchParams({
-        prefix: 'user:me:',
-        permissions: 'read,write',
-        ttl: 7776000  // 90 天
-      })
-    })
-    const token = await tokenRes.json()
-
-    // 4. 回傳 token
-    return Response.json({
-      access_token: token.access_token,
-      bucket_id: bucket.id
-    })
-  }
-}
+前端呼叫方式：
+```typescript
+const res = await fetch('https://kvdb.io', {
+  method: 'POST',
+  body: new URLSearchParams({ email })
+})
+const bucketId = (await res.text()).trim()
 ```
 
 ### 2.2 kvdb.io 契約（前端直接使用）
@@ -496,16 +448,16 @@ export default {
 | 項目 | 內容 |
 |------|------|
 | Base URL | `https://kvdb.io/<bucket_id>` |
-| Bucket | 每位使用者一個（由 Worker 自動建立） |
+| Bucket | 每位使用者一個（由前端自動建立） |
 | Key | `user:me:watchlist`（一人一份） |
-| 授權 | query string `?access_token=<token>` |
+| 授權 | bucket_id 為隨機字串（透過 obscurity 保護） |
 | 值格式 | `WatchlistSyncDoc`（JSON：`{ updatedAt, items }`） |
 | 額度 | 免費 1,000 req/IP/hr |
 
 #### 讀取（GET）
 
 ```
-GET https://kvdb.io/<bucket_id>/user:me:watchlist?access_token=<token>
+GET https://kvdb.io/<bucket_id>/user:me:watchlist
 → 200 { "updatedAt": 1756000000000, "items": [...] }
 → 404 （文件不存在，首次使用）
 → 429 （速率限制）
@@ -514,7 +466,7 @@ GET https://kvdb.io/<bucket_id>/user:me:watchlist?access_token=<token>
 #### 寫入（POST）
 
 ```
-POST https://kvdb.io/<bucket_id>/user:me:watchlist?access_token=<token>
+POST https://kvdb.io/<bucket_id>/user:me:watchlist
 Content-Type: application/json
 
 { "updatedAt": 1756000000000, "items": [...] }
@@ -527,8 +479,7 @@ Content-Type: application/json
 | Key | 值類型 | 說明 |
 |-----|--------|------|
 | `stockpayday-watchlist` | JSON 陣列 | 追蹤清單陣列（item 新增 `updatedAt`；舊資料無此欄位時視為 `addedAt`） |
-| `stockpayday-sync-token` | string | access token（由 Worker 產生）｜**只存 localStorage，不進程式碼** |
-| `stockpayday-sync-bucket-id` | string | bucket ID（由 Worker 回傳）｜用於組合 kvdb URL |
+| `stockpayday-sync-bucket-id` | string | bucket ID（由 kvdb.io 回傳）｜用於組合 kvdb URL |
 
 ```json
 // stockpayday-watchlist 範例（含墓碑）
@@ -538,14 +489,7 @@ Content-Type: application/json
 ]
 ```
 
-### 2.4 Worker 環境變數
 
-| 變數 | 說明 | 存放位置 |
-|------|------|----------|
-| `SECRET_KEY` | kvdb.io 管理金鑰 | Worker 環境變數 |
-| `SIGNING_KEY` | 用來簽 access token 的金鑰 | Worker 環境變數 |
-
-**安全性**：secret_key 只存在 Worker 環境變數中，前端永遠看不到。
 
 ---
 
@@ -555,16 +499,16 @@ Content-Type: application/json
 [使用者輸入 email]
        │
        ▼
-[POST Cloudflare Worker]
+[POST kvdb.io]
        │
        ▼
-[Worker: 建 bucket + 產生 token]
+[kvdb.io: 建立 bucket]
        │
        ▼
-[回傳 access_token + bucket_id]
+[回傳 bucket_id]
        │
        ▼
-[前端存入 localStorage]
+[前端存入 localStorage (bucket_id)]
        │
        ▼
 [開始同步流程]
@@ -593,7 +537,7 @@ Content-Type: application/json
 | 階段 | 觸發 | 動作 | 退出條件 |
 |------|------|------|---------|
 | 初始化 | 頁面載入 | 讀 token；無 token → `disabled`（零負擔）｜有 token → 立即 syncOnce + 啟動輪詢 | 初次同步完成 |
-| 建立帳號 | 輸入 email → 點「啟動」 | POST Worker → 建 bucket + 產生 token → 存入 localStorage | token 取得 |
+| 建立帳號 | 輸入 email → 點「啟動」 | POST kvdb.io → 建 bucket → 存入 localStorage (bucket_id) | bucket_id 取得 |
 | 本地變更 | add/remove/toggle | watchEffect debounce 1.5s → syncOnce（先 GET 比 updatedAt） | 寫回成功 |
 | 前景讀取 | `visibilitychange(visible)` / `window focus` | 立即 syncOnce | merge 完成 |
 | 輪詢 | 每 60s（僅 tab visible） | syncOnce | 單次完成 |
@@ -607,17 +551,17 @@ Content-Type: application/json
 | 情境 | 處理方式 |
 |------|---------|
 | 未輸入 email | 同步引擎完全不啟動，行為與現況 100% 一致（既有測試全數通過） |
-| 首次建立帳號（雲端無文件） | Worker 建 bucket → 產生 token → 前端 GET 404 → merge 本地 → POST 建立 |
+| 首次建立帳號（雲端無文件） | 前端 POST kvdb.io 建 bucket → 前端 GET 404 → merge 本地 → POST 建立 |
 | 離線 | 本地操作正常（localStorage 為主）；同步失敗記 `lastError`，恢復連線後由輪詢/focus 自動重試 |
 | 多裝置同時編輯同一支 | per-item 最後寫入勝出：以 `updatedAt` 新者勝；極端同刻僅最後 POST 者覆蓋（已接受） |
 | 裝置 A 移除、裝置 B 未移除 | 墓碑（`deleted: true`）合併後傳播到 B，B 清單同步移除該支 |
 | 舊資料無 `updatedAt` | 遷移時補 `default = addedAt`，合併比對不受影響 |
 | 429 速率限制 | 指數退避；僅前景輪詢 + focus 讀取管理額度（1,000 req/IP/hr） |
-| Token 外流 | 前端無管理金鑰；重新輸入 email 產生新 token（新 token 自動覆蓋舊 token） |
+| bucket_id 外流 | bucket_id 為隨機字串，難以猜測；重新輸入 email 產生新 bucket_id |
 | kvdb.io 停擺 / 改條款 | offline-first，本地資料永不消失；提供匯出/匯入備援；同步介面可遷移替代方案 |
 | 免費 key 3 個月過期 | 活資料持續讀寫預期自動續期；必要時重新輸入 email 產生新 token |
 | localStorage 不可用（隱私模式） | 沿用既有 catch 降級；同步 token 亦無法持久化 → 視同未配對 |
-| Worker 呼叫失敗 | 狀態顯示「同步失敗」；本地清單不受影響；確認網路連線後重新輸入 email |
+| kvdb.io 呼叫失敗 | 狀態顯示「同步失敗」；本地清單不受影響；確認網路連線後重新輸入 email |
 
 ---
 
@@ -625,16 +569,16 @@ Content-Type: application/json
 
 | 步驟 | 內容 | 依賴 |
 |------|------|------|
-| 1 | Cloudflare Worker 開發（建 bucket + 產生 token） | - |
+| 1 | - | - |
 | 2 | `types/watchlist.ts` 加 `updatedAt` / `deleted` / `WatchlistSyncDoc` | - |
 | 3 | `useWatchlist` 擴充（add 帶 updatedAt、remove 墓碑語意、isWatched 排除墓碑）＋舊資料遷移 | #2 |
-| 4 | `useWatchlistSync` 同步引擎（createAccount/pull/merge/push/輪詢/退避） | #1, #3 |
+| 4 | `useWatchlistSync` 同步引擎（createAccount/pull/merge/push/輪詢/退避） | #2, #3 |
 | 5 | 合併規則單元測試（per-item last-write-wins、墓碑、並集） | #4 |
-| 6 | `WatchlistSyncSettings.vue` 設定 UI（email 輸入 + Worker 呼叫） | #4 |
+| 6 | `WatchlistSyncSettings.vue` 設定 UI（email 輸入 + kvdb.io 直連） | #4 |
 | 7 | `WatchlistView.vue` 整合同步狀態列 | #6 |
 | 8 | 匯出/匯入備援功能 | #3 |
 | 9 | E2E 測試（建立帳號→跨 tab 同步情境） | #6 |
-| 10 | README Worker 部署 + kvdb bucket 建立一節 | #1 |
+| 10 | README kvdb bucket 建立一節 | #4 |
 | 11 | 手動驗證：雙裝置增刪、離線恢復、未啟用不影響現況 | #6, #8 |
 
 ---
@@ -662,7 +606,7 @@ Content-Type: application/json
 
 ### 安全性
 - [ ] Token 只存 localStorage（`stockpayday-sync-token`）
-- [ ] 前端程式碼不含 bucket secret / write key（secret_key 只在 Worker 環境變數）
+- [ ] bucket_id 為隨機字串，難以猜測（透過 obscurity 保護）
 - [ ] Token 越界（存取其他 prefix）被 kvdb 拒絕（實測驗證）
 
 ### 設定 UI
@@ -670,10 +614,10 @@ Content-Type: application/json
 - [ ] 同步狀態（同步中/已同步/失敗＋最後同步時間）正確顯示
 - [ ] 匯出/匯入備援功能可用
 
-### Worker Proxy
-- [ ] Cloudflare Worker 正確接收 email 並建立 bucket
-- [ ] Worker 正確產生 access token 並回傳前端
-- [ ] Token 正確存入 localStorage
+### kvdb.io 直連
+- [ ] 前端正確呼叫 kvdb.io 建立 bucket
+- [ ] kvdb.io 正確回傳 bucket_id
+- [ ] bucket_id 正確存入 localStorage
 
 ---
 
@@ -693,7 +637,7 @@ Content-Type: application/json
 | `useWatchlist.remove` 已啟用 | 寫墓碑、`isWatched` 立即 false |
 | `useWatchlist` 遷移 | 舊資料載入後補 `updatedAt = addedAt` |
 | `useWatchlistSync` 429 退避 | 觸發 30s → 60s → 120s 排程 |
-| `useWatchlistSync` createAccount | Worker 呼叫、token 存入 localStorage |
+| `useWatchlistSync` createAccount | kvdb.io 直連、bucket_id 存入 localStorage |
 | localStorage 失敗降級 | setItem/getItem 拋錯不影響其他功能 |
 
 ### 8.2 E2E（Playwright）
@@ -752,5 +696,5 @@ BDD 檔案：`docs/bdds/phases/phase-9-跨裝置追蹤清單同步.feature`（27
 - 同步介面抽象化：`useWatchlistSync` 內部只依賴 `kvdb.io` 契約；若 kvdb 停擺，可替換為其他方案而不動 `useWatchlist`
 - 匯出/匯入是手動備援，也是 kvdb 停擺時的逃生門
 - 使用者只需輸入 email 即可啟用同步，無需向擁有者索取配對碼
-- Cloudflare Worker 負責建立 bucket + 產生 token，secret_key 只存在 Worker 環境變數中，前端永遠看不到
-- 免費方案限制：Cloudflare Worker 100,000 次/天；kvdb.io 1,000 req/IP/hr
+- 前端直連 kvdb.io 建立 bucket，bucket_id 為隨機字串保護安全性
+- 免費方案限制：kvdb.io 1,000 req/IP/hr

@@ -4,6 +4,10 @@
  * 對應測試計畫 F- 群組：merge 並集/LWW/墓碑、429 退避（fake timers）、
  * 未配對零請求、kvdb fetch mock（URL/body/429）、setToken/clearToken 對
  * syncActiveRef 的影響、debounce/輪詢/前景可見性、初始化 reload 恢復。
+ *
+ * 架構更新：移除 Cloudflare Worker，前端直連 kvdb.io。
+ * - 建 bucket：POST https://kvdb.io/ with form body email=xxx → 純文字 bucket_id
+ * - 同步讀寫：GET/POST https://kvdb.io/{bucket_id}/user:me:watchlist
  */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { nextTick, defineComponent } from 'vue'
@@ -21,6 +25,7 @@ function item(code: string, opts: Partial<WatchlistItem> = {}): WatchlistItem {
  * kvdb.io fetch mock：可在測試中途切換行為（404/429/fail/401/500/POST 特定狀態）
  * - mode 'ok' + store null → GET 404（首次配對語意）
  * - mode 'ok' + store 有值 → GET 200 回傳 store
+ * - POST https://kvdb.io/（建 bucket）→ 回傳純文字 bucket_id
  * - 一律記錄 calls（url / method / parsed body）
  */
 type MockMode = 'ok' | '404' | '429' | 'fail' | 'unauthorized' | 'server-error'
@@ -37,6 +42,8 @@ interface KvdbMockState {
   store: WatchlistSyncDoc | null
   /** 若設定，POST 一律回傳此狀態碼（用於測 push 失敗/429） */
   forcePostStatus?: number
+  /** 建 bucket 回傳的 bucket_id（預設 'mock-bucket'） */
+  createdBucketId?: string
 }
 
 function createKvdbMock() {
@@ -44,43 +51,55 @@ function createKvdbMock() {
   const state: KvdbMockState = { mode: 'ok', store: null }
   const fn = vi.fn(async (input: unknown, init?: RequestInit) => {
     const url = String(input)
-    // 非 kvdb 請求（如 useUpcoming 模組載入時的 ./api/upcoming.json）不記錄、不處理
-    if (!url.startsWith('https://kvdb.io/')) {
-      return { ok: false, status: 404, json: async () => null }
-    }
     const method = (init?.method as string) ?? 'GET'
-    const body = init?.body ? (JSON.parse(init.body as string) as WatchlistSyncDoc) : undefined
+
+    // 非 kvdb 請求不記錄、不處理
+    if (!url.startsWith('https://kvdb.io')) {
+      return { ok: false, status: 404, text: async () => '', json: async () => null }
+    }
 
     if (state.mode === 'fail') throw new TypeError('Failed to fetch')
     if (state.mode === '429') {
-      calls.push({ url, method, body, status: 429 })
-      return { ok: false, status: 429, json: async () => null }
+      calls.push({ url, method, status: 429 })
+      return { ok: false, status: 429, text: async () => 'rate limited', json: async () => null }
     }
     if (state.mode === 'unauthorized') {
-      calls.push({ url, method, body, status: 401 })
-      return { ok: false, status: 401, json: async () => null }
+      calls.push({ url, method, status: 401 })
+      return { ok: false, status: 401, text: async () => 'unauthorized', json: async () => null }
     }
     if (state.mode === 'server-error') {
-      calls.push({ url, method, body, status: 500 })
-      return { ok: false, status: 500, json: async () => null }
+      calls.push({ url, method, status: 500 })
+      return { ok: false, status: 500, text: async () => 'server error', json: async () => null }
     }
+
+    // 建 bucket：POST https://kvdb.io/（無 bucket_id 在路徑中）
+    // 注意：happy-dom 的 fetch 可能不會正規化 URL（不加 trailing slash）
+    if (method === 'POST' && (url === 'https://kvdb.io/' || url === 'https://kvdb.io')) {
+      const bucketId = state.createdBucketId ?? 'mock-bucket'
+      calls.push({ url, method, status: 200 })
+      return { ok: true, status: 200, text: async () => bucketId, json: async () => null }
+    }
+
+    // 同步寫入：POST https://kvdb.io/{bucket_id}/...
     if (method === 'POST') {
       const forced = state.forcePostStatus
       if (forced !== undefined) {
-        calls.push({ url, method, body, status: forced })
-        return { ok: forced >= 200 && forced < 300, status: forced, json: async () => null }
+        calls.push({ url, method, status: forced })
+        return { ok: forced >= 200 && forced < 300, status: forced, text: async () => '', json: async () => null }
       }
+      const body = init?.body ? (JSON.parse(init.body as string) as WatchlistSyncDoc) : undefined
       state.store = body ?? null
       calls.push({ url, method, body, status: 200 })
-      return { ok: true, status: 200, json: async () => null }
+      return { ok: true, status: 200, text: async () => '', json: async () => null }
     }
-    // GET
+
+    // 同步讀取：GET https://kvdb.io/{bucket_id}/...
     if (state.mode === '404' || state.store === null) {
-      calls.push({ url, method, body, status: 404 })
-      return { ok: false, status: 404, json: async () => null }
+      calls.push({ url, method, status: 404 })
+      return { ok: false, status: 404, text: async () => '', json: async () => null }
     }
-    calls.push({ url, method, body, status: 200 })
-    return { ok: true, status: 200, json: async () => state.store }
+    calls.push({ url, method, status: 200 })
+    return { ok: true, status: 200, text: async () => '', json: async () => state.store }
   })
   return { fn, calls, state }
 }
@@ -105,8 +124,8 @@ function setVisibility(state: 'visible' | 'hidden'): void {
   Object.defineProperty(document, 'visibilityState', { value: state, configurable: true })
 }
 
-const TOKEN_KEY = 'stockpayday-sync-token'
-const KVDB_URL = 'https://kvdb.io/stockpayday/user:me:watchlist'
+const BUCKET_ID_KEY = 'stockpayday-sync-bucket-id'
+const KVDB_URL_BASE = 'https://kvdb.io'
 
 // ============================================================
 // merge 合併規則（F-04 / F-11b / F-12 / F-27b）
@@ -198,103 +217,60 @@ describe('merge 合併規則', () => {
 })
 
 // ============================================================
-// createAccount（透過 Worker 建立帳號 + 取得 token）
+// createAccount（直連 kvdb.io 建立 bucket）
 // ============================================================
-describe('createAccount', () => {
+describe('createAccount（直連 kvdb.io）', () => {
   let kvdb: KvdbMock
-  let workerFn: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     resetAll()
     kvdb = createKvdbMock()
     vi.stubGlobal('fetch', kvdb.fn)
-    // Worker fetch mock（獨立於 kvdb mock）
-    workerFn = vi.fn()
-    workerFn.mockClear()
   })
 
   afterEach(() => {
     resetAll()
   })
 
-  it('Worker 回傳 token → 存入 localStorage、syncActive=true、syncOnce 執行', async () => {
-    // Mock：Worker URL 回傳 token，kvdb URL 回傳 404（首次同步）+ POST 200
-    workerFn.mockImplementation(async (input: unknown, init?: RequestInit) => {
-      const url = String(input)
-      const method = (init?.method as string) ?? 'GET'
-      if (url.includes('kvdb-proxy')) {
-        return {
-          ok: true,
-          json: async () => ({ access_token: 'worker-token-123', bucket_id: 'bucket-abc' }),
-        }
-      }
-      // kvdb 請求
-      if (method === 'GET') return { ok: false, status: 404, json: async () => null }
-      if (method === 'POST') return { ok: true, status: 200, json: async () => null }
-      return { ok: false, status: 405, json: async () => null }
-    })
-    vi.stubGlobal('fetch', workerFn)
-
+  it('POST kvdb.io/ → 回傳 bucket_id、存入 localStorage、不啟動同步', async () => {
+    kvdb.state.createdBucketId = 'new-bucket-abc'
     const sync = useWatchlistSync()
-    await sync.createAccount('user@example.com')
-    await flushMicrotasks()
+    const result = await sync.createAccount('user@example.com')
 
-    // Worker 被呼叫一次
-    const workerCalls = workerFn.mock.calls.filter(([u]) => String(u).includes('kvdb-proxy'))
-    expect(workerCalls).toHaveLength(1)
-    const [url, opts] = workerCalls[0]
-    expect(url).toContain('kvdb-proxy')
-    expect(opts.method).toBe('POST')
-    expect(JSON.parse(opts.body)).toEqual({ email: 'user@example.com' })
+    // POST https://kvdb.io/（建 bucket）
+    const createCalls = kvdb.calls.filter(c => (c.url === 'https://kvdb.io/' || c.url === 'https://kvdb.io') && c.method === 'POST')
+    expect(createCalls).toHaveLength(1)
 
-    expect(sync.token.value).toBe('worker-token-123')
-    expect(localStorage.getItem(TOKEN_KEY)).toBe('worker-token-123')
-    expect(localStorage.getItem('stockpayday-sync-bucket-id')).toBe('bucket-abc')
-    expect(sync.syncActive.value).toBe(true)
-    expect(syncActiveRef.value).toBe(true)
-    expect(sync.status.value).toBe('synced')
+    expect(result.bucketId).toBe('new-bucket-abc')
+    expect(localStorage.getItem(BUCKET_ID_KEY)).toBe('new-bucket-abc')
+
+    // 建 bucket 後不設 bucketId、不啟動同步（等待 email 驗證）
+    expect(sync.bucketId.value).toBe('') // 尚未 confirmVerification
+    expect(sync.syncActive.value).toBe(false)
+    // 沒有發起任何同步請求
+    const syncCalls = kvdb.calls.filter(c => c.url !== 'https://kvdb.io/' && c.url !== 'https://kvdb.io')
+    expect(syncCalls).toHaveLength(0)
   })
 
-  it('Worker 回傳失敗 → status=error、lastError 含錯誤訊息、token 未寫入', async () => {
-    workerFn.mockImplementation(async (input: unknown) => {
-      const url = String(input)
-      if (url.includes('kvdb-proxy')) {
-        return {
-          ok: false,
-          status: 502,
-          json: async () => ({ error: 'Failed to create bucket: 502' }),
-        }
-      }
-      return { ok: false, status: 404, json: async () => null }
-    })
-    vi.stubGlobal('fetch', workerFn)
-
+  it('POST kvdb.io/ 失敗 → status=error、lastError 含錯誤訊息、bucket_id 未寫入', async () => {
+    kvdb.state.mode = 'server-error'
     const sync = useWatchlistSync()
-    await sync.createAccount('user@example.com')
-    await flushMicrotasks()
+
+    await expect(sync.createAccount('user@example.com')).rejects.toThrow()
 
     expect(sync.status.value).toBe('error')
-    expect(sync.lastError.value).toContain('Failed to create bucket')
-    expect(sync.token.value).toBe('')
-    expect(localStorage.getItem(TOKEN_KEY)).toBeNull()
+    expect(sync.lastError.value).toContain('建立帳號失敗')
+    expect(sync.bucketId.value).toBe('')
+    expect(localStorage.getItem(BUCKET_ID_KEY)).toBeNull()
   })
 
-  it('Worker 網路失敗 → lastError=建立帳號失敗、本地不受影響', async () => {
-    workerFn.mockImplementation(async (input: unknown) => {
-      const url = String(input)
-      if (url.includes('kvdb-proxy')) {
-        throw new TypeError('Failed to fetch')
-      }
-      return { ok: false, status: 404, json: async () => null }
-    })
-    vi.stubGlobal('fetch', workerFn)
-
+  it('POST kvdb.io/ 網路失敗 → lastError=建立帳號失敗、本地不受影響', async () => {
+    kvdb.state.mode = 'fail'
     const { add } = useWatchlist()
     add('2330', '台積電')
 
     const sync = useWatchlistSync()
-    await sync.createAccount('user@example.com')
-    await flushMicrotasks()
+    await expect(sync.createAccount('user@example.com')).rejects.toThrow()
 
     expect(sync.status.value).toBe('error')
     expect(sync.lastError.value).toBe('Failed to fetch')
@@ -303,33 +279,69 @@ describe('createAccount', () => {
 
   it('空白 email → 不發任何請求、不改變狀態', async () => {
     const sync = useWatchlistSync()
-    await sync.createAccount('   ')
+    await expect(sync.createAccount('   ')).rejects.toThrow()
 
-    // workerFn should not have been called for kvdb-proxy
-    const workerCalls = workerFn.mock.calls.filter(([u]) => String(u).includes('kvdb-proxy'))
-    expect(workerCalls).toHaveLength(0)
+    expect(kvdb.calls).toHaveLength(0)
     expect(sync.status.value).toBe('disabled')
   })
 
-  it('Worker 回傳無 access_token → lastError 含錯誤', async () => {
-    workerFn.mockImplementation(async (input: unknown) => {
-      const url = String(input)
-      if (url.includes('kvdb-proxy')) {
-        return {
-          ok: true,
-          json: async () => ({ bucket_id: 'bucket-abc' }), // 無 access_token
-        }
-      }
-      return { ok: false, status: 404, json: async () => null }
-    })
-    vi.stubGlobal('fetch', workerFn)
-
+  it('kvdb.io 未回傳 bucket_id → lastError 含錯誤', async () => {
+    kvdb.state.createdBucketId = ''
     const sync = useWatchlistSync()
-    await sync.createAccount('user@example.com')
-    await flushMicrotasks()
+
+    await expect(sync.createAccount('user@example.com')).rejects.toThrow()
 
     expect(sync.status.value).toBe('error')
-    expect(sync.lastError.value).toContain('未回傳 access_token')
+    expect(sync.lastError.value).toContain('未回傳 bucket_id')
+  })
+
+  it('回傳值含 bucketId', async () => {
+    kvdb.state.createdBucketId = 'test-123'
+    const sync = useWatchlistSync()
+    const result = await sync.createAccount('user@example.com')
+    expect(result).toEqual({ bucketId: 'test-123' })
+  })
+})
+
+// ============================================================
+// confirmVerification（驗證後啟動同步）
+// ============================================================
+describe('confirmVerification', () => {
+  let kvdb: KvdbMock
+
+  beforeEach(() => {
+    resetAll()
+    kvdb = createKvdbMock()
+    vi.stubGlobal('fetch', kvdb.fn)
+  })
+
+  afterEach(() => {
+    resetAll()
+  })
+
+  it('confirmVerification 啟動同步：syncActiveRef=true、發起 pull + push', async () => {
+    kvdb.state.createdBucketId = 'verify-bucket'
+    const sync = useWatchlistSync()
+    await sync.createAccount('user@example.com')
+
+    // 建 bucket 後無同步請求
+    expect(kvdb.calls.filter(c => c.url !== 'https://kvdb.io/' && c.url !== 'https://kvdb.io')).toHaveLength(0)
+
+    // 確認驗證 → 啟動同步
+    sync.confirmVerification()
+    await flushMicrotasks()
+
+    expect(syncActiveRef.value).toBe(true)
+    expect(sync.status.value).toBe('synced')
+    // 發起 pull（GET 404）+ push（POST）
+    const syncCalls = kvdb.calls.filter(c => c.url !== 'https://kvdb.io/' && c.url !== 'https://kvdb.io')
+    expect(syncCalls.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('confirmVerification 在未建立 bucket 時不執行', () => {
+    const sync = useWatchlistSync()
+    sync.confirmVerification() // 無 bucket_id，不應崩潰
+    expect(syncActiveRef.value).toBe(false)
   })
 })
 
@@ -360,15 +372,16 @@ describe('syncActive 語意與對外 API', () => {
     expect(sync.status.value).toBe('disabled')
   })
 
-  it('對外 API 形狀：回傳 { token, status, lastSyncedAt, lastError, syncActive, createAccount, setToken, clearToken, syncOnce }', () => {
+  it('對外 API 形狀：回傳 { bucketId, status, lastSyncedAt, lastError, syncActive, createAccount, confirmVerification, setToken, clearToken, syncOnce }', () => {
     const sync = useWatchlistSync()
     expect(Object.keys(sync)).toEqual([
-      'token',
+      'bucketId',
       'status',
       'lastSyncedAt',
       'lastError',
       'syncActive',
       'createAccount',
+      'confirmVerification',
       'setToken',
       'clearToken',
       'syncOnce',
@@ -377,10 +390,10 @@ describe('syncActive 語意與對外 API', () => {
 
   it('F-01 setToken 寫入 localStorage、啟動同步並讓 syncActiveRef 為 true', async () => {
     const sync = useWatchlistSync()
-    sync.setToken('  my-token-123  ')
+    sync.setToken('  my-bucket-123  ')
 
-    expect(sync.token.value).toBe('my-token-123')
-    expect(localStorage.getItem(TOKEN_KEY)).toBe('my-token-123')
+    expect(sync.bucketId.value).toBe('my-bucket-123')
+    expect(localStorage.getItem(BUCKET_ID_KEY)).toBe('my-bucket-123')
     expect(sync.syncActive.value).toBe(true)
     expect(syncActiveRef.value).toBe(true) // useWatchlist 的墓碑語意旗標被同步
     expect(sync.status.value).toBe('syncing')
@@ -403,8 +416,8 @@ describe('syncActive 語意與對外 API', () => {
 
     sync.clearToken()
 
-    expect(sync.token.value).toBe('')
-    expect(localStorage.getItem(TOKEN_KEY)).toBeNull()
+    expect(sync.bucketId.value).toBe('')
+    expect(localStorage.getItem(BUCKET_ID_KEY)).toBeNull()
     expect(sync.syncActive.value).toBe(false)
     expect(syncActiveRef.value).toBe(false)
     expect(sync.status.value).toBe('disabled')
@@ -431,7 +444,7 @@ describe('syncActive 語意與對外 API', () => {
       const sync = useWatchlistSync()
       sync.setToken('tok')
 
-      expect(sync.token.value).toBe('')
+      expect(sync.bucketId.value).toBe('')
       expect(sync.syncActive.value).toBe(false)
       expect(syncActiveRef.value).toBe(false)
       expect(sync.status.value).toBe('disabled')
@@ -486,11 +499,11 @@ describe('kvdb.io 讀寫契約', () => {
     // GET 404（首次）→ 無 POST 前先 GET
     expect(kvdb.calls[0].method).toBe('GET')
     expect(kvdb.calls[0].status).toBe(404)
-    expect(kvdb.calls[0].url).toBe(`${KVDB_URL}?access_token=first-token`)
+    expect(kvdb.calls[0].url).toBe('https://kvdb.io/first-token/user:me:watchlist')
 
     // POST 建立含本地 items 的 doc
     expect(kvdb.calls[1].method).toBe('POST')
-    expect(kvdb.calls[1].url).toBe(`${KVDB_URL}?access_token=first-token`)
+    expect(kvdb.calls[1].url).toBe('https://kvdb.io/first-token/user:me:watchlist')
     expect(kvdb.calls[1].status).toBe(200)
     const posted = kvdb.calls[1].body!
     expect(posted.updatedAt).toBeTypeOf('number')
@@ -655,7 +668,7 @@ describe('同步觸發策略（debounce / 輪詢 / 429 退避）', () => {
     // 滿 1.5s：觸發一次 syncOnce（GET + POST 寫回）
     await vi.advanceTimersByTimeAsync(100)
     expect(kvdb.fn).toHaveBeenCalledTimes(4)
-    const lastPost = [...kvdb.calls].reverse().find(c => c.method === 'POST')!
+    const lastPost = [...kvdb.calls].reverse().find(c => c.method === 'POST' && c.url !== 'https://kvdb.io/' && c.url !== 'https://kvdb.io')!
     expect(lastPost.body?.items.some(i => i.code === 'X')).toBe(true)
   })
 
@@ -789,7 +802,7 @@ describe('同步觸發策略（debounce / 輪詢 / 429 退避）', () => {
     await vi.advanceTimersByTimeAsync(1_500)
     await flushMicrotasks()
     expect(kvdb.fn).toHaveBeenCalledTimes(6)
-    const lastPost = [...kvdb.calls].reverse().find(c => c.method === 'POST')!
+    const lastPost = [...kvdb.calls].reverse().find(c => c.method === 'POST' && c.url !== 'https://kvdb.io/' && c.url !== 'https://kvdb.io')!
     expect(lastPost.body?.items.some(i => i.code === 'Z')).toBe(true)
   })
 
@@ -836,7 +849,7 @@ describe('初始化：reload 恢復配對（module init）', () => {
   })
 
   it('F-01 reload：頁面載入讀取 localStorage token 並自動執行首次同步（syncActiveRef=true）', async () => {
-    localStorage.setItem(TOKEN_KEY, 'reload-token')
+    localStorage.setItem(BUCKET_ID_KEY, 'reload-token')
     localStorage.setItem(
       'stockpayday-watchlist',
       JSON.stringify([{ code: '2330', name: '台積電', type: 'stock', addedAt: 1000, updatedAt: 1000 }]),
@@ -851,21 +864,21 @@ describe('初始化：reload 恢復配對（module init）', () => {
     await vi.waitFor(() => expect(kvdb.calls.length).toBe(2))
 
     const sync = syncMod.useWatchlistSync()
-    expect(sync.token.value).toBe('reload-token')
+    expect(sync.bucketId.value).toBe('reload-token')
     expect(sync.syncActive.value).toBe(true)
     expect(wl.syncActiveRef.value).toBe(true) // 初始化同步 syncActiveRef
     expect(sync.status.value).toBe('synced')
 
     // GET 404 → POST 建立（含 localStorage 載入的本地清單）
-    expect(kvdb.calls[0].url).toContain('access_token=reload-token')
-    const post = kvdb.calls.find(c => c.method === 'POST')!
+    expect(kvdb.calls[0].url).toBe('https://kvdb.io/reload-token/user:me:watchlist')
+    const post = kvdb.calls.find(c => c.method === 'POST' && c.url !== 'https://kvdb.io/' && c.url !== 'https://kvdb.io')!
     expect(post.body?.items.some(i => i.code === '2330')).toBe(true)
 
     syncMod.resetSyncState() // 清理 fresh module 的 timer/listener
   })
 
   it('F-26 localStorage 不可用（getItem 拋錯）→ 視同未配對、同步引擎不啟動', async () => {
-    localStorage.setItem(TOKEN_KEY, 'tok')
+    localStorage.setItem(BUCKET_ID_KEY, 'tok')
     const original = Storage.prototype.getItem
     Storage.prototype.getItem = () => {
       throw new Error('access denied')
@@ -878,7 +891,7 @@ describe('初始化：reload 恢復配對（module init）', () => {
       const syncMod = await import('../useWatchlistSync')
 
       const sync = syncMod.useWatchlistSync()
-      expect(sync.token.value).toBe('')
+      expect(sync.bucketId.value).toBe('')
       expect(sync.syncActive.value).toBe(false)
       expect(sync.status.value).toBe('disabled')
       await sync.syncOnce()

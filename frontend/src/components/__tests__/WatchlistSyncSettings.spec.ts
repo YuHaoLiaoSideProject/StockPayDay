@@ -12,6 +12,10 @@
  * - F-21 匯出內容為目前追蹤項目（不含已移除墓碑）
  * - F-22 匯入合併且不重複（本地已含 X，匯入 X+Y → X 一筆、Y 加入）
  * - F-23 匯入格式錯誤：顯示錯誤且本地清單不變
+ *
+ * 架構更新：移除 Cloudflare Worker，前端直連 kvdb.io。
+ * - email 啟動流程：POST kvdb.io/ → 顯示 bucket_id → 等待 email 驗證 → 確認後同步
+ * - 備援：可直接貼上配對碼（bucket_id）啟動同步
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount, flushPromises, type VueWrapper } from '@vue/test-utils'
@@ -25,21 +29,39 @@ type KvdbMode = 'ok' | 'delay' | 'fail' | '429'
 
 let kvdbMode: KvdbMode = 'ok'
 let kvdbStore: WatchlistSyncDoc | null = null
+let createdBucketId = 'mock-bucket'
 
 /** kvdb.io fetch stub：非 kvdb 請求（如 ./api/upcoming.json）不處理 */
-const kvdbFetch = vi.fn(async (input: unknown) => {
+const kvdbFetch = vi.fn(async (input: unknown, init?: RequestInit) => {
   const url = String(input)
-  if (!url.startsWith('https://kvdb.io/')) {
-    return { ok: false, status: 404, json: async () => null }
+  const method = (init?.method as string) ?? 'GET'
+  if (!url.startsWith('https://kvdb.io')) {
+    return { ok: false, status: 404, text: async () => '', json: async () => null }
+  }
+  // fail/429 模式：所有請求都失敗（含建 bucket）
+  if (kvdbMode === 'fail') throw new TypeError('連線錯誤')
+  if (kvdbMode === '429') return { ok: false, status: 429, text: async () => 'rate limited', json: async () => null }
+  // 建 bucket：POST https://kvdb.io/（無 bucket_id 在路徑中）
+  // 注意：happy-dom 的 fetch 可能不會正規化 URL（不加 trailing slash）
+  if (method === 'POST' && (url === 'https://kvdb.io/' || url === 'https://kvdb.io')) {
+    return { ok: true, status: 200, text: async () => createdBucketId, json: async () => null }
   }
   if (kvdbMode === 'delay') return new Promise(() => {}) // 永不 resolve → 停留在「同步中…」
-  if (kvdbMode === 'fail') throw new TypeError('連線錯誤')
-  if (kvdbMode === '429') return { ok: false, status: 429, json: async () => null }
-  return { ok: true, status: 200, json: async () => kvdbStore }
+
+  // 同步讀取/寫入
+  return { ok: true, status: 200, text: async () => '', json: async () => kvdbStore }
 })
 
 function kvdbCallCount(): number {
-  return kvdbFetch.mock.calls.filter(([u]) => String(u).startsWith('https://kvdb.io/')).length
+  return kvdbFetch.mock.calls.filter(([u]) => String(u).startsWith('https://kvdb.io')).length
+}
+
+/** 只計同步請求（不含建 bucket） */
+function syncCallCount(): number {
+  return kvdbFetch.mock.calls.filter(([u]) => {
+    const url = String(u)
+    return url.startsWith('https://kvdb.io') && url !== 'https://kvdb.io/' && url !== 'https://kvdb.io'
+  }).length
 }
 
 function findButtonByText(wrapper: VueWrapper, text: string) {
@@ -54,15 +76,25 @@ beforeEach(() => {
   resetSyncState()
   kvdbMode = 'ok'
   kvdbStore = null
+  createdBucketId = 'mock-bucket'
   kvdbFetch.mockClear()
   vi.stubGlobal('fetch', kvdbFetch)
+  // Mock clipboard API (navigator.clipboard may not exist in happy-dom)
+  if (!navigator.clipboard) {
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+      configurable: true,
+    })
+  } else {
+    navigator.clipboard.writeText = vi.fn().mockResolvedValue(undefined)
+  }
 })
 
 afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe(' WatchlistSyncSettings（設定 UI）', () => {
+describe('WatchlistSyncSettings（設定 UI）', () => {
   it('F-06 未配對時顯示同步設定區塊、說明、email 輸入框與配對碼備援', () => {
     const wrapper = mount(WatchlistSyncSettings)
 
@@ -86,7 +118,7 @@ describe(' WatchlistSyncSettings（設定 UI）', () => {
 
     // 仍為未配對區塊，token 未寫入
     expect(wrapper.find('[data-testid="sync-email-input"]').exists()).toBe(true)
-    expect(localStorage.getItem('stockpayday-sync-token')).toBeNull()
+    expect(localStorage.getItem('stockpayday-sync-bucket-id')).toBeNull()
     expect(kvdbCallCount()).toBe(0)
   })
 
@@ -97,9 +129,98 @@ describe(' WatchlistSyncSettings（設定 UI）', () => {
     await wrapper.find('form').trigger('submit')
     await nextTick()
 
-    expect(localStorage.getItem('stockpayday-sync-token')).toBeNull()
+    expect(localStorage.getItem('stockpayday-sync-bucket-id')).toBeNull()
     expect(wrapper.find('[data-testid="sync-email-input"]').exists()).toBe(true)
     expect(kvdbCallCount()).toBe(0)
+  })
+
+  it('email 啟動：建立 bucket → 顯示 bucket_id + 驗證提示（不立即同步）', async () => {
+    createdBucketId = 'email-bucket-123'
+    const wrapper = mount(WatchlistSyncSettings)
+
+    await wrapper.find('[data-testid="sync-email-input"]').setValue('user@example.com')
+    // 觸發 form submit（happy-dom 可能不支援 button click 觸發 form submit）
+    const form = wrapper.find('form')
+    await form.trigger('submit')
+    await flushPromises()
+
+    // 建 bucket 請求
+    const createCalls = kvdbFetch.mock.calls.filter(([u, opts]) =>
+      (String(u) === 'https://kvdb.io/' || String(u) === 'https://kvdb.io') && (opts as any)?.method === 'POST'
+    )
+    expect(createCalls).toHaveLength(1)
+
+    // 顯示 bucket_id
+    expect(wrapper.find('[data-testid="bucket-id-display"]').text()).toBe('email-bucket-123')
+    expect(wrapper.text()).toContain('同步空間已建立')
+    expect(wrapper.text()).toContain('請將此同步碼貼到其他裝置')
+    expect(wrapper.text()).toContain('請檢查 email 並點擊驗證連結')
+
+    // 顯示「複製」按鈕
+    expect(wrapper.find('[data-testid="copy-bucket-id"]').exists()).toBe(true)
+
+    // 顯示「我已完成驗證」按鈕
+    expect(wrapper.find('[data-testid="confirm-verification"]').exists()).toBe(true)
+
+    // 不在同步狀態（未配對、等待驗證）
+    expect(wrapper.text()).not.toContain('同步中…')
+    expect(wrapper.text()).not.toContain('已同步')
+
+    // bucket_id 存入 localStorage
+    expect(localStorage.getItem('stockpayday-sync-bucket-id')).toBe('email-bucket-123')
+  })
+
+  it('email 啟動失敗：留在 email 表單、顯示錯誤訊息', async () => {
+    kvdbMode = 'fail'
+    const wrapper = mount(WatchlistSyncSettings)
+
+    await wrapper.find('[data-testid="sync-email-input"]').setValue('user@example.com')
+    const form = wrapper.find('form')
+    await form.trigger('submit')
+    await flushPromises()
+
+    // 錯誤訊息
+    expect(wrapper.find('[data-testid="sync-create-error"]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('連線錯誤')
+
+    // 仍在 email 表單
+    expect(wrapper.find('[data-testid="sync-email-input"]').exists()).toBe(true)
+    expect(localStorage.getItem('stockpayday-sync-bucket-id')).toBeNull()
+  })
+
+  it('複製 bucket_id：呼叫 navigator.clipboard.writeText', async () => {
+    createdBucketId = 'copy-test-bucket'
+    const wrapper = mount(WatchlistSyncSettings)
+
+    await wrapper.find('[data-testid="sync-email-input"]').setValue('user@example.com')
+    const form = wrapper.find('form')
+    await form.trigger('submit')
+    await flushPromises()
+
+    await wrapper.find('[data-testid="copy-bucket-id"]').trigger('click')
+    await nextTick()
+
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('copy-test-bucket')
+    expect(wrapper.text()).toContain('已複製')
+  })
+
+  it('確認驗證：呼叫 confirmVerification → 啟動同步', async () => {
+    kvdbMode = 'delay' // 延遲 → 停留在同步中
+    createdBucketId = 'verify-bucket'
+    const wrapper = mount(WatchlistSyncSettings)
+
+    await wrapper.find('[data-testid="sync-email-input"]').setValue('user@example.com')
+    const form = wrapper.find('form')
+    await form.trigger('submit')
+    await flushPromises()
+
+    // 點擊「我已完成驗證」
+    await wrapper.find('[data-testid="confirm-verification"]').trigger('click')
+    await nextTick()
+
+    // 切換到同步狀態區塊
+    expect(wrapper.text()).toContain('同步中…')
+    expect(wrapper.find('[data-testid="bucket-id-display"]').exists()).toBe(false)
   })
 
   it('F-01 配對碼直接輸入啟動：trim 後寫入 localStorage、切換已配對並顯示「同步中…」', async () => {
@@ -120,12 +241,12 @@ describe(' WatchlistSyncSettings（設定 UI）', () => {
     if (tokenForm) await tokenForm.trigger('submit')
     await nextTick()
 
-    expect(localStorage.getItem('stockpayday-sync-token')).toBe('test-token')
+    expect(localStorage.getItem('stockpayday-sync-bucket-id')).toBe('test-token')
     expect(wrapper.find('[data-testid="sync-email-input"]').exists()).toBe(false) // 已配對分支
     expect(wrapper.text()).toContain('同步中…')
     expect(wrapper.text()).not.toContain('上次同步')
     // 啟動後立即發起一次同步（pull）
-    expect(kvdbCallCount()).toBe(1)
+    expect(syncCallCount()).toBe(1)
   })
 
   it('F-07b 已配對同步完成：顯示「已同步」並附上次同步時間', async () => {
@@ -174,12 +295,12 @@ describe(' WatchlistSyncSettings（設定 UI）', () => {
     expect(wrapper.text()).toContain('已同步')
 
     kvdbMode = 'delay'
-    const before = kvdbCallCount()
+    const before = syncCallCount()
     await findButtonByText(wrapper, '立即同步').trigger('click')
     await nextTick()
 
     expect(wrapper.text()).toContain('同步中…')
-    expect(kvdbCallCount()).toBe(before + 1)
+    expect(syncCallCount()).toBe(before + 1)
   })
 
   it('F-19 停用同步：token 清除、回到未配對區塊、本地追蹤清單保留', async () => {
@@ -195,7 +316,7 @@ describe(' WatchlistSyncSettings（設定 UI）', () => {
     await wrapper.find('[data-testid="sync-token-clear"]').trigger('click')
     await nextTick()
 
-    expect(localStorage.getItem('stockpayday-sync-token')).toBeNull()
+    expect(localStorage.getItem('stockpayday-sync-bucket-id')).toBeNull()
     expect(wrapper.find('[data-testid="sync-email-input"]').exists()).toBe(true) // 回到未配對分支
     expect(isWatched('2330')).toBe(true) // 停用不刪本地清單
   })

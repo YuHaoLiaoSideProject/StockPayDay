@@ -21,11 +21,10 @@ import {
   activatePage,
   cloudDoc,
   cloudCodes,
-  CLOUD_KEY,
   type KvdbMock,
 } from './helpers/kvdbMock'
 
-const TOKEN_KEY = 'stockpayday-sync-token'
+const BUCKET_ID_KEY = 'stockpayday-sync-bucket-id'
 const WATCHLIST_URL = '/#/watchlist'
 
 // ── UI helpers ────────────────────────────────────────────────────────────────
@@ -72,6 +71,10 @@ async function pair(page: Page, token: string): Promise<void> {
 async function pairByEmail(page: Page, email: string): Promise<void> {
   await page.locator('[data-testid="sync-email-input"]').fill(email)
   await page.locator('[data-testid="sync-email-submit"]').click()
+  // 等待 bucket 建立完成
+  await page.locator('[data-testid="bucket-id-display"]').waitFor({ state: 'visible', timeout: 5000 })
+  // 點擊「我已完成驗證，開始同步」
+  await page.locator('[data-testid="confirm-verification"]').click()
 }
 
 async function expectSynced(page: Page): Promise<void> {
@@ -111,7 +114,7 @@ test.describe('Phase 9 跨裝置追蹤清單同步（E2E）', () => {
     // 空白 email 無法啟動（E2E-02）：仍為未配對、無任何 kvdb 請求
     await page.locator('[data-testid="sync-email-submit"]').click()
     await expect(page.locator('[data-testid="sync-email-input"]')).toBeVisible()
-    expect(await page.evaluate(k => localStorage.getItem(k), TOKEN_KEY)).toBeNull()
+    expect(await page.evaluate(k => localStorage.getItem(k), BUCKET_ID_KEY)).toBeNull()
 
     // 既有操作與現況完全一致（E2E-05）：搜尋、加入、切換顯示模式、移除
     await addStock(page, '2330')
@@ -152,7 +155,7 @@ test.describe('Phase 9 跨裝置追蹤清單同步（E2E）', () => {
     await expectBadge(page, 1)
 
     // 配對碼記住於本機 → reload 後仍已配對並自動同步
-    expect(await page.evaluate(k => localStorage.getItem(k), TOKEN_KEY)).toBe('token-phase9')
+    expect(await page.evaluate(k => localStorage.getItem(k), BUCKET_ID_KEY)).toBe('token-phase9')
     await page.reload()
     await expect(page.locator('.watchlist-view')).toBeVisible({ timeout: 10000 })
     await expect(page.locator('[data-testid="sync-email-input"]')).toBeHidden() // 已配對分支
@@ -325,7 +328,7 @@ test.describe('Phase 9 跨裝置追蹤清單同步（E2E）', () => {
     await page.locator('[data-testid="sync-token-clear"]').click()
     await expect(page.locator('[data-testid="sync-email-input"]')).toBeVisible() // 回到未配對
     await expect(page.locator('.sync-status-info')).toBeHidden()
-    expect(await page.evaluate(k => localStorage.getItem(k), TOKEN_KEY)).toBeNull()
+    expect(await page.evaluate(k => localStorage.getItem(k), BUCKET_ID_KEY)).toBeNull()
     await expect(page.locator('[data-testid="watchlist-sync-error"]')).toBeHidden()
 
     // 本地清單完整保留
@@ -417,7 +420,7 @@ test.describe('Phase 9 跨裝置追蹤清單同步（E2E）', () => {
     await expectBadge(page, 1)
   })
 
-  test('E2E-email email 啟動同步：透過 Worker 建立帳號、token 自動寫入、同步成功', async ({ page }) => {
+  test('E2E-email email 啟動同步：建立 bucket → 顯示 ID → 驗證後同步成功', async ({ page }) => {
     const mock = createKvdbMock('ok')
     await installKvdbMock(page, mock)
     await gotoWatchlist(page)
@@ -425,22 +428,28 @@ test.describe('Phase 9 跨裝置追蹤清單同步（E2E）', () => {
     await addStock(page, '2330')
     await expectBadge(page, 1)
 
-    // 輸入 email → 透過 Worker 建立帳號
-    await pairByEmail(page, 'test@example.com')
-    await expectSynced(page)
+    // 輸入 email → 建立 bucket
+    await page.locator('[data-testid="sync-email-input"]').fill('test@example.com')
+    await page.locator('[data-testid="sync-email-submit"]').click()
 
-    // Worker 被呼叫
-    expect(mock.workerRequests).toBe(1)
+    // 顯示 bucket_id
+    await expect(page.locator('[data-testid="bucket-id-display"]')).toBeVisible()
+    await expect(page.locator('[data-testid="bucket-id-display"]')).toHaveText('mock-bucket')
+    await expect(page.locator('[data-testid="copy-bucket-id"]')).toBeVisible()
+    await expect(page.locator('[data-testid="confirm-verification"]')).toBeVisible()
+
+    // bucket_id 記住於本機
+    const storedBucketId = await page.evaluate(k => localStorage.getItem(k), BUCKET_ID_KEY)
+    expect(storedBucketId).toBe('mock-bucket')
+
+    // 點擊「我已完成驗證」→ 啟動同步
+    await page.locator('[data-testid="confirm-verification"]').click()
+    await expectSynced(page)
 
     // kvdb 收到合併後的資料
     await waitUntil(() => cloudCodes(mock).includes('2330'))
     expect(cloudCodes(mock)).toEqual(['2330'])
     await expectBadge(page, 1)
-
-    // Token 記住於本機
-    const storedToken = await page.evaluate(k => localStorage.getItem(k), TOKEN_KEY)
-    expect(storedToken).toBeTruthy()
-    expect(storedToken).toContain('worker-token-')
   })
 
   test('E2E-email 配對碼備援：展開後可直接貼上 token 啟動', async ({ page }) => {
@@ -458,8 +467,7 @@ test.describe('Phase 9 跨裝置追蹤清單同步（E2E）', () => {
     await pair(page, 'direct-token-123')
     await expectSynced(page)
 
-    // 零 Worker 請求（直接用 token）
-    expect(mock.workerRequests).toBe(0)
+    // 零建 bucket 請求（直接用 token）
     await waitUntil(() => cloudCodes(mock).includes('2330'))
   })
 })

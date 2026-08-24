@@ -64,34 +64,23 @@ Push 到 `master` 時，GitHub Actions（`.github/workflows/update.yml`）會自
 
 ## 跨裝置同步（Phase 9）
 
-追蹤清單支援跨裝置自動同步，**選配**——未貼配對碼的裝置行為與現況完全一致。同步為 offline-first：本地以 localStorage 為主，離線或同步失敗不影響使用；透過免登入的 kvdb.io 雲端 JSON 存取，維持純靜態站架構。
+追蹤清單支援跨裝置自動同步，**選配**——未設定的裝置行為與現況完全一致。同步為 offline-first：本地以 localStorage 為主，離線或同步失敗不影響使用；透過免登入的 kvdb.io 雲端 JSON 存取，維持純靜態站架構。
 
-### 開通新成員（擁有者）
+### 啟用同步
 
-以 curl 三步建立 bucket 並產生配對碼，把回傳的 `access_token=` 值交給成員貼進設定頁：
+1. 在追蹤清單頁的「跨裝置同步（選配）」輸入 email，系統自動建立雲端空間
+2. 複製顯示的「同步碼（Bucket ID）」
+3. 到 email 點擊驗證連結，完成後點「我已完成驗證，開始同步」
 
-```bash
-# 1) 建立 bucket（免註冊，email 為綁定用；secret_key / write_key 僅開通時使用）
-curl https://kvdb.io -d 'email=you@example.com' -d 'secret_key=xxx' -d 'write_key=yyy'
+### 其他裝置同步
 
-# 2) 設定 signing_key（產生 token 的前置）
-curl -X PATCH https://kvdb.io/stockpayday -u '<secret_key>:' -d 'signing_key=<random>'
-
-# 3) 產生 access token（scope 限定單一使用者的 key 前綴）＝配對碼
-curl https://kvdb.io/stockpayday/tokens/ -u '<secret_key>:' \
-  -d 'prefix=user:<uid>:&permissions=read,write&ttl=7776000'
-# 回應 access_token=<token> → 交給成員
-```
-
-### 一般使用者
-
-在追蹤清單頁的「跨裝置同步（選配）」設定區貼上配對碼，即開始自動同步：任一裝置增刪追蹤，其他配對裝置切回頁面即自動收到變更。
+在追蹤清單頁的「跨裝置同步（選配）」設定區，展開「已有配對碼？直接貼上」，貼上同步碼即可開始同步。
 
 ### 安全
 
-- 配對碼即 access token，只授權單一使用者 key 前綴（`user:<uid>:`），存取其他前綴會被 kvdb.io 拒絕
-- 配對碼外流時換發新 token 即回收，不需重建 bucket
-- 前端程式碼不含 bucket secret / write key；配對碼只存於瀏覽器 localStorage
+- 同步碼（bucket ID）為隨機字串，難以猜測
+- 同步碼外流時重建 bucket 即回收
+- 前端程式碼不含 bucket secret / write key；同步碼只存於瀏覽器 localStorage
 
 ## 環境變數
 

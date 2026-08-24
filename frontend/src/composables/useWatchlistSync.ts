@@ -17,19 +17,12 @@ import type { WatchlistItem, WatchlistSyncDoc, SyncStatus } from '../types/watch
 import { useWatchlist, syncActiveRef } from './useWatchlist'
 
 const TOKEN_KEY = 'stockpayday-sync-token'
+const BUCKET_ID_KEY = 'stockpayday-sync-bucket-id'
 const KVDB_BASE = 'https://kvdb.io'
-const BUCKET = 'stockpayday'
 const POLL_INTERVAL_MS = 60_000
 const WRITE_DEBOUNCE_MS = 1_500
 const BACKOFF_BASE_MS = 30_000
 const BACKOFF_MAX_MS = 120_000
-
-/**
- * Cloudflare Worker URL（Phase 9 §2.1）
- * 用於 createAccount()：POST { email } → 建 bucket + 產生 token
- * 部署後替換為實際 Worker URL；本地開發可用 http://localhost:8787
- */
-const WORKER_URL = import.meta.env.VITE_SYNC_WORKER_URL || 'https://kvdb-proxy.your-domain.workers.dev'
 
 /** 429 速率限制專屬錯誤：觸發指數退避排程 */
 class SyncRateLimitedError extends Error {
@@ -48,26 +41,26 @@ function kvKey(): string {
 }
 
 function kvdbUrl(): string {
-  return `${KVDB_BASE}/${BUCKET}/${kvKey()}?access_token=${token.value}`
+  return `${KVDB_BASE}/${bucketId.value}/${kvKey()}`
 }
 
-/** 讀取 localStorage 中的配對碼（讀取失敗時視同未配對，維持現況） */
-function readToken(): string {
+/** 讀取 localStorage 中的 bucket_id（讀取失敗時視同未配對，維持現況） */
+function readBucketId(): string {
   try {
-    return localStorage.getItem(TOKEN_KEY) ?? ''
+    return localStorage.getItem(BUCKET_ID_KEY) ?? ''
   } catch {
     return ''
   }
 }
 
 // ── module-level 狀態（singleton，與 useWatchlist 同層）──
-const token = ref<string>(readToken())
+const bucketId = ref<string>(readBucketId())
 const status = ref<SyncStatus>('disabled')
 const lastSyncedAt = ref<number | null>(null)
 const lastError = ref<string | null>(null)
 
-/** 已配對（token 非空）→ 同步引擎可運作 */
-const syncActive = computed(() => token.value.length > 0)
+/** 已配對（bucket_id 非空）→ 同步引擎可運作 */
+const syncActive = computed(() => bucketId.value.length > 0)
 
 // ── 引擎內部狀態 ──
 let pollTimer: number | undefined
@@ -242,56 +235,59 @@ function removeListeners(): void {
   window.removeEventListener('focus', onVisibility)
 }
 
-// ── 透過 Worker 建立帳號（§2.1）──
+// ── 建立帳號（直連 kvdb.io）──
 
 /**
- * createAccount — 輸入 email → 透過 Cloudflare Worker 建立 kvdb bucket + 取得 token
+ * createAccount — 輸入 email → 直接 POST kvdb.io 建立 bucket
  *
- * Worker 回傳 { access_token, bucket_id }：
- * - access_token 存入 localStorage → 啟動同步
- * - bucket_id 存入 localStorage（供未來多 bucket 擴充）
+ * kvdb.io 回傳純文字 bucket_id；email 未驗證前寫入會 403，
+ * 因此建完 bucket 後不立即啟動同步，需呼叫 confirmVerification()。
  */
-async function createAccount(email: string): Promise<void> {
-  if (!email.trim()) return
+async function createAccount(email: string): Promise<{ bucketId: string }> {
+  if (!email.trim()) throw new Error('Email required')
   status.value = 'syncing'
   lastError.value = null
   try {
-    const res = await fetch(WORKER_URL, {
+    const res = await fetch(KVDB_BASE, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email.trim() }),
+      body: new URLSearchParams({ email: email.trim() }),
     })
     if (!res.ok) {
-      const body = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
-      throw new Error(body.error || `建立帳號失敗: ${res.status}`)
+      const text = await res.text().catch(() => '')
+      throw new Error(`建立帳號失敗: ${res.status} ${text}`)
     }
-    const { access_token, bucket_id } = await res.json() as { access_token: string; bucket_id: string }
-    if (!access_token) throw new Error('Worker 未回傳 access_token')
+    const newBucketId = (await res.text()).trim()
+    if (!newBucketId) throw new Error('kvdb.io 未回傳 bucket_id')
 
-    // 存入 localStorage
     try {
-      localStorage.setItem(TOKEN_KEY, access_token)
-      if (bucket_id) {
-        localStorage.setItem('stockpayday-sync-bucket-id', bucket_id)
-      }
+      localStorage.setItem(BUCKET_ID_KEY, newBucketId)
     } catch {
-      // localStorage 不可用 → 視同未配對
-      token.value = ''
+      bucketId.value = ''
       syncActiveRef.value = false
       status.value = 'disabled'
       lastError.value = '無法儲存同步金鑰（localStorage 不可用）'
-      return
+      throw new Error(lastError.value)
     }
 
-    token.value = access_token
-    syncActiveRef.value = true
-    ensureListeners()
-    startPolling()
-    void syncOnce()
+    // 不設 bucketId.value（等待 confirmVerification 才啟動同步）
+    return { bucketId: newBucketId }
   } catch (err) {
-    lastError.value = err instanceof Error ? err.message : '建立帳號失敗'
     status.value = 'error'
+    lastError.value = err instanceof Error ? err.message : '建立帳號失敗'
+    throw err
   }
+}
+
+/** confirmVerification — email 驗證完成後呼叫，從 localStorage 讀取 bucket_id 並啟動同步 */
+function confirmVerification(): void {
+  // 從 localStorage 讀取 createAccount 儲存的 bucket_id
+  const savedBucketId = readBucketId()
+  if (!savedBucketId) return
+  bucketId.value = savedBucketId
+  syncActiveRef.value = true
+  ensureListeners()
+  startPolling()
+  void syncOnce()
 }
 
 // ── 對外 API（配對 / 停用）──
@@ -300,23 +296,23 @@ function setToken(value: string): void {
   const trimmed = value.trim()
   if (trimmed) {
     try {
-      localStorage.setItem(TOKEN_KEY, trimmed)
+      localStorage.setItem(BUCKET_ID_KEY, trimmed)
     } catch {
       // localStorage 不可用 → 視同未配對，同步不啟動（維持現況）
-      token.value = ''
+      bucketId.value = ''
       syncActiveRef.value = false
       status.value = 'disabled'
       return
     }
   } else {
     try {
-      localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(BUCKET_ID_KEY)
     } catch {
       // ignore
     }
   }
 
-  token.value = trimmed
+  bucketId.value = trimmed
   syncActiveRef.value = syncActive.value // 同步驅動 useWatchlist 的墓碑語意
   if (syncActive.value) {
     status.value = 'syncing'
@@ -331,11 +327,11 @@ function setToken(value: string): void {
 
 function clearToken(): void {
   try {
-    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(BUCKET_ID_KEY)
   } catch {
     // ignore
   }
-  token.value = ''
+  bucketId.value = ''
   syncActiveRef.value = false
   status.value = 'disabled'
   lastError.value = null
@@ -346,7 +342,7 @@ function clearToken(): void {
   clearBackoffTimer()
 }
 
-// ── 初始化：有配對碼才啟動（reload 恢復配對）──
+// ── 初始化：有 bucket_id 才啟動（reload 恢復配對）──
 syncActiveRef.value = syncActive.value
 if (syncActive.value) {
   ensureListeners()
@@ -381,7 +377,7 @@ export function useWatchlistSync() {
     ensureListeners()
     startPolling()
   }
-  return { token, status, lastSyncedAt, lastError, syncActive, createAccount, setToken, clearToken, syncOnce }
+  return { bucketId, status, lastSyncedAt, lastError, syncActive, createAccount, confirmVerification, setToken, clearToken, syncOnce }
 }
 
 /** 測試用：重置引擎 module 狀態（token/計時器/監聽器/快照） */
@@ -393,7 +389,7 @@ export function resetSyncState(): void {
   backoff = 0
   inFlight = false
   lastPushedSnapshot = null
-  token.value = ''
+  bucketId.value = ''
   status.value = 'disabled'
   lastSyncedAt.value = null
   lastError.value = null
