@@ -827,18 +827,6 @@ body {
   font-size: 0.8125rem;
 }
 
-/* ============================================
-   追蹤清單頁常駐搜尋欄（功能 001）
-   ============================================ */
-.watchlist-search {
-  margin-bottom: 1.25rem;
-}
-
-.watchlist-search .search-bar {
-  width: 100%;
-  max-width: 480px;
-}
-
 .no-results {
   position: absolute;
   top: 100%;

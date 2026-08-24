@@ -15,21 +15,17 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUpcoming } from '../composables/useUpcoming'
 import { useCalendar } from '../composables/useCalendar'
-import { useSearch } from '../composables/useSearch'
 import type { ViewMode } from '../types/stock'
 import LoadingState from '../components/LoadingState.vue'
 import ErrorState from '../components/ErrorState.vue'
 import EmptyState from '../components/EmptyState.vue'
 import ViewSwitcher from '../components/ViewSwitcher.vue'
-import SearchBar from '../components/SearchBar.vue'
-import WatchlistButton from '../components/WatchlistButton.vue'
 import Calendar from '../components/Calendar.vue'
 import ListView from '../components/ListView.vue'
 import DayDetail from '../components/DayDetail.vue'
 
 const router = useRouter()
 const { upcoming, status, errorMessage, load, retry, getByDate, sortedUpcoming, dividendDates } = useUpcoming()
-const { query, results } = useSearch()
 const { monthLabel, days, prevMonth, nextMonth } = useCalendar(dividendDates, upcoming)
 
 const currentView = ref<ViewMode>('calendar')
@@ -55,11 +51,6 @@ function handleStockClick(code: string) {
   router.push(`/stock/${code}`)
 }
 
-function onStockSelect(result: { code: string; name: string }) {
-  router.push(`/stock/${result.code}`)
-  query.value = ''
-}
-
 // 計算選中日期的配息資料
 const selectedDividends = computed(() => {
   if (!selectedDate.value) return []
@@ -77,17 +68,6 @@ const selectedDividends = computed(() => {
     <!-- 主要內容 -->
     <template v-else>
       <div class="content-container">
-        <SearchBar v-model="query" :results="results" @select="onStockSelect">
-          <template #result-actions="{ result }">
-            <WatchlistButton
-              :code="result.code"
-              :name="result.name"
-              type="stock"
-              size="sm"
-            />
-          </template>
-        </SearchBar>
-
         <ViewSwitcher :current-view="currentView" @view-change="handleViewChange" />
 
         <transition name="view-fade" mode="out-in">
