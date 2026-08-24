@@ -14,6 +14,7 @@ import Calendar from './Calendar.vue'
 import DayDetail from './DayDetail.vue'
 import WatchlistEmpty from './WatchlistEmpty.vue'
 import WatchlistItemRow from './WatchlistItemRow.vue'
+import ListView from './ListView.vue'
 import ViewSwitcher from './ViewSwitcher.vue'
 import WatchlistSyncSettings from './WatchlistSyncSettings.vue'
 import type { ViewMode, UpcomingDividend } from '../types/stock'
@@ -44,6 +45,13 @@ const allWatchedItems = computed(() => {
       hasUpcomingDividend: !!dividend,
     }
   })
+})
+
+// 有配息的追蹤項目（用於列表模式）
+const watchlistWithDividends = computed(() => {
+  return allWatchedItems.value
+    .filter(item => item.hasUpcomingDividend)
+    .map(item => item.dividend!)
 })
 
 // 追蹤股票中有未來配息的（用於行事曆標記）
@@ -137,21 +145,28 @@ const selectedDividends = computed(() => {
         </div>
       </template>
 
-      <!-- 列表模式：顯示所有追蹤項目 -->
-      <div v-else class="watchlist-all-items">
-        <WatchlistItemRow
-          v-for="item in sortedAllItems"
-          :key="item.code"
-          :code="item.code"
-          :name="item.name"
-          :type="item.type"
-          :dividend="item.dividend"
+      <!-- 列表模式：使用 ListView 顯示（按日期分組） -->
+      <template v-else>
+        <ListView
+          :items="watchlistWithDividends"
           @stock-click="handleStockClick"
         />
-        <div v-if="sortedAllItems.length === 0" class="watchlist-no-items">
-          目前沒有追蹤的證券
+        <!-- 無近期配息的追蹤項目 -->
+        <div v-if="allWatchedItems.filter(i => !i.hasUpcomingDividend).length > 0" class="watchlist-no-date-group">
+          <div class="list-date-group no-date">
+            <span>無近期配息</span>
+            <span class="group-count">{{ allWatchedItems.filter(i => !i.hasUpcomingDividend).length }} 支</span>
+          </div>
+          <WatchlistItemRow
+            v-for="item in allWatchedItems.filter(i => !i.hasUpcomingDividend)"
+            :key="item.code"
+            :code="item.code"
+            :name="item.name"
+            :type="item.type"
+            @stock-click="handleStockClick"
+          />
         </div>
-      </div>
+      </template>
 
       <!-- 追蹤股票數量提示 -->
       <div class="watchlist-count">
@@ -168,3 +183,14 @@ const selectedDividends = computed(() => {
     </template>
   </div>
 </template>
+
+<style scoped>
+.watchlist-no-date-group {
+  margin-top: 16px;
+}
+
+.no-date {
+  color: var(--color-text-muted, #999);
+  font-style: italic;
+}
+</style>
