@@ -901,11 +901,21 @@ def main(source_name: str = DEFAULT_SOURCE):
     dividends_dir = API_DIR / "dividends"
     dividends_dir.mkdir(parents=True, exist_ok=True)
     total_dividends = 0
+    month_keys = []  # 用於產生 index.json
     for month_key, month_records in monthly.items():
         save_api_file(month_records, f"{month_key}.json", dividends_dir)
+        month_keys.append(month_key)
         total_dividends += len(month_records)
         print(f"   ✅ dividends/{month_key}.json: {len(month_records)} 筆")
     print(f"   共 {len(monthly)} 個月份，{total_dividends} 筆配息")
+
+    # 4.1 產生 index.json（記錄有哪些月份檔案）
+    index_data = {
+        "last_updated": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "months": month_keys,
+    }
+    save_api_file(index_data, "dividends/index.json")
+    print(f"   ✅ dividends/index.json: {len(month_keys)} 個月份")
 
     # 5. 產生 securities-index.json
     print("📋 產生證券清單...")

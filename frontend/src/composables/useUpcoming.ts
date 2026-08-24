@@ -6,10 +6,22 @@ const allMonths = ref<Map<string, UpcomingDividend[]>>(new Map())
 const status = ref<LoadingStatus>('loading')
 const errorMessage = ref<string>('')
 
-/** 從月份檔案的月份 key（YYYY-MM）取得今天的 YYYY-MM */
+/**
+ * 從月份檔案的月份 key（YYYY-MM）取得今天的 YYYY-MM
+ */
 function currentMonthKey(): string {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+/**
+ * 載入 index.json（記錄有哪些月份檔案）
+ */
+async function fetchIndex(): Promise<string[]> {
+  const response = await fetch('./api/dividends/index.json')
+  if (!response.ok) throw new Error(`index.json HTTP ${response.status}`)
+  const data = await response.json()
+  return data.months ?? []
 }
 
 /**
@@ -24,34 +36,34 @@ async function fetchMonth(monthKey: string): Promise<UpcomingDividend[]> {
 
 /**
  * 載入月份配息資料
- * - 先載入當月（確保有基本資料）
- * - 後續載入所有月份（含過去），供行事曆瀏覽
+ * - 先讀取 index.json 取得可用品月份列表
+ * - 並行載入所有可用品月份
  */
 async function load(): Promise<void> {
   status.value = 'loading'
   errorMessage.value = ''
 
   try {
-    const now = currentMonthKey()
-    const [year] = now.split('-').map(Number)
+    // 1. 先讀取 index.json
+    const monthKeys = await fetchIndex()
 
-    // 產生所有月份 key（1~12月）
-    const allMonthKeys: string[] = []
-    for (let m = 1; m <= 12; m++) {
-      allMonthKeys.push(`${year}-${String(m).padStart(2, '0')}`)
+    // 如果 index.json 無資料或格式異常，嘗試 fallback：載入當月
+    if (monthKeys.length === 0) {
+      const now = currentMonthKey()
+      monthKeys.push(now)
     }
 
-    // 並行載入所有月份
+    // 2. 並行載入所有可用品月份
     const results = await Promise.allSettled(
-      allMonthKeys.map(key => fetchMonth(key))
+      monthKeys.map(key => fetchMonth(key))
     )
 
     const merged = new Map<string, UpcomingDividend[]>()
     let successCount = 0
-    for (let i = 0; i < allMonthKeys.length; i++) {
+    for (let i = 0; i < monthKeys.length; i++) {
       const result = results[i]
       if (result.status === 'fulfilled' && result.value.length > 0) {
-        merged.set(allMonthKeys[i], result.value)
+        merged.set(monthKeys[i], result.value)
         successCount++
       }
     }

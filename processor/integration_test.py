@@ -34,12 +34,14 @@ def _write_moneydj(data_dir: Path, month: str, records: list) -> None:
 
 
 def _load_all_dividends(api_dir: Path) -> list:
-    """輔助：讀取所有 dividends/*.json 並合併為一維列表"""
+    """輔助：讀取所有 dividends/*.json（排除 index.json）並合併為一維列表"""
     dividends_dir = api_dir / "dividends"
     if not dividends_dir.exists():
         return []
     all_records = []
     for f in sorted(dividends_dir.glob("*.json")):
+        if f.name == "index.json":
+            continue
         with open(f) as fh:
             all_records.extend(json.load(fh))
     return all_records

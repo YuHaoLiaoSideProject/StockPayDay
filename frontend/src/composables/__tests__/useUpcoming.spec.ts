@@ -15,6 +15,7 @@ describe('useUpcoming', () => {
     ]
 
     vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (url.includes('index.json')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ months: ['2026-07', '2026-08'] }) })
       if (url.includes('2026-07')) return Promise.resolve({ ok: true, json: () => Promise.resolve(mockJuly) })
       if (url.includes('2026-08')) return Promise.resolve({ ok: true, json: () => Promise.resolve(mockAug) })
       return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
@@ -39,6 +40,7 @@ describe('useUpcoming', () => {
 
   it('should handle HTTP error gracefully (some months fail, some succeed)', async () => {
     vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (url.includes('index.json')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ months: ['2026-08', '2026-09'] }) })
       if (url.includes('2026-09')) {
         return Promise.resolve({ ok: true, json: () => Promise.resolve([{ code: '2330', name: '台積電', type: 'stock', ex_date: '2026-09-16', pay_date: '2026-10-08', cash_dividend: 7.0, stock_dividend: 0 }]) })
       }
@@ -71,6 +73,7 @@ describe('useUpcoming', () => {
     ]
 
     vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (url.includes('index.json')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ months: ['2026-07'] }) })
       if (url.includes('2026-07')) return Promise.resolve({ ok: true, json: () => Promise.resolve(mockJuly) })
       return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
     }))
@@ -103,6 +106,7 @@ describe('useUpcoming', () => {
     ]
 
     vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (url.includes('index.json')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ months: [`${futureYear}-${futureMonth}`, `${pastYear}-${pastMonth}`] }) })
       const match = url.match(/(\d{4}-\d{2})/)
       const month = match?.[1]
       if (month === `${futureYear}-${futureMonth}`) return Promise.resolve({ ok: true, json: () => Promise.resolve(mockFuture) })
@@ -126,6 +130,7 @@ describe('useUpcoming', () => {
     ]
 
     vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (url.includes('index.json')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ months: ['2026-09', '2026-10'] }) })
       if (url.includes('2026-09')) return Promise.resolve({ ok: true, json: () => Promise.resolve(mockSep) })
       if (url.includes('2026-10')) return Promise.resolve({ ok: true, json: () => Promise.resolve(mockOct) })
       return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
@@ -146,6 +151,7 @@ describe('useUpcoming', () => {
     ]
 
     vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (url.includes('index.json')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ months: ['2026-07'] }) })
       if (url.includes('2026-07')) return Promise.resolve({ ok: true, json: () => Promise.resolve(mockJuly) })
       return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
     }))
@@ -169,10 +175,10 @@ describe('useUpcoming', () => {
     await load()
     expect(status.value).toBe('error')
 
-    // Retry: all succeed → success
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockData),
+    // Retry: index.json returns month list, then month data
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (url.includes('index.json')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ months: ['2026-09'] }) })
+      return Promise.resolve({ ok: true, json: () => Promise.resolve(mockData) })
     }))
 
     await retry()
@@ -180,9 +186,9 @@ describe('useUpcoming', () => {
   })
 
   it('should getMonthData return empty for unknown month', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve([]),
+    vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+      if (url.includes('index.json')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ months: ['2026-08'] }) })
+      return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
     }))
 
     const { load, getMonthData } = useUpcoming()
