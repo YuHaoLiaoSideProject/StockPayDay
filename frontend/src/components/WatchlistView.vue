@@ -9,7 +9,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useWatchlist } from '../composables/useWatchlist'
 import { useUpcoming } from '../composables/useUpcoming'
-import { useSecuritiesIndex } from '../composables/useSecuritiesIndex'
 import { useCalendar } from '../composables/useCalendar'
 import Calendar from './Calendar.vue'
 import DayDetail from './DayDetail.vue'
@@ -17,12 +16,11 @@ import WatchlistEmpty from './WatchlistEmpty.vue'
 import WatchlistItemRow from './WatchlistItemRow.vue'
 import ListView from './ListView.vue'
 import ViewSwitcher from './ViewSwitcher.vue'
-
+import WatchlistSyncSettings from './WatchlistSyncSettings.vue'
 import type { ViewMode, UpcomingDividend } from '../types/stock'
 
 const { items, watchedCodes } = useWatchlist()
 const { allMonths, status, load, getByDate, upcoming } = useUpcoming()
-const { getName } = useSecuritiesIndex()
 const router = useRouter()
 
 const currentView = ref<ViewMode>('calendar')
@@ -34,7 +32,8 @@ onMounted(() => {
   }
 })
 
-const activeItems = computed(() => items.value)
+// 目前追蹤中的項目（排除 deleted 墓碑：同步合併後移除的股票不應再顯示）
+const activeItems = computed(() => items.value.filter(item => item.deleted !== true))
 
 // 所有追蹤項目（含配息資訊作為附加屬性）
 const allWatchedItems = computed(() => {
@@ -43,7 +42,7 @@ const allWatchedItems = computed(() => {
     return {
       code: item.code,
       addedAt: item.addedAt,
-      name: dividend?.name ?? getName(item.code),
+      name: dividend?.name,
       dividend,
       hasUpcomingDividend: !!dividend,
     }
@@ -91,6 +90,9 @@ const selectedDividends = computed(() => {
 
 <template>
   <div class="watchlist-view">
+    <!-- 同步設定（配對碼 + 匯出/匯入備援） -->
+    <WatchlistSyncSettings />
+
     <!-- 追蹤清單為空 -->
     <WatchlistEmpty v-if="isEmpty" />
 
