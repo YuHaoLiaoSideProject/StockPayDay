@@ -115,8 +115,7 @@ async function ensureMonth(monthKey: string): Promise<UpcomingDividend[]> {
   }
 }
 
-// Fire-and-forget: load once at module import time
-load()
+// 注意：移除 module-level load()，由各 View 在 onMounted 決定載入範圍
 
 /**
  * 配息資料管理 composable

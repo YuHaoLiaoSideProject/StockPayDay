@@ -28,9 +28,16 @@ const router = useRouter()
 const currentView = ref<ViewMode>('calendar')
 const selectedDate = ref<string | null>(null)
 
+/** 取得當月 key (YYYY-MM) */
+function currentMonthKey(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
 onMounted(() => {
   if (status.value === 'loading') {
-    load()
+    // 行事曆模式：只載入當月
+    load([currentMonthKey()])
   }
 })
 
@@ -88,6 +95,12 @@ function handleViewChange(view: ViewMode) {
   // 列表模式：載入當月 + 未來 4 個月（共 5 個月）
   if (view === 'list') {
     load(getFutureMonths(5))
+  } else {
+    // 行事曆模式：確保當月已載入（若尚未載入）
+    const key = currentMonthKey()
+    if (!allMonths.value.has(key)) {
+      load([key])
+    }
   }
 }
 
