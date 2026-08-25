@@ -270,6 +270,7 @@ async function createSyncSpace(): Promise<{ token: string }> {
     }
 
     // 不立即啟動同步（等待使用者點擊「開始同步」）
+    status.value = 'idle'
     return { token: newToken }
   } catch (err) {
     status.value = 'error'

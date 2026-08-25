@@ -94,7 +94,7 @@ describe('WatchlistSyncSettings（設定 UI）', () => {
     const wrapper = mount(WatchlistSyncSettings)
 
     expect(wrapper.find('[data-testid="watchlist-sync-settings"]').exists()).toBe(true)
-    expect(wrapper.text()).toContain('🔄 跨裝置同步（選配）')
+    expect(wrapper.text()).toContain('🔄 跨裝置同步')
     expect(wrapper.text()).toContain('不設定則完全不影響現有功能')
     // 建立同步空間按鈕為主要方式
     expect(wrapper.find('[data-testid="sync-create-btn"]').exists()).toBe(true)
