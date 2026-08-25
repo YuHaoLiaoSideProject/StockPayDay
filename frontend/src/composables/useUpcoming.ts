@@ -6,6 +6,10 @@ const allMonths = ref<Map<string, UpcomingDividend[]>>(new Map())
 const status = ref<LoadingStatus>('loading')
 const errorMessage = ref<string>('')
 
+// --- Index cache for available months ---
+let availableMonths: Set<string> | null = null
+let lastUpdated: string | null = null
+
 /**
  * 從月份檔案的月份 key（YYYY-MM）取得今天的 YYYY-MM
  */
@@ -16,12 +20,42 @@ function currentMonthKey(): string {
 
 /**
  * 載入 index.json（記錄有哪些月份檔案）
+ * 回傳可用月份列表，同時快取到模組層級
  */
 async function fetchIndex(): Promise<string[]> {
   const response = await fetch('./api/dividends/index.json')
   if (!response.ok) throw new Error(`index.json HTTP ${response.status}`)
   const data = await response.json()
-  return data.months ?? []
+  const months = data.months ?? []
+  availableMonths = new Set(months)
+  lastUpdated = data.last_updated ?? null
+  return months
+}
+
+/**
+ * 檢查指定月份是否在 index.json 中存在
+ * @param monthKey YYYY-MM
+ */
+function isMonthAvailable(monthKey: string): boolean {
+  // 如果尚未載入 index，預設可用（讓 fetch 嘗試）
+  if (availableMonths === null) return true
+  return availableMonths.has(monthKey)
+}
+
+/**
+ * 取得 index.json 的 last_updated 時間
+ */
+function getLastUpdated(): string | null {
+  return lastUpdated
+}
+
+/**
+ * 確保 index.json 已載入（快取機制）
+ */
+async function ensureIndexLoaded(): Promise<void> {
+  if (availableMonths === null) {
+    await fetchIndex()
+  }
 }
 
 /**
@@ -101,7 +135,15 @@ async function ensureMonth(monthKey: string): Promise<UpcomingDividend[]> {
     return allMonths.value.get(monthKey) ?? []
   }
 
-  // 未載入：fetch 該月
+  // 確保 index 已載入以檢查月份是否存在
+  await ensureIndexLoaded()
+
+  // 檢查月份是否在 index 中存在，不存在則直接回傳空
+  if (!isMonthAvailable(monthKey)) {
+    return []
+  }
+
+  // 月份存在：fetch 該月
   try {
     const data = await fetchMonth(monthKey)
     if (data.length > 0) {
@@ -189,6 +231,17 @@ export function useUpcoming() {
     return dates
   })
 
+  /**
+   * 重置模組級別快取（測試用）
+   */
+  function resetCache(): void {
+    allMonths.value = new Map()
+    availableMonths = null
+    lastUpdated = null
+    status.value = 'loading'
+    errorMessage.value = ''
+  }
+
   return {
     allMonths,
     status,
@@ -201,5 +254,9 @@ export function useUpcoming() {
     upcoming,
     sortedUpcoming,
     dividendDates,
+    isMonthAvailable,
+    getLastUpdated,
+    ensureIndexLoaded,
+    resetCache,
   }
 }

@@ -1,8 +1,15 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { useUpcoming } from '../useUpcoming'
 
 describe('useUpcoming', () => {
   beforeEach(() => {
+    vi.restoreAllMocks()
+    // Reset module-level singleton state
+    const { resetCache } = useUpcoming()
+    resetCache()
+  })
+
+  afterEach(() => {
     vi.restoreAllMocks()
   })
 
@@ -195,5 +202,97 @@ describe('useUpcoming', () => {
     await load()
 
     expect(getMonthData(2025, 1)).toEqual([])
+  })
+
+  describe('index.json and month availability', () => {
+    it('should cache available months from index.json', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+        if (url.includes('index.json')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ months: ['2026-07', '2026-08'], last_updated: '2026-08-25 09:00:00' }) })
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
+      }))
+
+      const { load, isMonthAvailable } = useUpcoming()
+      await load()
+
+      expect(isMonthAvailable('2026-07')).toBe(true)
+      expect(isMonthAvailable('2026-08')).toBe(true)
+      expect(isMonthAvailable('2025-01')).toBe(false)
+    })
+
+    it('should return last_updated from index.json', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+        if (url.includes('index.json')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ months: ['2026-07'], last_updated: '2026-08-25 09:13:14' }) })
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
+      }))
+
+      const { load, getLastUpdated } = useUpcoming()
+      await load()
+
+      expect(getLastUpdated()).toBe('2026-08-25 09:13:14')
+    })
+
+    it('should not fetch month data when month is not in index', async () => {
+      const fetchMock = vi.fn().mockImplementation((url: string) => {
+        if (url.includes('index.json')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ months: ['2026-07'] }) })
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
+      })
+      vi.stubGlobal('fetch', fetchMock)
+
+      const { load, ensureMonth } = useUpcoming()
+      await load()
+
+      // Clear the fetch mock calls count after load
+      fetchMock.mockClear()
+
+      // Try to ensure a month that doesn't exist in index
+      const result = await ensureMonth('2025-01')
+
+      // Should not have fetched the month data
+      expect(fetchMock).not.toHaveBeenCalledWith(expect.stringContaining('2025-01'))
+      expect(result).toEqual([])
+    })
+
+    it('should fetch month data when month exists in index (but not yet loaded)', async () => {
+      const mockJuly = [{ code: '2330', name: '台積電', type: 'stock' as const, ex_date: '2026-07-25', pay_date: '2026-08-15', cash_dividend: 3.5, stock_dividend: 0 }]
+      const mockAug = [{ code: '0056', name: '元大高股息', type: 'etf' as const, ex_date: '2026-08-01', pay_date: '2026-09-01', cash_dividend: 1.8, stock_dividend: 0 }]
+      const fetchMock = vi.fn().mockImplementation((url: string) => {
+        if (url.includes('index.json')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ months: ['2026-07', '2026-08'] }) })
+        if (url.includes('2026-07')) return Promise.resolve({ ok: true, json: () => Promise.resolve(mockJuly) })
+        if (url.includes('2026-08')) return Promise.resolve({ ok: true, json: () => Promise.resolve(mockAug) })
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
+      })
+      vi.stubGlobal('fetch', fetchMock)
+
+      const { load, ensureMonth } = useUpcoming()
+      // Load only July - this doesn't call fetchIndex since months are specified
+      await load(['2026-07'])
+
+      // Clear the fetch mock calls count after load
+      fetchMock.mockClear()
+
+      // Try to ensure August - should call ensureIndexLoaded first
+      const result = await ensureMonth('2026-08')
+
+      // Should have fetched index.json first, then the month data
+      expect(fetchMock).toHaveBeenCalledWith('./api/dividends/index.json')
+      expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining('2026-08'))
+      expect(result).toEqual(mockAug)
+    })
+
+    it('should return correct availability after index is loaded', async () => {
+      vi.stubGlobal('fetch', vi.fn().mockImplementation((url: string) => {
+        if (url.includes('index.json')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ months: ['2026-07', '2026-08'] }) })
+        return Promise.resolve({ ok: true, json: () => Promise.resolve([]) })
+      }))
+
+      const { load, isMonthAvailable } = useUpcoming()
+      await load()
+
+      // Available months should be true
+      expect(isMonthAvailable('2026-07')).toBe(true)
+      expect(isMonthAvailable('2026-08')).toBe(true)
+      // Non-available months should be false
+      expect(isMonthAvailable('2025-01')).toBe(false)
+    })
   })
 })
