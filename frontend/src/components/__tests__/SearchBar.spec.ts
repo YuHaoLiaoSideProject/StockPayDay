@@ -21,8 +21,6 @@ function mountSearchBar(modelValue = '', resultList = results) {
       'result-actions': ({ result }: { result: { code: string; name: string } }) =>
         h(WatchlistButton, {
           code: result.code,
-          name: result.name,
-          type: 'stock',
           size: 'sm',
         }),
     },
@@ -50,7 +48,7 @@ describe('SearchBar — 功能 001（追蹤任意股票）', () => {
 
   it('未追蹤 ❤️ 為空心（aria-pressed=false）、已追蹤為實心（aria-pressed=true）', async () => {
     const { toggle } = useWatchlist()
-    toggle('2330', '台積電')
+    toggle('2330')
 
     const wrapper = mountSearchBar()
     await openDropdown(wrapper)
@@ -78,7 +76,7 @@ describe('SearchBar — 功能 001（追蹤任意股票）', () => {
 
   it('再次點 ❤️ 移除追蹤（回到空心）', async () => {
     const { toggle } = useWatchlist()
-    toggle('2330', '台積電')
+    toggle('2330')
 
     const wrapper = mountSearchBar()
     await openDropdown(wrapper)

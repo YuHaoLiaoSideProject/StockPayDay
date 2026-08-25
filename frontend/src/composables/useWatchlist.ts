@@ -19,29 +19,6 @@ const sortBy = ref<WatchlistSortBy>('addedAt')
  */
 export const syncActiveRef = ref<boolean>(false)
 
-/**
- * 舊資料遷移：無 updatedAt 的項目補 updatedAt = addedAt（向後相容）
- * 有遷移發生時立即寫回 localStorage，保持向前相容。
- */
-function migrateItems(raw: WatchlistItem[]): WatchlistItem[] {
-  let migrated = false
-  const result = raw.map(item => {
-    if (item.updatedAt === undefined) {
-      migrated = true
-      return { ...item, updatedAt: item.addedAt }
-    }
-    return item
-  })
-  if (migrated) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(result))
-    } catch {
-      // 寫入失敗不影響（後續 watchEffect 會再嘗試）
-    }
-  }
-  return result
-}
-
 // 初始化：從 localStorage 讀取（必須在 watchEffect 之前）
 function init(): void {
   try {
@@ -49,7 +26,14 @@ function init(): void {
     if (stored) {
       const parsed = JSON.parse(stored)
       if (Array.isArray(parsed)) {
-        items.value = migrateItems(parsed)
+        // 過濾掉不合法的項目（必須有 code 和 addedAt）
+        items.value = parsed.filter(
+          (item: unknown): item is WatchlistItem =>
+            item !== null &&
+            typeof item === 'object' &&
+            'code' in item &&
+            'addedAt' in item
+        )
       }
     }
   } catch {
@@ -83,15 +67,12 @@ export function useWatchlist() {
   /**
    * 新增追蹤
    */
-  function add(code: string, name: string, type: WatchlistItem['type'] = 'stock'): void {
+  function add(code: string): void {
     if (isWatched(code)) return
 
     items.value.push({
       code,
-      name,
-      type,
       addedAt: Date.now(),
-      updatedAt: Date.now(),
     })
   }
 
@@ -105,7 +86,7 @@ export function useWatchlist() {
   function remove(code: string): void {
     if (syncActiveRef.value) {
       items.value = items.value.map(item =>
-        item.code === code ? { ...item, deleted: true, updatedAt: Date.now() } : item
+        item.code === code ? { ...item, deleted: true } : item
       )
     } else {
       items.value = items.value.filter(item => item.code !== code)
@@ -115,11 +96,11 @@ export function useWatchlist() {
   /**
    * 切換追蹤狀態（加入/移除）
    */
-  function toggle(code: string, name: string, type: WatchlistItem['type'] = 'stock'): void {
+  function toggle(code: string): void {
     if (isWatched(code)) {
       remove(code)
     } else {
-      add(code, name, type)
+      add(code)
     }
   }
 
@@ -149,7 +130,8 @@ export function useWatchlist() {
       case 'code':
         return sorted.sort((a, b) => a.code.localeCompare(b.code))
       case 'name':
-        return sorted.sort((a, b) => a.name.localeCompare(b.name, 'zh-TW'))
+        // 依代號排序（名稱需從外部資料取得，此處僅做代號排序）
+        return sorted.sort((a, b) => a.code.localeCompare(b.code, 'zh-TW'))
       case 'nextDividend': {
         const { upcoming } = useUpcoming()
         const upcomingByCode = new Map<string, string>()

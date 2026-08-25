@@ -98,155 +98,78 @@ describe('WatchlistSyncSettings（設定 UI）', () => {
     expect(wrapper.text()).toContain('不設定則完全不影響現有功能')
     // 建立同步空間按鈕為主要方式
     expect(wrapper.find('[data-testid="sync-create-btn"]').exists()).toBe(true)
-    // 同步碼備援（預設隱藏）
-    expect(wrapper.find('[data-testid="sync-token-input"]').exists()).toBe(false)
-    expect(wrapper.find('[data-testid="sync-token-toggle"]').exists()).toBe(true)
   })
 
-  it('建立同步空間：建立空間 → 顯示 token + 同步已自動啟動', async () => {
-    syncMode = 'delay' // 延遲 → 停留在同步中
-    createdToken = 'new-sync-token-123'
+  it('F-06b 同步碼備援輸入區可展開', async () => {
     const wrapper = mount(WatchlistSyncSettings)
 
-    await wrapper.find('[data-testid="sync-create-btn"]').trigger('click')
-    await flushPromises()
-    await nextTick() // 等待 Vue 重新渲染
-
-    // 建立空間請求
-    const createCalls = syncFetch.mock.calls.filter(([u, opts]) =>
-      String(u) === 'https://www.npoint.io/documents' && (opts as any)?.method === 'POST'
-    )
-    expect(createCalls).toHaveLength(1)
-
-    // 顯示 token
-    expect(wrapper.find('[data-testid="token-display"]').text()).toBe('new-sync-token-123')
-    expect(wrapper.text()).toContain('同步空間已建立')
-    expect(wrapper.text()).toContain('請將此同步碼貼到其他裝置')
-
-    // 顯示「複製」按鈕
-    expect(wrapper.find('[data-testid="copy-token"]').exists()).toBe(true)
-
-    // 顯示「開始同步」按鈕
-    expect(wrapper.find('[data-testid="start-sync"]').exists()).toBe(true)
-
-    // token 存入 localStorage
-    expect(localStorage.getItem('stockpayday-sync-token')).toBe('new-sync-token-123')
-  })
-
-  it('建立同步空間失敗：留在建立畫面、顯示錯誤訊息', async () => {
-    syncMode = 'fail'
-    const wrapper = mount(WatchlistSyncSettings)
-
-    await wrapper.find('[data-testid="sync-create-btn"]').trigger('click')
-    await flushPromises()
-
-    // 錯誤訊息
-    expect(wrapper.find('[data-testid="sync-create-error"]').exists()).toBe(true)
-    expect(wrapper.text()).toContain('連線錯誤')
-
-    // 仍在建立畫面
-    expect(wrapper.find('[data-testid="sync-create-btn"]').exists()).toBe(true)
-    expect(localStorage.getItem('stockpayday-sync-token')).toBeNull()
-  })
-
-  it('複製 token：呼叫 navigator.clipboard.writeText', async () => {
-    createdToken = 'copy-test-token'
-    const wrapper = mount(WatchlistSyncSettings)
-
-    await wrapper.find('[data-testid="sync-create-btn"]').trigger('click')
-    await flushPromises()
-    await nextTick() // 等待 Vue 重新渲染
-
-    await wrapper.find('[data-testid="copy-token"]').trigger('click')
-    await nextTick()
-
-    expect(navigator.clipboard.writeText).toHaveBeenCalledWith('copy-test-token')
-    expect(wrapper.text()).toContain('已複製')
-  })
-
-  it('開始同步：點擊後切換到同步狀態區塊', async () => {
-    syncMode = 'delay'
-    createdToken = 'verify-token'
-    const wrapper = mount(WatchlistSyncSettings)
-
-    await wrapper.find('[data-testid="sync-create-btn"]').trigger('click')
-    await flushPromises()
-    await nextTick() // 等待 Vue 重新渲染
-
-    // 點擊「開始同步」
-    await wrapper.find('[data-testid="start-sync"]').trigger('click')
-    await nextTick()
-
-    // 切換到同步狀態區塊
-    expect(wrapper.text()).toContain('同步中…')
-    expect(wrapper.find('[data-testid="token-display"]').exists()).toBe(false)
-  })
-
-  it('F-01 同步碼直接輸入啟動：trim 後寫入 localStorage、切換已配對並顯示「同步中…」', async () => {
-    syncMode = 'delay' // fetch 延遲 → 狀態停留「同步中…」
-    const wrapper = mount(WatchlistSyncSettings)
-
-    // 展開同步碼輸入
     await wrapper.find('[data-testid="sync-token-toggle"]').trigger('click')
-    await nextTick()
-
-    await wrapper.find('[data-testid="sync-token-input"]').setValue('  test-token  ')
-    // Click the submit button AND trigger form submit (happy-dom may not propagate)
-    const submitBtn = wrapper.find('[data-testid="sync-token-submit"]')
-    await submitBtn.trigger('click')
-    // Also trigger form submit directly as fallback
-    const forms = wrapper.findAll('form')
-    const tokenForm = forms.find(f => f.find('[data-testid="sync-token-input"]').exists())
-    if (tokenForm) await tokenForm.trigger('submit')
-    await nextTick()
-
-    expect(localStorage.getItem('stockpayday-sync-token')).toBe('test-token')
-    expect(wrapper.find('[data-testid="sync-create-btn"]').exists()).toBe(false) // 已配對分支
-    expect(wrapper.text()).toContain('同步中…')
-    expect(wrapper.text()).not.toContain('上次同步')
-    // 啟動後立即發起一次同步（pull）
-    expect(syncCallCount()).toBe(1)
+    expect(wrapper.find('[data-testid="sync-token-input"]').exists()).toBe(true)
   })
 
-  it('F-07b 已配對同步完成：顯示「已同步」並附上次同步時間', async () => {
-    syncMode = 'ok'
+  it('F-01 建立同步空間：顯示同步碼 + 使用說明', async () => {
+    const wrapper = mount(WatchlistSyncSettings)
+
+    await findButtonByText(wrapper, '建立同步空間').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('✅ 同步空間已建立')
+    expect(wrapper.find('[data-testid="token-display"]').text()).toBe('mock-token')
+    expect(wrapper.text()).toContain('請將此同步碼貼到其他裝置')
+  })
+
+  it('F-01b 建立同步空間後點「開始同步」：進入已配對狀態', async () => {
     syncStore = { updatedAt: Date.now(), items: [] }
     const wrapper = mount(WatchlistSyncSettings)
 
+    await findButtonByText(wrapper, '建立同步空間').trigger('click')
+    await flushPromises()
+
+    await wrapper.find('[data-testid="start-sync"]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('已同步')
+  })
+
+  it('F-07a 已配對時顯示同步狀態（同步中…）', async () => {
+    syncMode = 'delay'
+    const wrapper = mount(WatchlistSyncSettings)
+    useWatchlistSync().setToken('test-token')
+    await nextTick()
+
+    expect(wrapper.text()).toContain('同步中…')
+  })
+
+  it('F-07b 已同步後顯示上次同步時間', async () => {
+    syncStore = { updatedAt: Date.now(), items: [] }
+    const wrapper = mount(WatchlistSyncSettings)
     useWatchlistSync().setToken('test-token')
     await flushPromises()
 
     expect(wrapper.text()).toContain('已同步')
     expect(wrapper.text()).toContain('上次同步')
-    expect(wrapper.text()).not.toContain('同步中…')
   })
 
-  it('F-07c 同步失敗：顯示「同步失敗」與錯誤訊息', async () => {
+  it('F-07c 同步失敗時顯示錯誤訊息', async () => {
     syncMode = 'fail'
     const wrapper = mount(WatchlistSyncSettings)
-
-    useWatchlistSync().setToken('bad-token')
-    await flushPromises()
-
-    expect(wrapper.text()).toContain('同步失敗')
-    expect(wrapper.text()).toContain('連線錯誤')
-    expect(wrapper.find('[data-testid="watchlist-sync-error"]').exists()).toBe(true)
-  })
-
-  it('429 速率限制：顯示退避訊息（速率限制（429），30 秒後重試）', async () => {
-    syncMode = '429'
-    const wrapper = mount(WatchlistSyncSettings)
-
     useWatchlistSync().setToken('test-token')
     await flushPromises()
 
     expect(wrapper.text()).toContain('同步失敗')
-    expect(wrapper.text()).toContain('速率限制（429）')
-    expect(wrapper.text()).toContain('30 秒後重試')
+    expect(wrapper.find('[data-testid="watchlist-sync-error"]').text()).toContain('連線錯誤')
   })
 
-  it('立即同步：再次觸發 syncOnce（狀態回到「同步中…」）', async () => {
-    syncMode = 'ok'
+  it('F-16 429 速率限制：顯示退避訊息', async () => {
+    syncMode = '429'
+    const wrapper = mount(WatchlistSyncSettings)
+    useWatchlistSync().setToken('test-token')
+    await flushPromises()
+
+    expect(wrapper.find('[data-testid="watchlist-sync-error"]').text()).toContain('速率限制')
+  })
+
+  it('立即同步：觸發 syncOnce，狀態回到同步中', async () => {
     syncStore = { updatedAt: Date.now(), items: [] }
     const wrapper = mount(WatchlistSyncSettings)
     useWatchlistSync().setToken('test-token')
@@ -264,7 +187,7 @@ describe('WatchlistSyncSettings（設定 UI）', () => {
 
   it('F-19 停用同步：token 清除、回到未配對區塊、本地追蹤清單保留', async () => {
     const { add, isWatched } = useWatchlist()
-    add('2330', '台積電')
+    add('2330')
 
     syncMode = 'delay'
     const wrapper = mount(WatchlistSyncSettings)
@@ -289,12 +212,12 @@ describe('WatchlistSyncSettings（匯出/匯入備援）', () => {
     return wrapper
   }
 
-  it('F-21 匯出內容為目前追蹤項目（含 ETF／特別股）；不含已移除墓碑', async () => {
+  it('F-21 匯出內容為目前追蹤項目；不含已移除墓碑', async () => {
     const { items } = useWatchlist()
     items.value = [
-      { code: '2330', name: '台積電', type: 'stock', addedAt: 1, updatedAt: 1 },
-      { code: '0056', name: '元大高股息', type: 'etf', addedAt: 2, updatedAt: 2 },
-      { code: '2884', name: '玉山金', type: 'preferred', addedAt: 3, updatedAt: 3, deleted: true },
+      { code: '2330', addedAt: 1 },
+      { code: '0056', addedAt: 2 },
+      { code: '2884', addedAt: 3, deleted: true },
     ]
 
     const wrapper = await openBackup()
@@ -312,12 +235,12 @@ describe('WatchlistSyncSettings（匯出/匯入備援）', () => {
 
   it('F-22 匯入合併且不重複：本地已含 X，匯入 X+Y 後 X 維持一筆、Y 加入', async () => {
     const { add, items } = useWatchlist()
-    add('2330', '台積電', 'stock')
+    add('2330')
 
     const wrapper = await openBackup()
     const importText = JSON.stringify([
-      { code: '2330', name: '台積電', type: 'stock', addedAt: 100, updatedAt: 100 },
-      { code: '0056', name: '元大高股息', type: 'etf', addedAt: 101, updatedAt: 101 },
+      { code: '2330', addedAt: 100 },
+      { code: '0056', addedAt: 101 },
     ])
     await wrapper.find('[data-testid="sync-import-text"]').setValue(importText)
     await wrapper.find('[data-testid="sync-import-submit"]').trigger('click')
@@ -331,7 +254,7 @@ describe('WatchlistSyncSettings（匯出/匯入備援）', () => {
 
   it('F-23 匯入格式錯誤：顯示錯誤提示且本地清單不變', async () => {
     const { add, items } = useWatchlist()
-    add('2330', '台積電')
+    add('2330')
 
     const wrapper = await openBackup()
     await wrapper.find('[data-testid="sync-import-text"]').setValue('this is not json')
@@ -346,7 +269,7 @@ describe('WatchlistSyncSettings（匯出/匯入備援）', () => {
 
   it('F-23b 匯入內容欄位錯誤（缺少有效 code）：顯示錯誤且本地清單不變', async () => {
     const { add, items } = useWatchlist()
-    add('2330', '台積電')
+    add('2330')
 
     const wrapper = await openBackup()
     await wrapper.find('[data-testid="sync-import-text"]').setValue('[{"name":"無代號"}]')

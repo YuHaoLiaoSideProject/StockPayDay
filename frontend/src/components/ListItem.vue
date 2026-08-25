@@ -32,8 +32,6 @@ function formatAmount(amount?: number | null): string {
     >{{ formatAmount(dividend.dividend ?? dividend.cash_dividend) }}</span>
     <WatchlistButton
       :code="dividend.code"
-      :name="dividend.name"
-      :type="(dividend.type as 'stock' | 'etf' | 'preferred')"
       size="sm"
     />
   </div>

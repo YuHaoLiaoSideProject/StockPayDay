@@ -40,7 +40,9 @@ const allWatchedItems = computed(() => {
   return activeItems.value.map(item => {
     const dividend = upcoming.value.find(u => u.code === item.code)
     return {
-      ...item,
+      code: item.code,
+      addedAt: item.addedAt,
+      name: dividend?.name,
       dividend,
       hasUpcomingDividend: !!dividend,
     }
@@ -132,7 +134,6 @@ const selectedDividends = computed(() => {
             :key="item.code"
             :code="item.code"
             :name="item.name"
-            :type="item.type"
             :dividend="item.dividend"
             @stock-click="handleStockClick"
           />
@@ -156,7 +157,6 @@ const selectedDividends = computed(() => {
             :key="item.code"
             :code="item.code"
             :name="item.name"
-            :type="item.type"
             @stock-click="handleStockClick"
           />
         </div>

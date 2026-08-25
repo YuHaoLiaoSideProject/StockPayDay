@@ -42,11 +42,11 @@ describe('App 導覽列徽章 — 功能 001（追蹤任意股票）', () => {
     const { add, remove } = useWatchlist()
     const wrapper = await mountApp()
 
-    add('2330', '台積電')
+    add('2330')
     await flushPromises()
     expect(wrapper.find('.watchlist-badge').text()).toBe('1')
 
-    add('2317', '鴻海')
+    add('2317')
     await flushPromises()
     expect(wrapper.find('.watchlist-badge').text()).toBe('2')
 
@@ -57,7 +57,7 @@ describe('App 導覽列徽章 — 功能 001（追蹤任意股票）', () => {
 
   it('切換頁面時追蹤狀態與徽章保持一致（module-level singleton）', async () => {
     const { add } = useWatchlist()
-    add('2330', '台積電')
+    add('2330')
     const wrapper = await mountApp()
     expect(wrapper.find('.watchlist-badge').text()).toBe('1')
 
@@ -81,8 +81,8 @@ describe('App 導覽列徽章 — 已配對模式墓碑語意（Phase 9）', () 
     const { add, remove, items } = useWatchlist()
     const wrapper = await mountApp()
 
-    add('2330', '台積電')
-    add('2317', '鴻海')
+    add('2330')
+    add('2317')
     await flushPromises()
     expect(wrapper.find('.watchlist-badge').text()).toBe('2')
 
@@ -101,7 +101,7 @@ describe('App 導覽列徽章 — 已配對模式墓碑語意（Phase 9）', () 
     const { add, remove } = useWatchlist()
     const wrapper = await mountApp()
 
-    add('2330', '台積電')
+    add('2330')
     await flushPromises()
     expect(wrapper.find('.watchlist-badge').text()).toBe('1')
 

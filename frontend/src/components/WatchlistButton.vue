@@ -10,13 +10,10 @@ import { useWatchlist } from '../composables/useWatchlist'
 
 interface Props {
   code: string
-  name: string
-  type?: 'stock' | 'etf' | 'preferred'
   size?: 'sm' | 'md' | 'lg'
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  type: 'stock',
   size: 'md',
 })
 
@@ -30,7 +27,7 @@ const watched = computed(() => isWatched(props.code))
 
 function handleClick() {
   const wasWatched = watched.value
-  toggleWatchlist(props.code, props.name, props.type)
+  toggleWatchlist(props.code)
   emit('toggle', props.code, !wasWatched)
 }
 

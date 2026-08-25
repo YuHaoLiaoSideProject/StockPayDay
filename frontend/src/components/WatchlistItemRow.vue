@@ -5,18 +5,18 @@
  * 顯示單一追蹤股票，含/不含配息資訊。
  * 用於追蹤清單中顯示所有已追蹤的股票。
  */
+import { computed } from 'vue'
 import type { UpcomingDividend } from '../types/stock'
 import WatchlistButton from './WatchlistButton.vue'
 
 interface Props {
   code: string
-  name: string
-  type?: 'stock' | 'etf' | 'preferred'
+  name?: string
   dividend?: UpcomingDividend
 }
 
-withDefaults(defineProps<Props>(), {
-  type: 'stock',
+const props = withDefaults(defineProps<Props>(), {
+  name: '',
 })
 
 defineEmits<{
@@ -30,20 +30,21 @@ function formatAmount(amount?: number | null): string {
   const rounded = Math.round(val * 1000) / 1000
   return `$${rounded.toFixed(3).replace(/\.?0+$/, '')}`
 }
+
+/** 顯示名稱：優先使用 props.name，其次用 dividend.name，最後用 code */
+const displayName = computed(() => props.name || props.dividend?.name || props.code)
 </script>
 
 <template>
   <div class="watchlist-item-row" @click="$emit('stock-click', code)">
     <span class="item-code">{{ code }}</span>
-    <span class="item-name">{{ name }}</span>
+    <span class="item-name">{{ displayName }}</span>
     <span v-if="dividend" class="item-dividend">
       {{ formatAmount(dividend.cash_dividend) }}
     </span>
     <span v-else class="item-no-dividend">無近期配息</span>
     <WatchlistButton
       :code="code"
-      :name="name"
-      :type="type"
       size="sm"
     />
   </div>

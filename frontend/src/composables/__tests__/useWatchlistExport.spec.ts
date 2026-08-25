@@ -2,10 +2,9 @@
  * useWatchlistExport 單元測試（Phase 9 子任務 C — 匯出/匯入備援工具）
  *
  * 對應測試計畫 2.5 匯出／匯入備援 util：
- * - F-21 匯出內容為目前追蹤項目（含 ETF／特別股），不含已移除的墓碑項目
+ * - F-21 匯出內容為目前追蹤項目，不含已移除的墓碑項目
  * - F-22 匯入合併且不重複（依 code 去重）
  * - F-23 匯入格式錯誤（非 JSON / 非陣列 / 缺 code）→ 拋出可辨識的 WatchlistImportError
- * - 容錯：name 缺省補 code、type 無效補 stock、deleted 項目跳過
  */
 import { describe, it, expect } from 'vitest'
 import type { WatchlistItem } from '../../types/watchlist'
@@ -16,12 +15,12 @@ import {
 } from '../useWatchlistExport'
 
 describe('exportWatchlistToText', () => {
-  it('F-21 匯出僅含目前追蹤項目（含 ETF／特別股），不含已移除墓碑', () => {
+  it('F-21 匯出僅含目前追蹤項目，不含已移除墓碑', () => {
     const items: WatchlistItem[] = [
-      { code: '2330', name: '台積電', type: 'stock', addedAt: 1, updatedAt: 1 },
-      { code: '0056', name: '元大高股息', type: 'etf', addedAt: 2, updatedAt: 2 },
-      { code: '2884', name: '玉山金', type: 'preferred', addedAt: 3, updatedAt: 3 },
-      { code: '6666', name: '已移除股', type: 'stock', addedAt: 4, updatedAt: 4, deleted: true },
+      { code: '2330', addedAt: 1 },
+      { code: '0056', addedAt: 2 },
+      { code: '2884', addedAt: 3 },
+      { code: '6666', addedAt: 4, deleted: true },
     ]
 
     const text = exportWatchlistToText(items)
@@ -40,32 +39,19 @@ describe('exportWatchlistToText', () => {
 describe('parseWatchlistImportText', () => {
   it('F-22 匯入解析依 code 去重（重複 X 只留一筆，Y 保留）', () => {
     const text = JSON.stringify([
-      { code: '2330', name: '台積電', type: 'stock', addedAt: 1, updatedAt: 1 },
-      { code: '2330', name: '台積電重複', type: 'stock', addedAt: 2, updatedAt: 2 },
-      { code: '0056', name: '元大高股息', type: 'etf', addedAt: 3, updatedAt: 3 },
+      { code: '2330', addedAt: 1 },
+      { code: '2330', addedAt: 2 },
+      { code: '0056', addedAt: 3 },
     ])
 
     const result = parseWatchlistImportText(text)
     expect(result.map(i => i.code)).toEqual(['2330', '0056'])
-    expect(result[0].name).toBe('台積電') // 保留第一筆
-  })
-
-  it('name 缺省時以 code 代替；type 無效時視為 stock', () => {
-    const text = JSON.stringify([
-      { code: '2330', type: 'invalid-type' },
-      { code: '0056', name: '元大高股息', type: 'etf' },
-    ])
-
-    const result = parseWatchlistImportText(text)
-    expect(result[0]).toMatchObject({ code: '2330', name: '2330', type: 'stock' })
-    expect(result[0].addedAt).toEqual(result[0].updatedAt)
-    expect(result[1]).toMatchObject({ code: '0056', name: '元大高股息', type: 'etf' })
   })
 
   it('匯入內容中的墓碑（deleted: true）不恢復為追蹤項目', () => {
     const text = JSON.stringify([
-      { code: '2330', name: '台積電', type: 'stock', addedAt: 1, updatedAt: 1 },
-      { code: '6666', name: '已移除股', type: 'stock', addedAt: 2, updatedAt: 2, deleted: true },
+      { code: '2330', addedAt: 1 },
+      { code: '6666', addedAt: 2, deleted: true },
     ])
 
     const result = parseWatchlistImportText(text)
@@ -83,7 +69,7 @@ describe('parseWatchlistImportText', () => {
 
   it('F-23 項目缺少有效 code（欄位錯誤）拋出 WatchlistImportError 並含筆數', () => {
     expect(() =>
-      parseWatchlistImportText('[{"name":"無代號","type":"stock"}]')
+      parseWatchlistImportText('[{"name":"無代號"}]')
     ).toThrowError('匯入格式錯誤：第 1 筆缺少有效的證券代號（code）')
     expect(() => parseWatchlistImportText('[{"code": 123}]')).toThrowError(WatchlistImportError)
   })

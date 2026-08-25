@@ -106,7 +106,7 @@ async function push(items: WatchlistItem[]): Promise<void> {
 }
 
 /**
- * merge — 依 code 並集；單筆以 updatedAt（無則 addedAt）新者勝；
+ * merge — 依 code 並集；單筆以 addedAt 新者勝；
  * 同刻時墓碑（deleted: true）為最終狀態；墓碑保留在陣列中以持續傳播「移除」。
  */
 export function merge(localItems: WatchlistItem[], remoteItems?: WatchlistItem[]): WatchlistItem[] {
@@ -117,8 +117,8 @@ export function merge(localItems: WatchlistItem[], remoteItems?: WatchlistItem[]
       byCode.set(item.code, item) // 新項目直接採用
       continue
     }
-    const prevTs = prev.updatedAt ?? prev.addedAt
-    const curTs = item.updatedAt ?? item.addedAt
+    const prevTs = prev.addedAt
+    const curTs = item.addedAt
     const prevDeleted = prev.deleted === true
     const curDeleted = item.deleted === true
     // 較新者勝；同刻時墓碑（deleted）為最終狀態，不被舊資料覆蓋

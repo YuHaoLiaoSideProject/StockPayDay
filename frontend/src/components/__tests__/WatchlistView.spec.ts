@@ -69,7 +69,7 @@ describe('components/WatchlistView（追蹤清單視圖）— 功能 001 無配�
 
   it('無配息股票顯示「無近期配息」', async () => {
     const { add } = useWatchlist()
-    add('9999', '無配息股')
+    add('9999')
 
     const wrapper = await mountView()
 
@@ -79,17 +79,16 @@ describe('components/WatchlistView（追蹤清單視圖）— 功能 001 無配�
 
   it('已下市股票仍顯示於追蹤清單', async () => {
     const { add } = useWatchlist()
-    add('6666', '已下市測試股')
+    add('6666')
 
     const wrapper = await mountView()
 
-    expect(wrapper.text()).toContain('已下市測試股')
     expect(wrapper.text()).toContain('無近期配息')
   })
 
   it('公布配息後自動顯示配息資訊（upcoming 重新載入）', async () => {
     const { add } = useWatchlist()
-    add('2330', '台積電')
+    add('2330')
 
     const wrapper = await mountView()
     expect(wrapper.text()).toContain('無近期配息')

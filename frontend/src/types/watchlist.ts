@@ -6,14 +6,8 @@
 export interface WatchlistItem {
   /** 證券代號，如 "2330" */
   code: string
-  /** 證券名稱，如 "台積電" */
-  name: string
-  /** 證券類型：stock | etf | preferred */
-  type: 'stock' | 'etf' | 'preferred'
   /** 加入追蹤的時間戳記 */
   addedAt: number
-  /** 最近一次變更時間戳記（同步合併用；舊資料讀取時補 default = addedAt） */
-  updatedAt?: number
   /** 墓碑標記（讓「移除」能跨裝置傳播；deleted: true 視為最終狀態） */
   deleted?: boolean
 }

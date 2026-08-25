@@ -118,7 +118,7 @@ function handleImport() {
     let addedCount = 0
     for (const item of parsed) {
       if (!isWatched(item.code)) {
-        add(item.code, item.name, item.type)
+        add(item.code)
         addedCount++
       }
     }
