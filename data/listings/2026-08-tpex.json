@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-24",
+  "last_updated": "2026-08-25",
   "source": "TPEx",
   "records": [
     {
@@ -3315,6 +3315,11 @@
     {
       "code": "6240",
       "name": "松崗",
+      "market": "TPEx"
+    },
+    {
+      "code": "6241",
+      "name": "鑫永洋",
       "market": "TPEx"
     },
     {
@@ -6785,6 +6790,16 @@
     {
       "code": "73058U",
       "name": "頎邦群益62售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73059U",
+      "name": "安葆國票68售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73060U",
+      "name": "宏捷科國票63售01",
       "market": "TPEx"
     }
   ]

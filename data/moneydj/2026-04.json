@@ -191,9 +191,9 @@
       "reserve_dividend": 0.0,
       "cash_dividend": 2.8,
       "pay_date": "2026-04-24",
-      "earnings_stock": 1.5000001803,
-      "reserve_stock": 0.0,
-      "stock_dividend": 1.5000001803,
+      "earnings_stock": 0,
+      "reserve_stock": 0,
+      "stock_dividend": 0,
       "ex_date": "2026-04-01",
       "type": "息"
     },
