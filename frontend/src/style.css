@@ -1259,6 +1259,141 @@ body {
   height: 24px;
 }
 
+/* Step Card with Mini Visual */
+.step-card {
+  flex: 1;
+  text-align: center;
+  max-width: 220px;
+  padding: 1.5rem 1rem;
+  border-radius: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.step-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.dark .step-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.step-visual {
+  margin-top: 16px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+/* Mini Search */
+.mini-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+/* Mini Stock Row */
+.mini-stock {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.mini-stock--watched {
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.04);
+}
+
+.dark .mini-stock--watched {
+  background: rgba(248, 113, 113, 0.08);
+}
+
+.mini-stock-code {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.mini-stock-name {
+  font-size: 0.72rem;
+  color: var(--muted);
+  flex: 1;
+}
+
+/* Mini Calendar */
+.mini-cal {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.mini-cal-month {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.mini-cal-dots {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.mini-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.mini-dot--normal {
+  background: rgba(26, 115, 232, 0.3);
+}
+
+.mini-dot--watched {
+  background: rgba(239, 68, 68, 0.4);
+}
+
+.dark .mini-dot--normal {
+  background: rgba(96, 165, 250, 0.4);
+}
+
+.dark .mini-dot--watched {
+  background: rgba(248, 113, 113, 0.5);
+}
+
+/* Inline CTA (inside How It Works) */
+.cta-inline {
+  text-align: center;
+  margin-top: 48px;
+  padding-top: 40px;
+  border-top: 1px solid var(--border);
+}
+
+.cta-inline h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 24px;
+  letter-spacing: -0.01em;
+}
+
 /* CTA Section */
 .cta-section {
   padding: var(--section-padding) 24px;
@@ -1359,6 +1494,10 @@ body {
     gap: 24px;
   }
   .step-arrow { transform: rotate(90deg); padding-top: 0; }
+  .step-card { max-width: none; width: 100%; }
+  .cta-inline { margin-top: 32px; padding-top: 28px; }
+  .cta-inline h2 { font-size: 1.25rem; }
+  .cta-inline .landing-btn-large { height: 48px; padding: 0 32px; font-size: 1rem; width: 100%; }
   .cta-section { padding: var(--section-padding-mobile) 16px; }
   .cta-section h2 { font-size: 1.25rem; }
   .cta-section .landing-btn-large {

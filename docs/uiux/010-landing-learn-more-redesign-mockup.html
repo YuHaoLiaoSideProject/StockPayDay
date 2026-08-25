@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>010 — Landing「了解更多」流程重設計 — BEFORE / AFTER 比較稿</title>
+<style>
+
+/* ════════════════════════════════════════════════════════════
+   設計 Token（對應前端 CSS 變數）
+   ════════════════════════════════════════════════════════════ */
+:root {
+  --accent: #1a73e8; --accent-hover: #1557b0; --accent-light: rgba(26,115,232,0.12);
+  --success: #188038; --success-light: #e6f4ea; --success-border: #a8dab5;
+  --danger: #c5221f; --danger-light: #fce8e6; --danger-border: #f5c6c2;
+  --warning: #e37400; --warning-light: #fff4e5;
+  --radius: 10px; --radius-sm: 6px; --transition: 0.2s ease;
+  --h: 36px; --h-mobile: 44px; --fs: 0.875rem;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Landing 專用 token（對應 style.css） */
+  --hero-bg: #f0f7ff;
+  --hero-gradient: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 50%, #ffffff 100%);
+  --step-circle-bg: #1a73e8;
+  --cta-section-bg: #f9fafb;
+  --card-radius: 16px;
+  --section-padding: 64px;
+  --section-padding-mobile: 40px;
+}
+[data-theme="light"] {
+  --bg: #ffffff; --surface: #ffffff; --surface-2: #f6f7f9; --surface-3: #eef0f3;
+  --border: #e3e6ea; --text: #374151; --muted: #9ca3af;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08); --shadow-lg: 0 12px 32px rgba(0,0,0,0.16);
+  --frame: #eef0f3;
+}
+[data-theme="dark"] {
+  --bg: #11191f; --surface: #181e25; --surface-2: #1e2530; --surface-3: #232c38;
+  --border: #262e38; --text: #c7c9ce; --muted: #7d8590;
+  --shadow: 0 2px 16px rgba(0,0,0,0.45); --shadow-lg: 0 12px 36px rgba(0,0,0,0.6);
+  --frame: #0d1318;
+  --hero-bg: #0f172a;
+  --hero-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #111827 100%);
+  --step-circle-bg: #60a5fa;
+  --cta-section-bg: #1f2937;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background: var(--bg); color: var(--text); transition: background var(--transition), color var(--transition);
+  padding: 2rem 1.25rem 4rem;
+}
+.wrap { max-width: 1120px; margin: 0 auto; }
+.topbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; }
+h1 { font-size: 1.35rem; margin: 0; }
+.sub { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+.controls { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.segmented { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 2px; }
+.segmented button { border: none; background: none; color: var(--muted); font-size: 0.85rem; padding: 0.45rem 0.9rem; border-radius: 7px; cursor: pointer; transition: all var(--transition); font-weight: 500; }
+.segmented button:hover { color: var(--text); }
+.segmented button.active { background: var(--surface); color: var(--accent); box-shadow: var(--shadow); }
+
+.frame { background: var(--frame); border: 1px solid var(--border); border-radius: 14px; padding: 1.6rem 1.5rem 1.8rem; margin-bottom: 1.5rem; }
+.frame h2 { margin: 0 0 0.25rem; font-size: 1.1rem; }
+.frame .fsub { color: var(--muted); font-size: 0.82rem; margin: 0 0 1rem; line-height: 1.6; }
+.browser-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 1rem; }
+.bdot { width: 11px; height: 11px; border-radius: 50%; }
+.bdot:nth-child(1){ background:#f87171 } .bdot:nth-child(2){ background:#fbbf24 } .bdot:nth-child(3){ background:#34d399 }
+.browser-url { flex: 1; max-width: 420px; margin-left: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.8rem; font-size: 0.75rem; color: var(--muted); }
+.elem-count { font-size: 0.72rem; color: var(--muted); background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 0.2rem 0.7rem; white-space: nowrap; }
+.elem-count b { color: var(--accent); }
+
+.app-page { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); transition: background var(--transition); overflow: hidden; }
+
+/* ── Landing Page 模擬 ── */
+.landing { background: var(--bg); color: var(--text); }
+
+/* Hero */
+.hero { background: var(--hero-gradient); padding: 48px 24px; text-align: center; }
+.hero-content { max-width: 520px; margin: 0 auto; }
+.hero-icon { width: 64px; height: 64px; background: var(--accent-light); border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+.hero-icon svg { color: var(--accent); }
+.hero h1 { font-size: 1.85rem; font-weight: 700; margin: 0 0 10px; line-height: 1.25; letter-spacing: -0.02em; }
+.hero-subtitle { font-size: 1rem; color: var(--muted); margin: 0 0 28px; line-height: 1.65; }
+.hero-actions { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.social-proof { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--muted); }
+
+/* Landing Buttons */
+.landing-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 28px; border-radius: 12px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s ease; text-decoration: none; white-space: nowrap; border: none; }
+.landing-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-light); }
+.landing-btn-primary { background: var(--accent); color: white; }
+.landing-btn-primary:hover { box-shadow: 0 4px 16px rgba(26,115,232,0.3); transform: translateY(-1px); }
+.landing-btn-secondary { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+.landing-btn-secondary:hover { background: var(--surface-2); color: var(--text); border-color: var(--muted); }
+.landing-btn-danger { background: var(--danger-light); color: var(--danger); border: 1px solid var(--danger-border); }
+
+/* How It Works — BEFORE（現狀） */
+.how-it-works-before { padding: 56px 24px; background: var(--surface); }
+.section-header { text-align: center; margin-bottom: 40px; }
+.section-header h2 { font-size: 1.5rem; font-weight: 700; margin: 0 0 8px; }
+.section-header p { font-size: 0.95rem; color: var(--muted); margin: 0; }
+.steps { display: flex; align-items: flex-start; justify-content: center; gap: 16px; max-width: 700px; margin: 0 auto; }
+.step { flex: 1; text-align: center; max-width: 200px; padding: 1.25rem 0.75rem; }
+.step-number { width: 48px; height: 48px; background: var(--step-circle-bg); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; font-weight: 700; margin: 0 auto 14px; }
+.step h3 { font-size: 0.95rem; font-weight: 600; margin: 0 0 6px; }
+.step p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; margin: 0; }
+.step-arrow { display: flex; align-items: center; padding-top: 14px; color: var(--muted); }
+
+/* Blank page 模擬 */
+.blank-page { padding: 80px 24px; text-align: center; background: var(--bg); }
+.blank-page .blank-icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.3; }
+.blank-page h2 { font-size: 1.25rem; font-weight: 600; margin: 0 0 8px; color: var(--danger); }
+.blank-page p { font-size: 0.875rem; color: var(--muted); margin: 0; }
+
+/* How It Works — AFTER（目標設計） */
+.how-it-works-after { padding: 56px 24px; background: var(--surface); }
+.steps-after { display: flex; align-items: flex-start; justify-content: center; gap: 20px; max-width: 780px; margin: 0 auto; }
+.step-card { flex: 1; text-align: center; max-width: 240px; padding: 1.5rem 1rem; background: var(--bg); border: 1px solid var(--border); border-radius: 14px; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.step-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+.step-card .step-number { width: 48px; height: 48px; background: var(--step-circle-bg); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; font-weight: 700; margin: 0 auto 14px; }
+.step-card h3 { font-size: 0.95rem; font-weight: 600; margin: 0 0 8px; }
+.step-card .step-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.5; margin: 0 0 16px; }
+
+/* Mini app 畫面模擬 */
+.mini-app { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-top: 8px; }
+.mini-search { display: flex; align-items: center; gap: 6px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; margin-bottom: 8px; }
+.mini-search .ico { color: var(--muted); font-size: 0.75rem; }
+.mini-search .txt { font-size: 0.72rem; color: var(--text); font-weight: 500; }
+.mini-search .cursor { width: 1px; height: 14px; background: var(--accent); animation: blink 1s step-end infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.mini-heart { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.mini-stock { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; width: 100%; }
+.mini-stock .code { font-size: 0.78rem; font-weight: 700; color: var(--text); }
+.mini-stock .name { font-size: 0.72rem; color: var(--muted); flex: 1; }
+.mini-stock .heart { font-size: 1rem; color: #ef4444; }
+
+.mini-cal { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+.mini-cal-header { font-size: 0.72rem; font-weight: 600; text-align: center; margin-bottom: 6px; color: var(--text); }
+.mini-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.mini-cal-day { text-align: center; font-size: 0.62rem; color: var(--muted); padding: 3px 0; border-radius: 4px; }
+.mini-cal-day.today { background: var(--accent); color: white; font-weight: 700; border-radius: 50%; }
+.mini-cal-day.div { position: relative; }
+.mini-cal-day.div::after { content: ''; display: block; width: 6px; height: 3px; background: var(--accent); border-radius: 2px; margin: 1px auto 0; }
+
+/* CTA — AFTER */
+.cta-after { padding: 48px 24px; background: var(--cta-section-bg); text-align: center; }
+.cta-after h2 { font-size: 1.4rem; font-weight: 700; margin: 0 0 20px; }
+.cta-after .landing-btn { height: 52px; padding: 0 36px; font-size: 1.05rem; border-radius: 14px; }
+.cta-note { margin-top: 14px; font-size: 0.82rem; color: var(--muted); }
+
+/* Step arrow after */
+.step-arrow-after { display: flex; align-items: center; padding-top: 24px; color: var(--muted); }
+
+/* Footer */
+.landing-footer { padding: 36px 24px 28px; background: var(--text); text-align: center; }
+.footer-brand { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px; }
+.footer-brand span { font-size: 0.9rem; font-weight: 600; color: var(--bg); }
+.footer-desc { font-size: 0.82rem; color: var(--muted); margin-bottom: 20px; }
+.footer-links { display: flex; align-items: center; justify-content: center; gap: 20px; margin-bottom: 24px; }
+.footer-links a { font-size: 0.82rem; color: var(--muted); text-decoration: none; }
+.footer-links a:hover { color: var(--bg); }
+.footer-copy { font-size: 0.72rem; color: var(--muted); padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+
+/* Comparison layout */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-top: 1rem; }
+@media (max-width: 800px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+.compare-label.before { color: var(--danger); }
+.compare-label.after { color: var(--success); }
+.compare-label .dot { width: 8px; height: 8px; border-radius: 50%; }
+.compare-label.before .dot { background: var(--danger); }
+.compare-label.after .dot { background: var(--success); }
+
+/* Legend / Annotations */
+.legend { display: grid; grid-template-columns: 1fr; gap: 0.5rem; margin-top: 1.25rem; }
+.anno { display: flex; gap: 0.55rem; font-size: 0.8rem; color: var(--muted); align-items: flex-start; line-height: 1.55; }
+.anno .num { flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; background: var(--accent-light); color: var(--accent); font-size: 0.7rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+.anno .num.red { background: var(--danger-light); color: var(--danger); }
+.anno .num.green { background: var(--success-light); color: var(--success); }
+.anno b { color: var(--text); }
+
+/* States table */
+.states { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 1rem; }
+.states th, .states td { border: 1px solid var(--border); padding: 0.55rem 0.75rem; text-align: left; vertical-align: top; }
+.states th { background: var(--surface-2); font-size: 0.74rem; color: var(--muted); font-weight: 700; }
+.states td:first-child { white-space: nowrap; font-weight: 600; }
+.states code { background: var(--surface-2); border: 1px solid var(--border); border-radius: 4px; padding: 0.05rem 0.35rem; font-size: 0.72rem; font-family: var(--mono); }
+
+/* Token cards */
+.tokens { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+.tcard { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem 0.95rem; }
+.tcard .tk { font-size: 0.68rem; color: var(--muted); letter-spacing: 0.4px; }
+.tcard .tv { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-top: 0.2rem; }
+.tcard .td { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; line-height: 1.5; }
+.tcard .tv.accent { color: var(--accent); }
+
+.note { font-size: 0.78rem; color: var(--muted); margin-top: 1rem; line-height: 1.7; background: var(--surface); border: 1px dashed var(--border); border-radius: 10px; padding: 0.6rem 0.9rem; }
+.note b { color: var(--accent); }
+
+.footnote { margin-top: 2rem; font-size: 0.72rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 0.75rem; line-height: 1.7; }
+
+/* mobile 切換 */
+body.view-mobile .compare-grid { grid-template-columns: 1fr; }
+body.view-mobile .step-card { max-width: none; }
+body.view-mobile .steps-after { flex-direction: column; align-items: center; }
+body.view-mobile .step-arrow-after { transform: rotate(90deg); padding-top: 0; }
+</style>
+</head>
+<body data-theme="light">
+<div class="wrap">
+
+  <div class="topbar">
+    <div>
+      <h1>010 — Landing「了解更多」流程重設計</h1>
+      <div class="sub">BEFORE / AFTER 比較稿 ・ LandingView 「了解更多 ↓」按鈕 + How It Works 區塊</div>
+    </div>
+    <div class="controls">
+      <div class="segmented" id="devSwitch">
+        <button data-dev="desktop" class="active">🖥 Desktop</button>
+        <button data-dev="mobile">📱 Mobile</button>
+      </div>
+      <button class="segmented" id="themeToggle" style="background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:3px;">🌙 切換深色</button>
+    </div>
+  </div>
+
+  <!-- ══════════ 1. 問題說明 ══════════ -->
+  <div class="frame">
+    <h2>1️⃣ 問題根因</h2>
+    <p class="fsub">Vue Router hash mode 下，錨點連結被解釋為路由路徑，導致空白頁。</p>
+    <div class="legend">
+      <div class="anno"><span class="num red">1</span><span><b>P1 空白頁</b> — <code>&lt;a href="#how-it-works"&gt;</code> 在 hash mode 下被 Vue Router 攔截，解釋為路由 <code>/how-it-works</code>（不存在）→ 空白頁</span></div>
+      <div class="anno"><span class="num red">2</span><span><b>Footer 同樣問題</b> — Footer 的「功能介紹」連結 <code>href="#how-it-works"</code> 同樣會進入空白頁</span></div>
+      <div class="anno"><span class="num">3</span><span><b>How It Works 區塊設計單薄</b> — 僅有 3 個圓形數字 + 文字，無視覺輔助，用戶難以快速理解產品價值</span></div>
+      <div class="anno"><span class="num">4</span><span><b>CTA 與「了解更多」缺少層次</b> — 兩個按鈕並排但視覺權重相同，用戶不知該先做什麼</span></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 2. BEFORE / AFTER 比較 ══════════ -->
+  <div class="frame">
+    <h2>2️⃣ BEFORE / AFTER 比較</h2>
+    <p class="fsub">左側為現狀（P1 bug + 設計問題），右側為目標設計。</p>
+
+    <div class="compare-grid">
+      <!-- BEFORE -->
+      <div>
+        <div class="compare-label before"><span class="dot"></span>BEFORE — 現狀</div>
+        <div class="app-page">
+          <!-- Hero（簡化） -->
+          <div class="hero" style="padding: 36px 20px;">
+            <div class="hero-content" style="max-width: 400px;">
+              <div class="hero-icon" style="width: 52px; height: 52px; border-radius: 14px; margin-bottom: 16px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <h1 style="font-size: 1.4rem;">你的股利，不再錯過。</h1>
+              <p class="hero-subtitle" style="font-size: 0.88rem; margin-bottom: 20px;">StockPayDay 幫你掌握每一筆配息時程。</p>
+              <div class="hero-actions" style="margin-bottom: 16px;">
+                <a href="#/app" class="landing-btn landing-btn-primary" style="height: 40px; padding: 0 22px; font-size: 0.88rem;">立即查看配息行事曆</a>
+                <!-- ❌ BUG: 這個連結會進入空白頁 -->
+                <a href="#how-it-works" class="landing-btn landing-btn-secondary landing-btn-danger" style="height: 40px; padding: 0 22px; font-size: 0.88rem; position: relative;">
+                  了解更多 ↓
+                  <span style="position: absolute; top: -8px; right: -8px; background: var(--danger); color: white; font-size: 0.55rem; padding: 2px 5px; border-radius: 4px; font-weight: 700;">BUG</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- How It Works — 現狀 -->
+          <div class="how-it-works-before">
+            <div class="section-header">
+              <h2>使用方式超簡單</h2>
+              <p>三個步驟，開始掌握你的配息</p>
+            </div>
+            <div class="steps">
+              <div class="step">
+                <div class="step-number">1</div>
+                <h3>搜尋股票</h3>
+                <p>輸入代號或名稱，快速找到標的</p>
+              </div>
+              <div class="step-arrow" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </div>
+              <div class="step">
+                <div class="step-number">2</div>
+                <h3>加入追蹤</h3>
+                <p>點擊愛心，加入你的追蹤清單</p>
+              </div>
+              <div class="step-arrow" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </div>
+              <div class="step">
+                <div class="step-number">3</div>
+                <h3>掌握時程</h3>
+                <p>行事曆自動標示配息日期</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Blank page 模擬 -->
+          <div class="blank-page">
+            <div class="blank-icon">📄</div>
+            <h2>空白頁 — 路由不存在</h2>
+            <p>點擊「了解更多 ↓」後，Vue Router 試圖導航至 <code>/how-it-works</code><br>但路由表中無此路徑，導致空白頁。</p>
+          </div>
+        </div>
+
+        <div class="legend" style="margin-top: 0.75rem;">
+          <div class="anno"><span class="num red">1</span><span><b>BUG</b>：「了解更多 ↓」按鈕標示紅色警告，實際點擊後進入空白頁</span></div>
+          <div class="anno"><span class="num red">2</span><span><b>How It Works</b>：僅有文字步驟，無視覺輔助，用戶難以快速理解</span></div>
+          <div class="anno"><span class="num red">3</span><span><b>CTA 缺失</b>：How It Works 底部無 CTA，用戶需回頂端才能進入 app</span></div>
+        </div>
+      </div>
+
+      <!-- AFTER -->
+      <div>
+        <div class="compare-label after"><span class="dot"></span>AFTER — 目標設計</div>
+        <div class="app-page">
+          <!-- Hero（優化） -->
+          <div class="hero" style="padding: 36px 20px;">
+            <div class="hero-content" style="max-width: 400px;">
+              <div class="hero-icon" style="width: 52px; height: 52px; border-radius: 14px; margin-bottom: 16px;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <h1 style="font-size: 1.4rem;">你的股利，不再錯過。</h1>
+              <p class="hero-subtitle" style="font-size: 0.88rem; margin-bottom: 20px;">StockPayDay 幫你掌握每一筆配息時程。</p>
+              <div class="hero-actions" style="margin-bottom: 16px;">
+                <a href="#/app" class="landing-btn landing-btn-primary" style="height: 40px; padding: 0 22px; font-size: 0.88rem;">立即查看配息行事曆</a>
+                <!-- ✅ FIX: 使用 @click.prevent + scrollIntoView -->
+                <a href="#how-it-works" class="landing-btn landing-btn-secondary" style="height: 40px; padding: 0 22px; font-size: 0.88rem;">
+                  了解更多 ↓
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- How It Works — 目標設計 -->
+          <div class="how-it-works-after">
+            <div class="section-header">
+              <h2>使用方式超簡單</h2>
+              <p>三個步驟，開始掌握你的配息</p>
+            </div>
+            <div class="steps-after">
+              <!-- Step 1: 搜尋 -->
+              <div class="step-card">
+                <div class="step-number">1</div>
+                <h3>搜尋股票</h3>
+                <p class="step-desc">輸入代號或名稱，快速找到標的</p>
+                <div class="mini-app">
+                  <div class="mini-search">
+                    <span class="ico">🔍</span>
+                    <span class="txt">搜尋股票</span>
+                    <span class="cursor"></span>
+                  </div>
+                  <div class="mini-stock">
+                    <span class="code">2330</span>
+                    <span class="name">台積電</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="step-arrow-after" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </div>
+
+              <!-- Step 2: 追蹤 -->
+              <div class="step-card">
+                <div class="step-number">2</div>
+                <h3>加入追蹤</h3>
+                <p class="step-desc">點擊愛心，加入你的追蹤清單</p>
+                <div class="mini-app">
+                  <div class="mini-stock" style="border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.04);">
+                    <span class="code">2330</span>
+                    <span class="name">台積電</span>
+                    <span class="heart">❤️</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="step-arrow-after" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+              </div>
+
+              <!-- Step 3: 掌握 -->
+              <div class="step-card">
+                <div class="step-number">3</div>
+                <h3>掌握時程</h3>
+                <p class="step-desc">行事曆自動標示配息日期</p>
+                <div class="mini-app">
+                  <div class="mini-cal">
+                    <div class="mini-cal-header">2026 年 8 月</div>
+                    <div class="mini-cal-grid">
+                      <div class="mini-cal-day">日</div><div class="mini-cal-day">一</div><div class="mini-cal-day">二</div><div class="mini-cal-day">三</div><div class="mini-cal-day">四</div><div class="mini-cal-day">五</div><div class="mini-cal-day">六</div>
+                      <div class="mini-cal-day"></div><div class="mini-cal-day"></div><div class="mini-cal-day"></div><div class="mini-cal-day div">23</div><div class="mini-cal-day"></div><div class="mini-cal-day div">25</div><div class="mini-cal-day"></div>
+                      <div class="mini-cal-day"></div><div class="mini-cal-day"></div><div class="mini-cal-day today">20</div><div class="mini-cal-day"></div><div class="mini-cal-day"></div><div class="mini-cal-day"></div><div class="mini-cal-day"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CTA — 整合進 How It Works 底部 -->
+          <div class="cta-after" style="padding: 36px 20px;">
+            <h2>準備好掌握了嗎？</h2>
+            <a href="#/app" class="landing-btn landing-btn-primary" style="height: 48px; padding: 0 32px; font-size: 0.95rem;">
+              開始使用 StockPayDay
+            </a>
+            <p class="cta-note">免費使用 · 無需註冊 · 資料每日更新</p>
+          </div>
+        </div>
+
+        <div class="legend" style="margin-top: 0.75rem;">
+          <div class="anno"><span class="num green">1</span><span><b>FIX</b>：使用 <code>@click.prevent + scrollIntoView</code> 修復錨點滾動，不再進入空白頁</span></div>
+          <div class="anno"><span class="num green">2</span><span><b>Mini 畫面</b>：每步下方加入 app 畫面模擬（純 CSS），強化「一看就懂」的視覺引導</span></div>
+          <div class="anno"><span class="num green">3</span><span><b>CTA 整合</b>：CTA 按鈕移至 How It Works 底部，減少一次 scroll，提高轉換率</span></div>
+          <div class="anno"><span class="num green">4</span><span><b>步驟卡片</b>：加入白色卡片 + hover 微上浮效果，提升視覺層次</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 3. 元件解剖 ══════════ -->
+  <div class="frame">
+    <h2>3️⃣ 元件解剖 — How It Works 步驟卡片</h2>
+    <p class="fsub">每個步驟卡片包含：編號圓形 + 標題 + 描述 + Mini App 畫面。</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+      <!-- Step Card Anatomy -->
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem;">
+        <h4 style="margin: 0 0 0.8rem; font-size: 0.92rem; display: flex; align-items: center; gap: 0.4rem;">
+          Step Card <span style="font-size: 0.62rem; font-weight: 700; background: var(--accent-light); color: var(--accent); border-radius: 20px; padding: 0.12rem 0.5rem;">元件</span>
+        </h4>
+        <div style="background: var(--frame); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1rem; margin-bottom: 0.85rem;">
+          <div class="step-card" style="max-width: none;">
+            <div class="step-number">1</div>
+            <h3>搜尋股票</h3>
+            <p class="step-desc">輸入代號或名稱，快速找到標的</p>
+            <div class="mini-app">
+              <div class="mini-search">
+                <span class="ico">🔍</span>
+                <span class="txt">搜尋股票</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size: 0.74rem; color: var(--muted); line-height: 1.8;">
+          容器：<b style="color: var(--accent); font-family: var(--mono);">flex: 1</b> · 最大寬度 <b style="color: var(--accent); font-family: var(--mono);">240px</b><br>
+          圓角：<b style="color: var(--accent); font-family: var(--mono);">14px</b> · 邊框 <b style="color: var(--accent); font-family: var(--mono);">1px solid var(--border)</b><br>
+          編號圓形：<b style="color: var(--accent); font-family: var(--mono);">48×48px</b> · 背景 <b style="color: var(--accent); font-family: var(--mono);">var(--step-circle-bg)</b><br>
+          Mini App：<b style="color: var(--accent); font-family: var(--mono);">var(--surface-2)</b> 背景 · 圓角 <b style="color: var(--accent); font-family: var(--mono);">10px</b>
+        </div>
+      </div>
+
+      <!-- CTA Block Anatomy -->
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem;">
+        <h4 style="margin: 0 0 0.8rem; font-size: 0.92rem; display: flex; align-items: center; gap: 0.4rem;">
+          CTA Block <span style="font-size: 0.62rem; font-weight: 700; background: var(--accent-light); color: var(--accent); border-radius: 20px; padding: 0.12rem 0.5rem;">元件</span>
+        </h4>
+        <div style="background: var(--frame); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem 1rem; margin-bottom: 0.85rem;">
+          <div class="cta-after" style="padding: 24px 16px; border-radius: 10px;">
+            <h2 style="font-size: 1.1rem; margin: 0 0 14px;">準備好掌握了嗎？</h2>
+            <a href="#" class="landing-btn landing-btn-primary" style="height: 44px; padding: 0 28px; font-size: 0.9rem;">開始使用 StockPayDay</a>
+            <p class="cta-note" style="font-size: 0.78rem;">免費使用 · 無需註冊 · 資料每日更新</p>
+          </div>
+        </div>
+        <div style="font-size: 0.74rem; color: var(--muted); line-height: 1.8;">
+          背景：<b style="color: var(--accent); font-family: var(--mono);">var(--cta-section-bg)</b><br>
+          按鈕高度：<b style="color: var(--accent); font-family: var(--mono);">52px</b> · 圓角 <b style="color: var(--accent); font-family: var(--mono);">14px</b><br>
+          與 How It Works 共用 section，減少 scroll 距離
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 4. 狀態矩陣 ══════════ -->
+  <div class="frame">
+    <h2>4️⃣ 狀態矩陣</h2>
+    <p class="fsub">各狀態的視覺與互動行為。</p>
+    <table class="states">
+      <tr><th style="width:140px;">狀態</th><th>視覺</th><th>互動</th></tr>
+      <tr><td>Default</td><td>3 張步驟卡片水平排列，白色背景 + 1px 邊框</td><td>—</td></tr>
+      <tr><td>Hover（Desktop）</td><td>卡片 <code>translateY(-3px)</code> + 陰影加深</td><td>視覺反饋，無導航</td></tr>
+      <tr><td>Hover（CTA）</td><td>按鈕陰影 + 微上浮</td><td>點擊導航至 <code>/app</code></td></tr>
+      <tr><td>Focus</td><td><code>box-shadow: 0 0 0 3px var(--accent-light)</code></td><td>Tab 鍵到達，Enter/Space 觸發</td></tr>
+      <tr><td>Mobile</td><td>卡片縱向排列，箭頭旋轉 90°</td><td>觸控目標 ≥44px</td></tr>
+      <tr><td>Dark Mode</td><td>卡片背景 <code>var(--surface)</code>，文字 <code>var(--text)</code></td><td>—</td></tr>
+      <tr><td>Reduced Motion</td><td>無 hover 動畫</td><td>—</td></tr>
+    </table>
+  </div>
+
+  <!-- ══════════ 5. 實作方案 ══════════ -->
+  <div class="frame">
+    <h2>5️⃣ 實作方案 — 修復錨點滾動</h2>
+    <p class="fsub">推薦方案 A：使用 <code>@click.prevent</code> + <code>scrollIntoView</code>。</p>
+
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-top: 0.75rem;">
+      <div style="font-size: 0.78rem; color: var(--muted); margin-bottom: 0.5rem;">LandingView.vue — template 修改</div>
+      <pre style="background: var(--frame); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-size: 0.78rem; font-family: var(--mono); color: var(--text); margin: 0; overflow-x: auto; line-height: 1.7;"><code><span style="color: var(--danger);">- &lt;a href="#how-it-works" class="landing-btn landing-btn-secondary"&gt;</span>
+<span style="color: var(--success);">+ &lt;a href="#how-it-works"</span>
+<span style="color: var(--success);">+    class="landing-btn landing-btn-secondary"</span>
+<span style="color: var(--success);">+    @click.prevent="scrollToSection('how-it-works')"&gt;</span>
+     了解更多 ↓
+   &lt;/a&gt;</code></pre>
+    </div>
+
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-top: 0.75rem;">
+      <div style="font-size: 0.78rem; color: var(--muted); margin-bottom: 0.5rem;">LandingView.vue — script 新增</div>
+      <pre style="background: var(--frame); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-size: 0.78rem; font-family: var(--mono); color: var(--text); margin: 0; overflow-x: auto; line-height: 1.7;"><code><span style="color: var(--success);">+ function scrollToSection(id: string) {</span>
+<span style="color: var(--success);">+   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })</span>
+<span style="color: var(--success);">+ }</span></code></pre>
+    </div>
+
+    <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-top: 0.75rem;">
+      <div style="font-size: 0.78rem; color: var(--muted); margin-bottom: 0.5rem;">Footer 連結同步修改</div>
+      <pre style="background: var(--frame); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-size: 0.78rem; font-family: var(--mono); color: var(--text); margin: 0; overflow-x: auto; line-height: 1.7;"><code><span style="color: var(--danger);">- &lt;a href="#how-it-works"&gt;功能介紹&lt;/a&gt;</span>
+<span style="color: var(--success);">+ &lt;a href="#how-it-works"</span>
+<span style="color: var(--success);">+    @click.prevent="scrollToSection('how-it-works')"&gt;功能介紹&lt;/a&gt;</span></code></pre>
+    </div>
+
+    <div class="note" style="margin-top: 1rem;">
+      <b>備註：</b>此方案保留 <code>href="#how-it-works"</code> 以維持 URL 可分享性（使用者可手動輸入 <code>/##/how-it-works</code>），同時透過 <code>@click.prevent</code> 阻止瀏覽器預設行為，改用 JS 控制滾動。
+    </div>
+  </div>
+
+  <!-- ══════════ 6. 設計 Token 對照 ══════════ -->
+  <div class="frame">
+    <h2>6️⃣ 設計 Token 對照</h2>
+    <p class="fsub">實作時直接套用下列 CSS 變數。</p>
+    <div class="tokens">
+      <div class="tcard"><div class="tk">Step Circle</div><div class="tv accent">48×48px</div><div class="td">背景 <code>var(--step-circle-bg)</code></div></div>
+      <div class="tcard"><div class="tk">Card Radius</div><div class="tv">14px</div><div class="td">步驟卡片圓角</div></div>
+      <div class="tcard"><div class="tk">CTA Height</div><div class="tv accent">52px</div><div class="td">CTA 按鈕高度</div></div>
+      <div class="tcard"><div class="tk">Section BG</div><div class="tv">surface</div><div class="td"><code>var(--surface)</code> / <code>var(--cta-section-bg)</code></div></div>
+      <div class="tcard"><div class="tk">Card Hover</div><div class="tv">-3px</div><div class="td"><code>translateY(-3px)</code> + shadow</div></div>
+      <div class="tcard"><div class="tk">Arrow</div><div class="tv">20px</div><div class="td">步驟間箭頭，Mobile 旋轉 90°</div></div>
+    </div>
+  </div>
+
+  <!-- ══════════ 7. 驗收清單 ══════════ -->
+  <div class="frame">
+    <h2>7️⃣ 驗收清單</h2>
+    <p class="fsub">實作完成後逐項確認。</p>
+    <table class="states">
+      <tr><th style="width:40px;">✓</th><th>項目</th><th>驗證方式</th></tr>
+      <tr><td>☐</td><td>點擊「了解更多 ↓」平滑滾動至 How It Works</td><td>手動點擊 + 視覺確認</td></tr>
+      <tr><td>☐</td><td>Footer「功能介紹」連結正常滾動</td><td>手動點擊 + 視覺確認</td></tr>
+      <tr><td>☐</td><td>How It Works 3 步驟有 mini 畫面視覺</td><td>畫面檢查</td></tr>
+      <tr><td>☐</td><td>CTA 按鈕在 How It Works 底部可見</td><td>畫面檢查</td></tr>
+      <tr><td>☐</td><td>Mobile 縱向排列正常</td><td>Chrome DevTools responsive mode</td></tr>
+      <tr><td>☐</td><td>Dark mode 色彩正確</td><td>切換深色模式檢查</td></tr>
+      <tr><td>☐</td><td>Console error = 0</td><td>DevTools Console</td></tr>
+      <tr><td>☐</td><td><code>prefers-reduced-motion</code> 時無動畫</td><td>CSS media query 檢查</td></tr>
+    </table>
+  </div>
+
+  <div class="footnote">
+    📄 設計文件：<b>docs/uiux/010-landing-learn-more-redesign.md</b> ・ 本文件：<b>docs/uiux/010-landing-learn-more-redesign-mockup.html</b><br>
+    實作範圍：<b>LandingView.vue</b>（scrollToSection function + How It Works 區塊重新設計 + CTA 整合）
+  </div>
+</div>
+
+<script>
+// Theme toggle
+const themeBtn = document.getElementById('themeToggle');
+themeBtn.addEventListener('click', () => {
+  const dark = document.documentElement.dataset.theme === 'dark';
+  document.documentElement.dataset.theme = dark ? 'light' : 'dark';
+  themeBtn.textContent = dark ? '🌙 切換深色' : '☀️ 切換淺色';
+});
+
+// Device toggle
+const devSwitch = document.getElementById('devSwitch');
+devSwitch.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+  devSwitch.querySelectorAll('button').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  document.body.classList.toggle('view-mobile', b.dataset.dev === 'mobile');
+}));
+</script>
+</body>
+</html>
