@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { nextTick } from 'vue'
 import { useSearch } from '../useSearch'
+import { resetSecuritiesIndex } from '../useSecuritiesIndex'
 
 // Mock fetch
 const mockFetch = vi.fn()
@@ -14,6 +15,7 @@ const mockSecuritiesIndex = [
 
 describe('useSearch', () => {
   beforeEach(() => {
+    resetSecuritiesIndex() // 重置 singleton 狀態
     vi.stubGlobal('fetch', mockFetch)
     mockFetch.mockReset()
     mockFetch.mockResolvedValue({
@@ -161,6 +163,7 @@ describe('useSearch', () => {
 
 describe('useSearch — 功能 001（追蹤任意股票）', () => {
   beforeEach(() => {
+    resetSecuritiesIndex() // 重置 singleton 狀態
     vi.stubGlobal('fetch', mockFetch)
     mockFetch.mockReset()
     mockFetch.mockResolvedValue({

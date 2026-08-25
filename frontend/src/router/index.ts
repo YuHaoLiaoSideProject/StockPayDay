@@ -1,8 +1,10 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import LandingView from '../views/LandingView.vue'
-import HomeView from '../views/HomeView.vue'
-import StockView from '../views/StockView.vue'
-import WatchlistPage from '../views/WatchlistView.vue'
+
+// Lazy loading：避免首頁載入時觸發 useWatchlistSync 的 module-level 副作用
+const HomeView = () => import('../views/HomeView.vue')
+const StockView = () => import('../views/StockView.vue')
+const WatchlistPage = () => import('../views/WatchlistView.vue')
 
 const router = createRouter({
   // 使用 hash mode 以相容 GitHub Pages 靜態部署

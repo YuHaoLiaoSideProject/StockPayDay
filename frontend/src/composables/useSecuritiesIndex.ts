@@ -19,27 +19,35 @@ const loaded = ref(false)
 const loading = ref(false)
 const error = ref<string | null>(null)
 
+let fetchPromise: Promise<void> | null = null
+
 async function ensureLoaded(): Promise<void> {
-  if (loaded.value || loading.value) return
-  loading.value = true
-  error.value = null
-  try {
-    const res = await fetch(INDEX_URL)
-    if (!res.ok) throw new Error(`載入證券索引失敗: ${res.status}`)
-    const data = await res.json()
-    if (Array.isArray(data)) {
-      entries.value = data as SecurityEntry[]
-      loaded.value = true
+  if (loaded.value) return
+  if (fetchPromise) return fetchPromise
+  
+  fetchPromise = (async () => {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await fetch(INDEX_URL)
+      if (!res.ok) throw new Error(`載入證券索引失敗: ${res.status}`)
+      const data = await res.json()
+      if (Array.isArray(data)) {
+        entries.value = data as SecurityEntry[]
+        loaded.value = true
+      }
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '載入失敗'
+    } finally {
+      loading.value = false
+      fetchPromise = null
     }
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : '載入失敗'
-  } finally {
-    loading.value = false
-  }
+  })()
+  
+  return fetchPromise
 }
 
-// 自動觸發載入
-ensureLoaded()
+
 
 /**
  * 證券索引 composable
@@ -69,4 +77,13 @@ export function useSecuritiesIndex() {
     getName,
     reload: ensureLoaded,
   }
+}
+
+/** 測試用：重置 module-level 狀態 */
+export function resetSecuritiesIndex(): void {
+  entries.value = []
+  loaded.value = false
+  loading.value = false
+  error.value = null
+  fetchPromise = null
 }
