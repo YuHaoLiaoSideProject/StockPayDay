@@ -25,18 +25,45 @@ import ListView from '../components/ListView.vue'
 import DayDetail from '../components/DayDetail.vue'
 
 const router = useRouter()
-const { status, errorMessage, load, retry, allMonths, getByDate, sortedUpcoming } = useUpcoming()
-const { monthLabel, days, prevMonth, nextMonth } = useCalendar(allMonths)
+const { status, errorMessage, load, retry, ensureMonth, allMonths, getByDate, sortedUpcoming } = useUpcoming()
+
+/** 當前月份 key (YYYY-MM) */
+function currentMonthKey(): string {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+
+/** 懶載入 callback：確保指定月份已載入 */
+async function loadMonth(monthKey: string): Promise<void> {
+  await ensureMonth(monthKey)
+}
+
+const { monthLabel, days, prevMonth, nextMonth } = useCalendar(allMonths, loadMonth)
 
 const currentView = ref<ViewMode>('calendar')
 const selectedDate = ref<string | null>(null)
 
 onMounted(() => {
-  load()
+  load([currentMonthKey()])
 })
+
+/** 產生從 today 起算的月份列表（含當月） */
+function getFutureMonths(count: number): string[] {
+  const months: string[] = []
+  const now = new Date()
+  for (let i = 0; i < count; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
+  }
+  return months
+}
 
 function handleViewChange(view: ViewMode) {
   currentView.value = view
+  if (view === 'list') {
+    // 列表模式需要未來配息資料，載入當月 + 未來 4 個月
+    load(getFutureMonths(5))
+  }
 }
 
 function handleDateClick(date: string) {

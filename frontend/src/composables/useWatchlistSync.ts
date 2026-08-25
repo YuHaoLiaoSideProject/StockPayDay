@@ -139,9 +139,13 @@ async function syncOnce(): Promise<void> {
     const remote = await pull()
     const { items } = useWatchlist()
     const merged = merge(items.value, remote?.items)
-    items.value = merged
+    // 僅在合併結果與本地不同時才賦值，避免觸發 watchEffect 產生多餘同步
+    const mergedJson = JSON.stringify(merged)
+    if (mergedJson !== JSON.stringify(items.value)) {
+      items.value = merged
+    }
     await push(merged) // 合併結果一律寫回（遠端較新或本地較新皆正確處理）
-    lastPushedSnapshot = JSON.stringify(merged)
+    lastPushedSnapshot = mergedJson
     lastSyncedAt.value = Date.now()
     lastError.value = null
     status.value = 'synced'
