@@ -8,16 +8,7 @@ const STORAGE_KEY = 'stockpayday-watchlist'
 const items = ref<WatchlistItem[]>([])
 const sortBy = ref<WatchlistSortBy>('addedAt')
 
-/**
- * 同步啟用旗標（module-level，供 useWatchlistSync 設定）
- *
- * - false（未配對）：remove() 直接過濾移除，行為與現況一致
- * - true（已配對）：remove() 改為墓碑語意（保留 item 但 deleted: true）
- *
- * 由 useWatchlistSync（子任務 B）在配對/停用時寫入；
- * 此處不 import useWatchlistSync，避免循環依賴。
- */
-export const syncActiveRef = ref<boolean>(false)
+
 
 // 初始化：從 localStorage 讀取（必須在 watchEffect 之前）
 function init(): void {
@@ -77,20 +68,10 @@ export function useWatchlist() {
   }
 
   /**
-   * 移除追蹤（同步語意）
-   *
-   * - 未配對（syncActiveRef === false）：與現況一致，直接過濾掉該 item
-   * - 已配對（syncActiveRef === true）：保留 item 但標記 deleted: true（墓碑），
-   *   由 sync 引擎傳播到其他裝置；isWatched()/watchedCodes 立即排除，UI 層面無感
+   * 移除追蹤
    */
   function remove(code: string): void {
-    if (syncActiveRef.value) {
-      items.value = items.value.map(item =>
-        item.code === code ? { ...item, deleted: true } : item
-      )
-    } else {
-      items.value = items.value.filter(item => item.code !== code)
-    }
+    items.value = items.value.filter(item => item.code !== code)
   }
 
   /**
@@ -105,17 +86,17 @@ export function useWatchlist() {
   }
 
   /**
-   * 查詢是否已追蹤（排除 deleted 墓碑項目）
+   * 查詢是否已追蹤
    */
   function isWatched(code: string): boolean {
-    return items.value.some(item => item.code === code && !item.deleted)
+    return items.value.some(item => item.code === code)
   }
 
   /**
-   * 取得追蹤的證券代號集合（排除 deleted 墓碑項目）
+   * 取得追蹤的證券代號集合
    */
   const watchedCodes = computed(() => {
-    return new Set(items.value.filter(item => !item.deleted).map(item => item.code))
+    return new Set(items.value.map(item => item.code))
   })
 
   /**
