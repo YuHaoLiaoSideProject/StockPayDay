@@ -10,6 +10,7 @@ import { useRouter } from 'vue-router'
 import { useWatchlist } from '../composables/useWatchlist'
 import { useUpcoming } from '../composables/useUpcoming'
 import { useCalendar } from '../composables/useCalendar'
+import { useSecuritiesIndex } from '../composables/useSecuritiesIndex'
 import Calendar from './Calendar.vue'
 import DayDetail from './DayDetail.vue'
 import WatchlistEmpty from './WatchlistEmpty.vue'
@@ -21,6 +22,7 @@ import type { ViewMode, UpcomingDividend } from '../types/stock'
 
 const { items, watchedCodes } = useWatchlist()
 const { allMonths, status, load, getByDate, upcoming } = useUpcoming()
+const { getName } = useSecuritiesIndex()
 const router = useRouter()
 
 const currentView = ref<ViewMode>('calendar')
@@ -42,7 +44,7 @@ const allWatchedItems = computed(() => {
     return {
       code: item.code,
       addedAt: item.addedAt,
-      name: dividend?.name,
+      name: dividend?.name || getName(item.code),
       dividend,
       hasUpcomingDividend: !!dividend,
     }
