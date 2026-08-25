@@ -98,9 +98,10 @@ const selectedDividends = computed(() => {
 
     <!-- 有追蹤股票 -->
     <template v-else>
-      <!-- 視圖切換 -->
+      <!-- 視圖切換 + 追蹤數量 -->
       <div class="watchlist-controls">
         <ViewSwitcher :current-view="currentView" @view-change="handleViewChange" />
+        <span class="watchlist-count">已追蹤 {{ activeItems.length }} 支證券</span>
       </div>
 
       <!-- 行事曆模式 -->
@@ -136,10 +137,6 @@ const selectedDividends = computed(() => {
         </div>
       </template>
 
-      <!-- 追蹤股票數量提示 -->
-      <div class="watchlist-count">
-        已追蹤 {{ activeItems.length }} 支證券
-      </div>
       <!-- 日期明細 Modal -->
       <DayDetail
         v-if="selectedDate"
@@ -153,6 +150,18 @@ const selectedDividends = computed(() => {
 </template>
 
 <style scoped>
+.watchlist-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.watchlist-count {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
 .watchlist-no-date-group {
   margin-top: 16px;
 }
