@@ -1,4 +1,4 @@
-import { ref, computed, type Ref } from 'vue'
+import { ref, computed, watch, type Ref } from 'vue'
 import type { CalendarDay, UpcomingDividend } from '../types/stock'
 
 /**
@@ -9,11 +9,25 @@ import type { CalendarDay, UpcomingDividend } from '../types/stock'
  *
  * 直接從 allMonths reactive ref 讀取當月配息資料，
  * 切換月份時自動重新計算。
+ *
+ * @param allMonths 月份資料 ref
+ * @param loadMonth 可選：懶載入 callback，切換月份時若資料未載入會呼叫
  */
 export function useCalendar(
-  allMonths: Ref<Map<string, UpcomingDividend[]>>
+  allMonths: Ref<Map<string, UpcomingDividend[]>>,
+  loadMonth?: (monthKey: string) => Promise<void>
 ) {
   const currentDate = ref(new Date())
+
+  // 懶載入：切換月份時，若該月資料未載入則觸發 fetch
+  if (loadMonth) {
+    watch(currentDate, (d) => {
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+      if (!allMonths.value.has(key)) {
+        loadMonth(key)
+      }
+    })
+  }
 
   /** 當前年月標題，如 "2026 年 7 月" */
   const monthLabel = computed(() => {

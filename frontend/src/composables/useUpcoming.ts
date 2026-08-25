@@ -36,29 +36,33 @@ async function fetchMonth(monthKey: string): Promise<UpcomingDividend[]> {
 
 /**
  * 載入月份配息資料
- * - 先讀取 index.json 取得可用品月份列表
- * - 並行載入所有可用品月份
+ * @param months 可選：指定要載入的月份（YYYY-MM），省略則載入 index.json 全部月份
  */
-async function load(): Promise<void> {
+async function load(months?: string[]): Promise<void> {
   status.value = 'loading'
   errorMessage.value = ''
 
   try {
-    // 1. 先讀取 index.json
-    const monthKeys = await fetchIndex()
+    let monthKeys: string[]
 
-    // 如果 index.json 無資料或格式異常，嘗試 fallback：載入當月
-    if (monthKeys.length === 0) {
-      const now = currentMonthKey()
-      monthKeys.push(now)
+    if (months && months.length > 0) {
+      // 指定月份：直接使用，不 fetch index.json
+      monthKeys = months
+    } else {
+      // 未指定：讀取 index.json 取得全部可用品月份
+      monthKeys = await fetchIndex()
+      if (monthKeys.length === 0) {
+        monthKeys.push(currentMonthKey())
+      }
     }
 
-    // 2. 並行載入所有可用品月份
+    // 並行載入指定月份
     const results = await Promise.allSettled(
       monthKeys.map(key => fetchMonth(key))
     )
 
-    const merged = new Map<string, UpcomingDividend[]>()
+    // 指定月份模式：合併到現有資料；全量模式：替換
+    const merged = months ? new Map(allMonths.value) : new Map<string, UpcomingDividend[]>()
     let successCount = 0
     for (let i = 0; i < monthKeys.length; i++) {
       const result = results[i]
@@ -71,7 +75,6 @@ async function load(): Promise<void> {
     allMonths.value = merged
 
     if (successCount === 0) {
-      // 全部月份都失敗或無資料
       const allRejected = results.every(r => r.status === 'rejected')
       if (allRejected) {
         const firstError = results.find((r): r is PromiseRejectedResult => r.status === 'rejected')
@@ -84,6 +87,31 @@ async function load(): Promise<void> {
   } catch (e) {
     status.value = 'error'
     errorMessage.value = '資料載入失敗，請稍後再試'
+  }
+}
+
+/**
+ * 確保指定月份已載入（懶載入用）
+ * @param monthKey YYYY-MM
+ * @returns 該月資料，載入失敗回傳空陣列
+ */
+async function ensureMonth(monthKey: string): Promise<UpcomingDividend[]> {
+  // 已載入：直接回傳
+  if (allMonths.value.has(monthKey)) {
+    return allMonths.value.get(monthKey) ?? []
+  }
+
+  // 未載入：fetch 該月
+  try {
+    const data = await fetchMonth(monthKey)
+    if (data.length > 0) {
+      const merged = new Map(allMonths.value)
+      merged.set(monthKey, data)
+      allMonths.value = merged
+    }
+    return data
+  } catch {
+    return []
   }
 }
 
@@ -168,6 +196,7 @@ export function useUpcoming() {
     errorMessage,
     load,
     retry,
+    ensureMonth,
     getMonthData,
     getByDate,
     upcoming,

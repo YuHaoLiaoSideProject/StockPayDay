@@ -21,7 +21,7 @@ import WatchlistSyncSettings from './WatchlistSyncSettings.vue'
 import type { ViewMode, UpcomingDividend } from '../types/stock'
 
 const { items, watchedCodes } = useWatchlist()
-const { allMonths, status, load, getByDate, upcoming } = useUpcoming()
+const { allMonths, status, load, ensureMonth, getByDate, upcoming } = useUpcoming()
 const { getName } = useSecuritiesIndex()
 const router = useRouter()
 
@@ -64,10 +64,31 @@ const filteredMonths = computed(() => {
   }
   return result
 })
-const { monthLabel, days, prevMonth, nextMonth } = useCalendar(filteredMonths)
+
+// 懶載入 callback：確保指定月份已載入
+async function loadMonth(monthKey: string): Promise<void> {
+  await ensureMonth(monthKey)
+}
+
+const { monthLabel, days, prevMonth, nextMonth } = useCalendar(filteredMonths, loadMonth)
+
+/** 產生從 today 起算的月份列表（含當月） */
+function getFutureMonths(count: number): string[] {
+  const months: string[] = []
+  const now = new Date()
+  for (let i = 0; i < count; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`)
+  }
+  return months
+}
 
 function handleViewChange(view: ViewMode) {
   currentView.value = view
+  // 列表模式：載入當月 + 未來 4 個月（共 5 個月）
+  if (view === 'list') {
+    load(getFutureMonths(5))
+  }
 }
 
 /** 列表模式點擊證券 → 導航至單股頁（與首頁行為一致） */
