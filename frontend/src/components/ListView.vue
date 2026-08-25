@@ -4,16 +4,22 @@
  *
  * Props:
  *   - items: 已依日期排序的配息資料
+ *   - showHeader: 是否顯示表頭（預設 true）
  *
  * Emits:
  *   - stock-click(code: string) — 點擊股票（Phase 5 導航）
  */
 import { computed } from 'vue'
 import type { UpcomingDividend } from '../types/stock'
-import ListItem from './ListItem.vue'
+import ListItemRow from './ListItemRow.vue'
 import EmptyState from './EmptyState.vue'
 
-const props = defineProps<{ items: UpcomingDividend[] }>()
+const props = withDefaults(defineProps<{
+  items: UpcomingDividend[]
+  showHeader?: boolean
+}>(), {
+  showHeader: true,
+})
 
 const emit = defineEmits<{
   'stock-click': [code: string]
@@ -43,7 +49,7 @@ function formatDate(dateStr: string): string {
 
 <template>
   <div class="list-view">
-    <div class="list-header">
+    <div v-if="showHeader" class="list-header">
       <div>代號</div>
       <div>名稱</div>
       <div style="text-align: right;">金額</div>
@@ -54,14 +60,13 @@ function formatDate(dateStr: string): string {
         <span>{{ formatDate(date) }}</span>
         <span class="group-count">{{ group.length }} 支</span>
       </div>
-      <ListItem
+      <ListItemRow
         v-for="item in group"
         :key="`${item.code}-${item.ex_date}`"
-        :dividend="item"
-        class="clickable"
-        tabindex="0"
-        @click="emit('stock-click', item.code)"
-        @keydown.enter="emit('stock-click', item.code)"
+        :code="item.code"
+        :name="item.name"
+        :cash-dividend="item.cash_dividend"
+        @stock-click="emit('stock-click', $event)"
       />
     </template>
     <EmptyState v-if="items.length === 0" message="目前沒有即將配息的證券" />

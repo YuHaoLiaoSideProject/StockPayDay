@@ -14,7 +14,7 @@ import { useSecuritiesIndex } from '../composables/useSecuritiesIndex'
 import Calendar from './Calendar.vue'
 import DayDetail from './DayDetail.vue'
 import WatchlistEmpty from './WatchlistEmpty.vue'
-import WatchlistItemRow from './WatchlistItemRow.vue'
+import ListItemRow from './ListItemRow.vue'
 import ListView from './ListView.vue'
 import ViewSwitcher from './ViewSwitcher.vue'
 import WatchlistSyncSettings from './WatchlistSyncSettings.vue'
@@ -155,15 +155,16 @@ const selectedDividends = computed(() => {
       <template v-else>
         <ListView
           :items="allWatchedItems.filter(i => i.hasUpcomingDividend).map(i => i.dividend!)"
+          :show-header="true"
           @stock-click="handleStockClick"
         />
-        <!-- 無近期配息的追蹤項目 -->
+        <!-- 無近期配息的追蹤項目（放底部） -->
         <div v-if="allWatchedItems.filter(i => !i.hasUpcomingDividend).length > 0" class="watchlist-no-date-group">
           <div class="list-date-group no-date">
             <span>無近期配息</span>
             <span class="group-count">{{ allWatchedItems.filter(i => !i.hasUpcomingDividend).length }} 支</span>
           </div>
-          <WatchlistItemRow
+          <ListItemRow
             v-for="item in allWatchedItems.filter(i => !i.hasUpcomingDividend)"
             :key="item.code"
             :code="item.code"

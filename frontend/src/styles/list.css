@@ -39,7 +39,7 @@
 
 .list-header {
   display: grid;
-  grid-template-columns: 76px 1fr 90px 40px;
+  grid-template-columns: 80px 1fr auto auto;
   gap: 8px;
   padding: 0.45rem 0.5rem;
   border-bottom: 2px solid var(--border);
@@ -49,55 +49,7 @@
   font-weight: 700;
 }
 
-.list-item {
-  display: grid;
-  grid-template-columns: 76px 1fr 90px 40px;
-  gap: 8px;
-  padding: 0.55rem 0.5rem;
-  border-bottom: 1px solid var(--border);
-  font-size: 0.875rem;
-  min-height: 52px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background var(--transition-fast), box-shadow var(--transition-fast);
-  align-items: center;
-}
 
-/* #3 Zebra striping for visual hierarchy */
-.list-item:nth-child(even of .list-item) {
-  background: var(--surface);
-}
-
-.list-item:nth-child(even of .list-item):hover {
-  background: var(--surface-2);
-}
-
-.list-item:hover {
-  background: var(--surface-2);
-}
-
-.list-item:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(26,115,232,0.2);
-}
-
-.item-code {
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.item-amount {
-  color: var(--amount-color);
-  font-weight: 600;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  font-size: 0.875rem;
-}
-
-.item-amount.zero {
-  color: var(--text-muted);
-  font-weight: 400;
-}
 
 .list-date-group {
   position: sticky;

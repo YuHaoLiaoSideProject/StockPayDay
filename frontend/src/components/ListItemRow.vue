@@ -1,23 +1,24 @@
 <script setup lang="ts">
 /**
- * WatchlistItemRow 追蹤項目列
+ * ListItemRow 統一列表項目列
  *
- * 顯示單一追蹤股票，含/不含配息資訊。
- * 用於追蹤清單中顯示所有已追蹤的股票。
+ * 主畫面 & 追蹤清單共用。顯示：代號、名稱、金額（或佔位）、追蹤按鈕。
+ *
+ * Props:
+ *   - code: 證券代號
+ *   - name: 證券名稱
+ *   - cashDividend?: 現金配息金額（可選，無則顯示 "—"）
+ *
+ * Emits:
+ *   - stock-click(code: string)
  */
-import { computed } from 'vue'
-import type { UpcomingDividend } from '../types/stock'
 import WatchlistButton from './WatchlistButton.vue'
 
-interface Props {
+defineProps<{
   code: string
-  name?: string
-  dividend?: UpcomingDividend
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  name: '',
-})
+  name: string
+  cashDividend?: number | null
+}>()
 
 defineEmits<{
   'stock-click': [code: string]
@@ -30,19 +31,16 @@ function formatAmount(amount?: number | null): string {
   const rounded = Math.round(val * 1000) / 1000
   return `$${rounded.toFixed(3).replace(/\.?0+$/, '')}`
 }
-
-/** 顯示名稱：優先使用 props.name，其次用 dividend.name，最後用 code */
-const displayName = computed(() => props.name || props.dividend?.name || props.code)
 </script>
 
 <template>
-  <div class="watchlist-item-row" @click="$emit('stock-click', code)">
+  <div class="list-item-row" @click="$emit('stock-click', code)">
     <span class="item-code">{{ code }}</span>
-    <span class="item-name">{{ displayName }}</span>
-    <span v-if="dividend" class="item-dividend">
-      {{ formatAmount(dividend.cash_dividend) }}
+    <span class="item-name">{{ name }}</span>
+    <span v-if="cashDividend != null" class="item-dividend">
+      {{ formatAmount(cashDividend) }}
     </span>
-    <span v-else class="item-no-dividend">無近期配息</span>
+    <span v-else class="item-dividend item-no-dividend">—</span>
     <WatchlistButton
       :code="code"
       size="sm"
@@ -51,7 +49,7 @@ const displayName = computed(() => props.name || props.dividend?.name || props.c
 </template>
 
 <style scoped>
-.watchlist-item-row {
+.list-item-row {
   display: grid;
   grid-template-columns: 80px 1fr auto auto;
   gap: 8px;
@@ -63,7 +61,7 @@ const displayName = computed(() => props.name || props.dividend?.name || props.c
   border-radius: 6px;
 }
 
-.watchlist-item-row:hover {
+.list-item-row:hover {
   background-color: var(--surface-2);
 }
 
@@ -90,7 +88,6 @@ const displayName = computed(() => props.name || props.dividend?.name || props.c
 
 .item-no-dividend {
   color: var(--text-muted);
-  font-size: 0.8125rem;
-  text-align: right;
+  font-weight: 400;
 }
 </style>
