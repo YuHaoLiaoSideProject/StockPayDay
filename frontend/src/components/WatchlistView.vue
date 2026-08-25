@@ -49,13 +49,6 @@ const allWatchedItems = computed(() => {
   })
 })
 
-// 有配息的追蹤項目（用於列表模式）
-const watchlistWithDividends = computed(() => {
-  return allWatchedItems.value
-    .filter(item => item.hasUpcomingDividend)
-    .map(item => item.dividend!)
-})
-
 // 追蹤清單是否為空（墓碑不列入）
 const isEmpty = computed(() => activeItems.value.length === 0)
 
@@ -70,13 +63,6 @@ const filteredMonths = computed(() => {
   return result
 })
 const { monthLabel, days, prevMonth, nextMonth } = useCalendar(filteredMonths)
-
-// 所有追蹤項目（依加入時間排序）
-const sortedAllItems = computed(() => {
-  return [...allWatchedItems.value].sort(
-    (a, b) => b.addedAt - a.addedAt
-  )
-})
 
 function handleViewChange(view: ViewMode) {
   currentView.value = view
@@ -126,24 +112,12 @@ const selectedDividends = computed(() => {
           @next-month="nextMonth"
           @date-click="handleDateClick"
         />
-        <!-- 行事曆下方：所有追蹤項目概覽 -->
-        <div class="watchlist-all-items">
-          <h3 class="watchlist-all-title">所有追蹤（{{ activeItems.length }} 支）</h3>
-          <WatchlistItemRow
-            v-for="item in sortedAllItems"
-            :key="item.code"
-            :code="item.code"
-            :name="item.name"
-            :dividend="item.dividend"
-            @stock-click="handleStockClick"
-          />
-        </div>
       </template>
 
       <!-- 列表模式：使用 ListView 顯示（按日期分組） -->
       <template v-else>
         <ListView
-          :items="watchlistWithDividends"
+          :items="allWatchedItems.filter(i => i.hasUpcomingDividend).map(i => i.dividend!)"
           @stock-click="handleStockClick"
         />
         <!-- 無近期配息的追蹤項目 -->

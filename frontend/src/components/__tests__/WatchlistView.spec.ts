@@ -67,21 +67,29 @@ describe('components/WatchlistView（追蹤清單視圖）— 功能 001 無配�
     return wrapper
   }
 
-  it('無配息股票顯示「無近期配息」', async () => {
+  it('無配息股票在列表模式顯示「無近期配息」', async () => {
     const { add } = useWatchlist()
     add('9999')
 
     const wrapper = await mountView()
 
+    // 切換到列表模式
+    await wrapper.find('[data-view="list"]').trigger('click')
+    await flushPromises()
+
     expect(wrapper.text()).toContain('9999')
     expect(wrapper.text()).toContain('無近期配息')
   })
 
-  it('已下市股票仍顯示於追蹤清單', async () => {
+  it('已下市股票在列表模式仍顯示於追蹤清單', async () => {
     const { add } = useWatchlist()
     add('6666')
 
     const wrapper = await mountView()
+
+    // 切換到列表模式
+    await wrapper.find('[data-view="list"]').trigger('click')
+    await flushPromises()
 
     expect(wrapper.text()).toContain('無近期配息')
   })
@@ -91,6 +99,11 @@ describe('components/WatchlistView（追蹤清單視圖）— 功能 001 無配�
     add('2330')
 
     const wrapper = await mountView()
+
+    // 切換到列表模式
+    await wrapper.find('[data-view="list"]').trigger('click')
+    await flushPromises()
+
     expect(wrapper.text()).toContain('無近期配息')
 
     // upcoming.json 更新後重新載入：computed 自動反應
