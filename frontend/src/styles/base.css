@@ -1,0 +1,30 @@
+/* Base styles */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  padding: 0;
+}
+
+/* Home View Container */
+.home-view {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ============================================
+   App Root
+   ============================================ */
+.app-root {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.app-main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+}

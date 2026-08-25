@@ -1,0 +1,32 @@
+/* ============================================
+   View Switch Transition (calendar ↔ list)
+   ============================================ */
+.view-fade-enter-active,
+.view-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.view-fade-enter-from,
+.view-fade-leave-to {
+  opacity: 0;
+}
+
+/* ============================================
+   Modal Transition (DayDetail open/close)
+   ============================================ */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+.modal-fade-enter-active .modal-content,
+.modal-fade-leave-active .modal-content {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.modal-fade-enter-from .modal-content,
+.modal-fade-leave-to .modal-content {
+  transform: scale(0.95);
+  opacity: 0;
+}

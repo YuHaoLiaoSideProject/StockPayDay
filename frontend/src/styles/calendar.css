@@ -1,0 +1,189 @@
+/* Calendar */
+.calendar {
+  background: var(--bg);
+  padding: 0.75rem 0;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.calendar-header .prev-month,
+.calendar-header .next-month {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text);
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background var(--transition-fast);
+}
+
+.calendar-header .prev-month:hover,
+.calendar-header .next-month:hover {
+  background: var(--surface-2);
+}
+
+.calendar-header .month-label {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text);
+}
+
+/* Google Calendar 風格行事曆 */
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.calendar-weekdays .weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  padding: 0.5rem 0;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0;
+}
+
+.calendar-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 0.25rem 0.3rem;
+  min-height: 80px;
+  max-height: 104px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  border-right: none;
+  transition: background var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.calendar-day:hover {
+  background: var(--surface-2);
+}
+
+/* #7 Dividend visual weight: bottom accent bar */
+.calendar-day.has-dividend::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--dividend-dot);
+  border-radius: 3px 3px 0 0;
+  opacity: 0.7;
+}
+
+.calendar-day.has-watched::after {
+  background: #dc2626;
+  opacity: 0.85;
+}
+
+.dark .calendar-day.has-watched::after {
+  background: #f87171;
+}
+
+.calendar-day:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 3px rgba(26,115,232,0.2);
+}
+
+.calendar-day.other-month {
+  opacity: 0.35;
+}
+
+.day-number {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  border-radius: 50%;
+  color: var(--text);
+  flex-shrink: 0;
+}
+
+.calendar-day.is-today .day-number {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+  font-weight: 700;
+}
+
+.calendar-day.has-dividend .day-number {
+  font-weight: 600;
+}
+
+.dividend-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+}
+
+.dividend-label {
+  height: 18px;
+  border-radius: 4px;
+  padding: 0 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background: rgba(26,115,232,0.12);
+  color: var(--dividend-dot);
+  cursor: pointer;
+}
+
+.dividend-label--watched {
+  background: rgba(220,38,38,0.1);
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.dark .dividend-label--watched {
+  background: rgba(248,113,113,0.18);
+  color: #f87171;
+}
+
+.watched-heart {
+  display: none;
+}
+
+.dividend-more {
+  font-size: 0.72rem;
+  color: var(--tab-active-bg);
+  font-weight: 500;
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.dividend-more:hover {
+  text-decoration: underline;
+}

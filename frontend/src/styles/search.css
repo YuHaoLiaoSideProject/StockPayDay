@@ -1,0 +1,156 @@
+/* ============================================
+   Search Bar (Phase 5)
+   ============================================ */
+.search-bar {
+  position: relative;
+  width: 200px;
+}
+
+@media (min-width: 1024px) {
+  .search-bar {
+    width: 256px;
+  }
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 2rem 0 2rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 0.875rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-input:focus {
+  border-color: var(--tab-active-bg);
+  box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12);
+  outline: none;
+}
+
+.dark .search-input:focus {
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.12);
+}
+
+.clear-btn {
+  position: absolute;
+  right: 6px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.75rem;
+  width: 40px;
+  height: 40px;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition-fast);
+}
+
+.clear-btn:hover {
+  background: var(--surface-2);
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  margin-top: 4px;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 50;
+}
+
+.dark .search-results {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.search-result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  height: 44px;
+}
+
+.search-result-item:hover {
+  background: var(--surface-2);
+}
+
+/* 結果列主區塊（代號 + 名稱），slot ❤️ 置右 */
+.result-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.result-main .result-code,
+.result-main .result-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.result-main .result-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.result-code {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.result-name {
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+}
+
+.no-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  margin-top: 4px;
+  padding: 0.75rem 1rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  z-index: 50;
+  text-align: center;
+}

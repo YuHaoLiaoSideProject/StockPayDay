@@ -1,0 +1,220 @@
+/* ============================================
+   Stock Detail Page (Phase 5)
+   ============================================ */
+.stock-view {
+  padding-top: 0.5rem;
+}
+
+.stock-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0;
+}
+
+.stock-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+}
+
+.stock-loading .loading-text {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-top: 0.75rem;
+}
+
+.stock-error,
+.stock-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1rem;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.error-text {
+  color: #c5221f;
+  font-size: 0.875rem;
+}
+
+.dark .error-text {
+  color: #f87171;
+}
+
+.empty-text {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.stock-detail {
+  padding-top: 0.5rem;
+}
+
+.stock-header {
+  margin-bottom: 1.5rem;
+}
+
+.stock-title {
+  margin-top: 0.75rem;
+}
+
+.stock-code {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.stock-name {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-left: 0.5rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 0.75rem 0;
+}
+
+/* History Table (#9 Modernized) */
+.history-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 4px;
+  font-size: 0.8125rem;
+}
+
+.history-table th {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 2px solid var(--border);
+}
+
+.history-table td {
+  padding: 0.7rem 0.75rem;
+  color: var(--text);
+  background: var(--surface);
+  transition: background var(--transition-fast);
+}
+
+.history-table td:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.history-table td:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+.history-table .amount {
+  color: var(--amount-color);
+  font-weight: 600;
+  text-align: right;
+}
+
+.history-table .amount-bar {
+  display: inline-block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--amount-color);
+  opacity: 0.25;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+  transition: opacity var(--transition-fast);
+}
+
+.history-row {
+  transition: background var(--transition-fast);
+}
+
+.history-row:hover td {
+  background: var(--surface-2);
+}
+
+.history-row:hover .amount-bar {
+  opacity: 0.45;
+}
+
+/* ============================================
+   History Cards (Mobile)
+   ============================================ */
+.history-cards--mobile {
+  display: none;
+}
+
+.history-card {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  transition: background var(--transition-fast);
+}
+
+.history-card:hover {
+  background: var(--surface-2);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.card-amount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--amount-color);
+  white-space: nowrap;
+}
+
+.card-bar {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--amount-color);
+  opacity: 0.25;
+  max-width: 120px;
+}
+
+.card-dates {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.card-date-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.card-label {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.card-value {
+  font-size: 0.875rem;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* RWD: Desktop table / Mobile cards */
+@media (max-width: 767px) {
+  .history-table--desktop {
+    display: none;
+  }
+  .history-cards--mobile {
+    display: block;
+  }
+}

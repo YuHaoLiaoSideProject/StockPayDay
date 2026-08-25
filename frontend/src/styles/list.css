@@ -1,0 +1,148 @@
+/* ViewSwitcher */
+.view-switcher {
+  display: inline-flex;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.view-switcher button {
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.8125rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.view-switcher button:hover {
+  color: var(--text);
+}
+
+.view-switcher button.active {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+}
+
+/* List view */
+.list-view {
+  max-width: 760px;
+}
+
+.list-header {
+  display: grid;
+  grid-template-columns: 76px 1fr 90px 40px;
+  gap: 8px;
+  padding: 0.45rem 0.5rem;
+  border-bottom: 2px solid var(--border);
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.list-item {
+  display: grid;
+  grid-template-columns: 76px 1fr 90px 40px;
+  gap: 8px;
+  padding: 0.55rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+  min-height: 52px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background var(--transition-fast), box-shadow var(--transition-fast);
+  align-items: center;
+}
+
+/* #3 Zebra striping for visual hierarchy */
+.list-item:nth-child(even of .list-item) {
+  background: var(--surface);
+}
+
+.list-item:nth-child(even of .list-item):hover {
+  background: var(--surface-2);
+}
+
+.list-item:hover {
+  background: var(--surface-2);
+}
+
+.list-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26,115,232,0.2);
+}
+
+.item-code {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.item-amount {
+  color: var(--amount-color);
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.875rem;
+}
+
+.item-amount.zero {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.list-date-group {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+  padding: 0.5rem 0.625rem;
+  border-radius: 8px;
+  margin-top: 0.75rem;
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 1;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.list-date-group .group-count {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.list-more {
+  grid-column: 1 / -1;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.78rem;
+  color: var(--tab-active-bg);
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background var(--transition-fast);
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+}
+
+.list-more:hover {
+  background: rgba(26, 115, 232, 0.08);
+}
+
+.list-more:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(26,115,232,0.2);
+}

@@ -1,0 +1,17 @@
+@import './tokens.css';
+@import './base.css';
+@import './header.css';
+@import './calendar.css';
+@import './list.css';
+@import './modal.css';
+@import './states.css';
+@import './back-button.css';
+@import './landing.css';
+@import './search.css';
+@import './stock-detail.css';
+@import './watchlist.css';
+@import './transitions.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
