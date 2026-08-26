@@ -1,7 +1,12 @@
 {
-  "last_updated": "2026-08-25",
+  "last_updated": "2026-08-26",
   "source": "TPEx",
   "records": [
+    {
+      "code": "00411A",
+      "name": "主動統一前沿科技",
+      "market": "TPEx"
+    },
     {
       "code": "00679B",
       "name": "元大美債20年",
@@ -525,6 +530,11 @@
     {
       "code": "00987B",
       "name": "野村10+澳洲公債",
+      "market": "TPEx"
+    },
+    {
+      "code": "00987D",
+      "name": "主動統一美債量化",
       "market": "TPEx"
     },
     {

@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-25",
+  "last_updated": "2026-08-26",
   "source": "moneydj",
   "records": [
     {
@@ -1110,9 +1110,9 @@
     {
       "code": "6603",
       "name": "富強鑫",
-      "earnings_dividend": 0.202392775,
-      "reserve_dividend": 0.202392775,
-      "cash_dividend": 0.40478555,
+      "earnings_dividend": 0.20067681,
+      "reserve_dividend": 0.20067681,
+      "cash_dividend": 0.40135362,
       "pay_date": "2026-10-14",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
@@ -1212,6 +1212,19 @@
       "type": "息"
     },
     {
+      "code": "8234",
+      "name": "新漢",
+      "earnings_dividend": 0.4,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.4,
+      "pay_date": "2026-10-07",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-10",
+      "type": "息"
+    },
+    {
       "code": "9802",
       "name": "鈺齊-KY",
       "earnings_dividend": 3.1,
@@ -1233,9 +1246,9 @@
       "reserve_dividend": 0,
       "cash_dividend": 0,
       "pay_date": "",
-      "earnings_stock": 0.0848625,
+      "earnings_stock": 0.08486245,
       "reserve_stock": 0.0,
-      "stock_dividend": 0.0848625
+      "stock_dividend": 0.08486245
     },
     {
       "code": "3141",
