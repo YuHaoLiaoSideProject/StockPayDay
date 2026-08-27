@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-26",
+  "last_updated": "2026-08-27",
   "source": "moneydj",
   "records": [
     {
@@ -1162,9 +1162,9 @@
     {
       "code": "4912",
       "name": "聯德控股-KY",
-      "earnings_dividend": 0.8,
+      "earnings_dividend": 0.80047794,
       "reserve_dividend": 0.0,
-      "cash_dividend": 0.8,
+      "cash_dividend": 0.80047794,
       "pay_date": "2026-10-15",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
@@ -1253,9 +1253,9 @@
     {
       "code": "3141",
       "name": "晶宏",
-      "earnings_dividend": 0.25542191,
-      "reserve_dividend": 0.10216876,
-      "cash_dividend": 0.35759067,
+      "earnings_dividend": 0.25556276,
+      "reserve_dividend": 0.1022251,
+      "cash_dividend": 0.35778786,
       "pay_date": "2026-10-08",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
@@ -1313,6 +1313,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-09-15",
+      "type": "息"
+    },
+    {
+      "code": "1517",
+      "name": "利奇",
+      "earnings_dividend": 0.2,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.2,
+      "pay_date": "2026-10-14",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-16",
       "type": "息"
     },
     {

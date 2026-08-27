@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-26",
+  "last_updated": "2026-08-27",
   "source": "TPEx",
   "records": [
     {
@@ -5153,11 +5153,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72651U",
-      "name": "穩懋群益58售01",
-      "market": "TPEx"
-    },
-    {
       "code": "72662U",
       "name": "信驊群益59售01",
       "market": "TPEx"
@@ -6810,6 +6805,26 @@
     {
       "code": "73060U",
       "name": "宏捷科國票63售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73061U",
+      "name": "環球晶凱基62售06",
+      "market": "TPEx"
+    },
+    {
+      "code": "73062U",
+      "name": "環球晶群益64售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73063U",
+      "name": "環球晶中信62售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73064U",
+      "name": "環球晶元大62售04",
       "market": "TPEx"
     }
   ]
