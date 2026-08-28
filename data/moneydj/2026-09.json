@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-27",
+  "last_updated": "2026-08-28",
   "source": "moneydj",
   "records": [
     {
@@ -734,8 +734,8 @@
       "code": "8466",
       "name": "美吉吉-KY",
       "earnings_dividend": 0.0,
-      "reserve_dividend": 0.3,
-      "cash_dividend": 0.3,
+      "reserve_dividend": 0.30193828,
+      "cash_dividend": 0.30193828,
       "pay_date": "2026-10-07",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
@@ -1303,6 +1303,45 @@
       "type": "息"
     },
     {
+      "code": "6027",
+      "name": "德信",
+      "ex_date": "2026-09-14",
+      "type": "權",
+      "earnings_dividend": 0,
+      "reserve_dividend": 0,
+      "cash_dividend": 0,
+      "pay_date": "",
+      "earnings_stock": 0.5,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.5
+    },
+    {
+      "code": "8423",
+      "name": "保綠-KY",
+      "earnings_dividend": 0.7,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.7,
+      "pay_date": "2026-10-08",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-14",
+      "type": "息"
+    },
+    {
+      "code": "01009T",
+      "name": "王道圓滿R1",
+      "earnings_dividend": 0.1304762967,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.1304762967,
+      "pay_date": "2026-10-20",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-15",
+      "type": "息"
+    },
+    {
       "code": "5426",
       "name": "振發",
       "earnings_dividend": 0.3,
@@ -1322,6 +1361,19 @@
       "reserve_dividend": 0.0,
       "cash_dividend": 0.2,
       "pay_date": "2026-10-14",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-16",
+      "type": "息"
+    },
+    {
+      "code": "1599",
+      "name": "宏佳騰",
+      "earnings_dividend": 0.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.5,
+      "pay_date": "2026-10-15",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
