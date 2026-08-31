@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-30",
+  "last_updated": "2026-08-31",
   "source": "TPEx",
   "records": [
     {
@@ -2225,6 +2225,11 @@
     {
       "code": "4745",
       "name": "合富-KY",
+      "market": "TPEx"
+    },
+    {
+      "code": "4747",
+      "name": "強生*",
       "market": "TPEx"
     },
     {
@@ -5153,16 +5158,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72662U",
-      "name": "信驊群益59售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72665U",
-      "name": "信驊永豐59售01",
-      "market": "TPEx"
-    },
-    {
       "code": "72667U",
       "name": "富喬凱基59售01",
       "market": "TPEx"
@@ -5363,38 +5358,13 @@
       "market": "TPEx"
     },
     {
-      "code": "72770U",
-      "name": "信驊凱基59售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72771U",
-      "name": "信驊國票59售05",
-      "market": "TPEx"
-    },
-    {
       "code": "72772U",
       "name": "穩懋群益63售01",
       "market": "TPEx"
     },
     {
-      "code": "72773U",
-      "name": "信驊元大59售01",
-      "market": "TPEx"
-    },
-    {
       "code": "72774U",
       "name": "信驊永豐5A售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72775U",
-      "name": "信驊元富59售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72776U",
-      "name": "信驊元富59售03",
       "market": "TPEx"
     },
     {
@@ -6825,6 +6795,16 @@
     {
       "code": "73065U",
       "name": "環球晶台新63售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73066U",
+      "name": "千附精國票63售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73067U",
+      "name": "晶宏國票63售01",
       "market": "TPEx"
     }
   ]

@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-30",
+  "last_updated": "2026-08-31",
   "source": "moneydj",
   "records": [
     {
@@ -1277,6 +1277,19 @@
       "type": "息"
     },
     {
+      "code": "3659",
+      "name": "百辰",
+      "ex_date": "2026-09-14",
+      "type": "權",
+      "earnings_dividend": 0,
+      "reserve_dividend": 0,
+      "cash_dividend": 0,
+      "pay_date": "",
+      "earnings_stock": 0.7114545186,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.7114545186
+    },
+    {
       "code": "5243",
       "name": "乙盛-KY",
       "earnings_dividend": 2.2,
@@ -1316,6 +1329,19 @@
       "stock_dividend": 0.5
     },
     {
+      "code": "6204",
+      "name": "艾華",
+      "earnings_dividend": 0.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.5,
+      "pay_date": "2026-10-07",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-14",
+      "type": "息"
+    },
+    {
       "code": "8423",
       "name": "保綠-KY",
       "earnings_dividend": 0.7,
@@ -1348,6 +1374,19 @@
       "reserve_dividend": 0.0,
       "cash_dividend": 0.3,
       "pay_date": "2026-10-20",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-15",
+      "type": "息"
+    },
+    {
+      "code": "6924",
+      "name": "榮惠-KY創",
+      "earnings_dividend": 3.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 3.5,
+      "pay_date": "2026-10-13",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
