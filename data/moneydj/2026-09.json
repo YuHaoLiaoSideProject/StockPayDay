@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-08-31",
+  "last_updated": "2026-09-01",
   "source": "moneydj",
   "records": [
     {
@@ -1264,6 +1264,19 @@
       "type": "息"
     },
     {
+      "code": "00401A",
+      "name": "主動摩根台灣鑫收",
+      "earnings_dividend": 0.125,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.125,
+      "pay_date": "2026-10-06",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-14",
+      "type": "息"
+    },
+    {
       "code": "2530",
       "name": "華建",
       "earnings_dividend": 0.0,
@@ -1368,6 +1381,19 @@
       "type": "息"
     },
     {
+      "code": "3675",
+      "name": "德微",
+      "earnings_dividend": 4.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 4.0,
+      "pay_date": "2026-10-08",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-15",
+      "type": "息"
+    },
+    {
       "code": "5426",
       "name": "振發",
       "earnings_dividend": 0.3,
@@ -1391,6 +1417,97 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-09-15",
+      "type": "息"
+    },
+    {
+      "code": "00919",
+      "name": "群益台灣精選高息",
+      "earnings_dividend": 1.1,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.1,
+      "pay_date": "2026-10-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-16",
+      "type": "息"
+    },
+    {
+      "code": "00921",
+      "name": "兆豐龍頭等權重",
+      "earnings_dividend": 1.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.0,
+      "pay_date": "2026-10-07",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-16",
+      "type": "息"
+    },
+    {
+      "code": "00935",
+      "name": "野村臺灣新科技50",
+      "earnings_dividend": 1.83,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.83,
+      "pay_date": "2026-10-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-16",
+      "type": "息"
+    },
+    {
+      "code": "00943",
+      "name": "兆豐電子高息等權",
+      "earnings_dividend": 0.25,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.25,
+      "pay_date": "2026-10-07",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-16",
+      "type": "息"
+    },
+    {
+      "code": "00944",
+      "name": "野村趨勢動能高息",
+      "earnings_dividend": 0.109,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.109,
+      "pay_date": "2026-10-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-16",
+      "type": "息"
+    },
+    {
+      "code": "00972",
+      "name": "野村日本動能高息",
+      "earnings_dividend": 0.22,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.22,
+      "pay_date": "2026-10-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-16",
+      "type": "息"
+    },
+    {
+      "code": "00999A",
+      "name": "主動野村臺灣高息",
+      "earnings_dividend": 0.29,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.29,
+      "pay_date": "2026-10-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-16",
       "type": "息"
     },
     {
@@ -1433,6 +1550,32 @@
       "type": "息"
     },
     {
+      "code": "4763",
+      "name": "材料*-KY",
+      "earnings_dividend": 3.05,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 3.05,
+      "pay_date": "2026-10-14",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-16",
+      "type": "息"
+    },
+    {
+      "code": "4420",
+      "name": "光明",
+      "earnings_dividend": 2.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 2.0,
+      "pay_date": "2026-10-19",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-17",
+      "type": "息"
+    },
+    {
       "code": "5306",
       "name": "桂盟",
       "earnings_dividend": 1.07462833,
@@ -1457,6 +1600,19 @@
       "stock_dividend": 1.858,
       "ex_date": "2026-09-17",
       "type": "權息"
+    },
+    {
+      "code": "00918",
+      "name": "大華優利高填息30",
+      "earnings_dividend": 1.75,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.75,
+      "pay_date": "2026-10-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-18",
+      "type": "息"
     },
     {
       "code": "1595",
