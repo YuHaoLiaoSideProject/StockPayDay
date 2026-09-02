@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-01",
+  "last_updated": "2026-09-02",
   "source": "TWSE",
   "records": [
     {
@@ -45,6 +45,11 @@
     {
       "code": "00408A",
       "name": "主動第一金優股息",
+      "market": "TWSE"
+    },
+    {
+      "code": "00409A",
+      "name": "主動復華全球50",
       "market": "TWSE"
     },
     {
@@ -1065,6 +1070,16 @@
     {
       "code": "009826",
       "name": "貝萊德世界股票",
+      "market": "TWSE"
+    },
+    {
+      "code": "009827",
+      "name": "玉山未來全球算力",
+      "market": "TWSE"
+    },
+    {
+      "code": "009828",
+      "name": "中信台日韓PCB",
       "market": "TWSE"
     },
     {

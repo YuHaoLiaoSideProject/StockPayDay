@@ -1,7 +1,20 @@
 {
-  "last_updated": "2026-09-01",
+  "last_updated": "2026-09-02",
   "source": "moneydj",
   "records": [
+    {
+      "code": "5523",
+      "name": "豐謙",
+      "earnings_dividend": 0.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.5,
+      "pay_date": "2026-12-04",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-05",
+      "type": "息"
+    },
     {
       "code": "3680",
       "name": "家登",
