@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-02",
+  "last_updated": "2026-09-03",
   "source": "TPEx",
   "records": [
     {
@@ -1738,6 +1738,11 @@
       "market": "TPEx"
     },
     {
+      "code": "3718",
+      "name": "中光電投控",
+      "market": "TPEx"
+    },
+    {
       "code": "4102",
       "name": "永日",
       "market": "TPEx"
@@ -3030,11 +3035,6 @@
     {
       "code": "6127",
       "name": "九豪",
-      "market": "TPEx"
-    },
-    {
-      "code": "6129",
-      "name": "普誠",
       "market": "TPEx"
     },
     {
@@ -5153,16 +5153,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72667U",
-      "name": "富喬凱基59售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72671U",
-      "name": "東捷群益59售02",
-      "market": "TPEx"
-    },
-    {
       "code": "72675U",
       "name": "東捷凱基59售01",
       "market": "TPEx"
@@ -5210,21 +5200,6 @@
     {
       "code": "72724U",
       "name": "信驊國票5B售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72727U",
-      "name": "萬潤凱基59售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72729U",
-      "name": "精材國票59售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72730U",
-      "name": "穩懋國票59售01",
       "market": "TPEx"
     },
     {
@@ -5340,11 +5315,6 @@
     {
       "code": "72782U",
       "name": "環球晶群益62售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72783U",
-      "name": "旺矽群益59售04",
       "market": "TPEx"
     },
     {
@@ -6143,6 +6113,11 @@
       "market": "TPEx"
     },
     {
+      "code": "72944U",
+      "name": "中光電台新61售03",
+      "market": "TPEx"
+    },
+    {
       "code": "72945U",
       "name": "頎邦台新61售03",
       "market": "TPEx"
@@ -6170,6 +6145,11 @@
     {
       "code": "72950U",
       "name": "精材凱基63售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "72951U",
+      "name": "中光電台新61售05",
       "market": "TPEx"
     },
     {
@@ -6750,6 +6730,46 @@
     {
       "code": "73067U",
       "name": "晶宏國票63售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73068U",
+      "name": "均華群益63售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73069U",
+      "name": "精材群益63售09",
+      "market": "TPEx"
+    },
+    {
+      "code": "73070U",
+      "name": "精材群益69售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73071U",
+      "name": "雙鴻群益63售09",
+      "market": "TPEx"
+    },
+    {
+      "code": "73072U",
+      "name": "精材國票64售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73073U",
+      "name": "環球晶國票64售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73074U",
+      "name": "精材台新63售05",
+      "market": "TPEx"
+    },
+    {
+      "code": "73075U",
+      "name": "環球晶台新63售04",
       "market": "TPEx"
     }
   ]

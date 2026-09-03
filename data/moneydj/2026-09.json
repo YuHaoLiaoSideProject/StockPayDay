@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-02",
+  "last_updated": "2026-09-03",
   "source": "moneydj",
   "records": [
     {
@@ -2213,6 +2213,45 @@
       "type": "息"
     },
     {
+      "code": "00710B",
+      "name": "復華彭博非投等債",
+      "earnings_dividend": 0.39,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.39,
+      "pay_date": "2026-10-16",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-17",
+      "type": "息"
+    },
+    {
+      "code": "00711B",
+      "name": "復華彭博新興債",
+      "earnings_dividend": 0.2,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.2,
+      "pay_date": "2026-10-16",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-17",
+      "type": "息"
+    },
+    {
+      "code": "00712",
+      "name": "復華富時不動產",
+      "earnings_dividend": 0.2,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.2,
+      "pay_date": "2026-10-16",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-17",
+      "type": "息"
+    },
+    {
       "code": "00853B",
       "name": "統一美債10年Aa-A",
       "earnings_dividend": 0.347,
@@ -2226,12 +2265,51 @@
       "type": "息"
     },
     {
+      "code": "00929",
+      "name": "復華台灣科技優息",
+      "earnings_dividend": 0.38,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.38,
+      "pay_date": "2026-10-16",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-17",
+      "type": "息"
+    },
+    {
       "code": "00985D",
       "name": "主動貝萊德優投等",
       "earnings_dividend": 0.061,
       "reserve_dividend": 0.0,
       "cash_dividend": 0.061,
       "pay_date": "2026-10-20",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-17",
+      "type": "息"
+    },
+    {
+      "code": "00986D",
+      "name": "主動復華金融債息",
+      "earnings_dividend": 0.09,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.09,
+      "pay_date": "2026-10-16",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-17",
+      "type": "息"
+    },
+    {
+      "code": "00998A",
+      "name": "主動復華金融股息",
+      "earnings_dividend": 0.424,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.424,
+      "pay_date": "2026-10-16",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
