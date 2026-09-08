@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-07",
+  "last_updated": "2026-09-08",
   "source": "moneydj",
   "records": [
     {
@@ -2618,9 +2618,9 @@
     {
       "code": "1595",
       "name": "川寶",
-      "earnings_dividend": 0.5,
+      "earnings_dividend": 0.46744739,
       "reserve_dividend": 0.0,
-      "cash_dividend": 0.5,
+      "cash_dividend": 0.46744739,
       "pay_date": "2026-10-28",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
@@ -2687,6 +2687,19 @@
       "reserve_dividend": 0.0,
       "cash_dividend": 0.5,
       "pay_date": "2026-10-20",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-29",
+      "type": "息"
+    },
+    {
+      "code": "7631",
+      "name": "聚賢研發-創",
+      "earnings_dividend": 0.8,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.8,
+      "pay_date": "2026-10-30",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
