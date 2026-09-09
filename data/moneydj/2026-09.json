@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-08",
+  "last_updated": "2026-09-09",
   "source": "moneydj",
   "records": [
     {
@@ -2616,6 +2616,19 @@
       "type": "息"
     },
     {
+      "code": "1442",
+      "name": "名軒",
+      "earnings_dividend": 2.4,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 2.4,
+      "pay_date": "2026-10-23",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-23",
+      "type": "息"
+    },
+    {
       "code": "1595",
       "name": "川寶",
       "earnings_dividend": 0.46744739,
@@ -2681,6 +2694,19 @@
       "type": "息"
     },
     {
+      "code": "1235",
+      "name": "興泰",
+      "earnings_dividend": 0.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.5,
+      "pay_date": "2026-10-22",
+      "earnings_stock": 0.5,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.5,
+      "ex_date": "2026-09-24",
+      "type": "權息"
+    },
+    {
       "code": "2109",
       "name": "華豐",
       "earnings_dividend": 0.5,
@@ -2704,6 +2730,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-09-29",
+      "type": "息"
+    },
+    {
+      "code": "01004T",
+      "name": "土銀富邦R2",
+      "earnings_dividend": 0.2210746645,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.2210746645,
+      "pay_date": "2026-11-13",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-30",
       "type": "息"
     }
   ]

@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-08",
+  "last_updated": "2026-09-09",
   "source": "moneydj",
   "records": [
     {
@@ -52,6 +52,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-10-01",
+      "type": "息"
+    },
+    {
+      "code": "6171",
+      "name": "大城地產",
+      "earnings_dividend": 2.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 2.0,
+      "pay_date": "2026-10-30",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-02",
       "type": "息"
     },
     {

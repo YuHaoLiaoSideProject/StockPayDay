@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-08",
+  "last_updated": "2026-09-09",
   "source": "TPEx",
   "records": [
     {
@@ -3488,6 +3488,11 @@
       "market": "TPEx"
     },
     {
+      "code": "6461",
+      "name": "益得",
+      "market": "TPEx"
+    },
+    {
       "code": "6462",
       "name": "神盾",
       "market": "TPEx"
@@ -5233,11 +5238,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72753U",
-      "name": "茂迪國票59售03",
-      "market": "TPEx"
-    },
-    {
       "code": "72754U",
       "name": "博智群益62售02",
       "market": "TPEx"
@@ -5320,11 +5320,6 @@
     {
       "code": "72800U",
       "name": "信驊永豐5B售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72806U",
-      "name": "雙鴻凱基59售12",
       "market": "TPEx"
     },
     {
