@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-09",
+  "last_updated": "2026-09-10",
   "source": "TPEx",
   "records": [
     {
@@ -1725,11 +1725,6 @@
     {
       "code": "3709",
       "name": "鑫聯大投控",
-      "market": "TPEx"
-    },
-    {
-      "code": "3710",
-      "name": "連展投控",
       "market": "TPEx"
     },
     {
@@ -4408,6 +4403,11 @@
       "market": "TPEx"
     },
     {
+      "code": "7825",
+      "name": "和亞智慧",
+      "market": "TPEx"
+    },
+    {
       "code": "7828",
       "name": "創新服務",
       "market": "TPEx"
@@ -4490,11 +4490,6 @@
     {
       "code": "8054",
       "name": "安國",
-      "market": "TPEx"
-    },
-    {
-      "code": "8059",
-      "name": "凱碩",
       "market": "TPEx"
     },
     {
@@ -4690,11 +4685,6 @@
     {
       "code": "8272",
       "name": "全景軟體",
-      "market": "TPEx"
-    },
-    {
-      "code": "8277",
-      "name": "商丞",
       "market": "TPEx"
     },
     {
@@ -5120,11 +5110,6 @@
     {
       "code": "72587U",
       "name": "華電網國票5A售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72600U",
-      "name": "昇達科國票59售01",
       "market": "TPEx"
     },
     {
@@ -6685,6 +6670,86 @@
     {
       "code": "73080U",
       "name": "順達元大63售11",
+      "market": "TPEx"
+    },
+    {
+      "code": "73081U",
+      "name": "昇達科台新63售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73082U",
+      "name": "信驊台新63售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73083U",
+      "name": "信驊凱基63售06",
+      "market": "TPEx"
+    },
+    {
+      "code": "73084U",
+      "name": "信驊富邦66售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73085U",
+      "name": "信驊永豐63售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73086U",
+      "name": "信驊永豐64售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73087U",
+      "name": "信驊元大63售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73088U",
+      "name": "信驊群益63售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73089U",
+      "name": "信驊群益63售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73090U",
+      "name": "竹陞國票67售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73091U",
+      "name": "信驊國票64售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73092U",
+      "name": "信驊國票65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73093U",
+      "name": "信驊國票65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73094U",
+      "name": "漢達國票65售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73095U",
+      "name": "穩懋國票65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73096U",
+      "name": "穩懋國票69售01",
       "market": "TPEx"
     }
   ]
