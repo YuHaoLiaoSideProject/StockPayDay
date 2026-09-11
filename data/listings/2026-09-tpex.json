@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-10",
+  "last_updated": "2026-09-11",
   "source": "TPEx",
   "records": [
     {
@@ -6750,6 +6750,41 @@
     {
       "code": "73096U",
       "name": "穩懋國票69售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73097U",
+      "name": "頎邦台新63售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73098U",
+      "name": "台半國票65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73099U",
+      "name": "弘塑國票65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73100U",
+      "name": "威聯通國票65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73101U",
+      "name": "崴寶國票65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73102U",
+      "name": "萊德光國票65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73103U",
+      "name": "雷科國票64售03",
       "market": "TPEx"
     }
   ]

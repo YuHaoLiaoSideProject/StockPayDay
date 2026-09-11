@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-10",
+  "last_updated": "2026-09-11",
   "source": "moneydj",
   "records": [
     {
@@ -139,6 +139,19 @@
       "reserve_dividend": 0.0,
       "cash_dividend": 0.9,
       "pay_date": "2026-11-20",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-22",
+      "type": "息"
+    },
+    {
+      "code": "8936",
+      "name": "國統",
+      "earnings_dividend": 3.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 3.0,
+      "pay_date": "2026-11-27",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
