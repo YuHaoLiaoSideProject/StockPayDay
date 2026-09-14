@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-13",
+  "last_updated": "2026-09-14",
   "source": "moneydj",
   "records": [
     {
@@ -1422,9 +1422,9 @@
     {
       "code": "009803",
       "name": "玉山市值動能50",
-      "earnings_dividend": 0.87,
+      "earnings_dividend": 0.9,
       "reserve_dividend": 0.0,
-      "cash_dividend": 0.87,
+      "cash_dividend": 0.9,
       "pay_date": "2026-10-12",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
@@ -2739,6 +2739,19 @@
       "reserve_dividend": 0.0,
       "cash_dividend": 0.2210746645,
       "pay_date": "2026-11-13",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-09-30",
+      "type": "息"
+    },
+    {
+      "code": "8440",
+      "name": "綠電",
+      "earnings_dividend": 0.35,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.35,
+      "pay_date": "2026-11-05",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
