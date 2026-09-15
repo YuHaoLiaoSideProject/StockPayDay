@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-14",
+  "last_updated": "2026-09-15",
   "source": "TPEx",
   "records": [
     {
@@ -5338,16 +5338,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72815U",
-      "name": "精測元富59售09",
-      "market": "TPEx"
-    },
-    {
-      "code": "72816U",
-      "name": "精測元富59售10",
-      "market": "TPEx"
-    },
-    {
       "code": "72817U",
       "name": "雙鴻台新59售03",
       "market": "TPEx"
@@ -6785,6 +6775,46 @@
     {
       "code": "73105U",
       "name": "頎邦群益63售06",
+      "market": "TPEx"
+    },
+    {
+      "code": "73106U",
+      "name": "竹陞國票65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73107U",
+      "name": "南俊國票65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73108U",
+      "name": "茂達國票65售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73109U",
+      "name": "茂綸國票65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73110U",
+      "name": "高技國票65售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73111U",
+      "name": "博盛國票65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73112U",
+      "name": "雅特力國票65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73113U",
+      "name": "弘塑凱基65售02",
       "market": "TPEx"
     }
   ]
