@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-15",
+  "last_updated": "2026-09-16",
   "source": "TPEx",
   "records": [
     {
@@ -875,6 +875,11 @@
     {
       "code": "2937",
       "name": "集雅社",
+      "market": "TPEx"
+    },
+    {
+      "code": "2938",
+      "name": "床的世界",
       "market": "TPEx"
     },
     {
@@ -5338,33 +5343,13 @@
       "market": "TPEx"
     },
     {
-      "code": "72817U",
-      "name": "雙鴻台新59售03",
-      "market": "TPEx"
-    },
-    {
       "code": "72818U",
       "name": "信驊永豐5C售01",
       "market": "TPEx"
     },
     {
-      "code": "72819U",
-      "name": "鑫科國票59售02",
-      "market": "TPEx"
-    },
-    {
       "code": "72820U",
       "name": "鑫聯國票5A售03",
-      "market": "TPEx"
-    },
-    {
-      "code": "72821U",
-      "name": "信驊元大59售04",
-      "market": "TPEx"
-    },
-    {
-      "code": "72822U",
-      "name": "信驊元大59售05",
       "market": "TPEx"
     },
     {
@@ -6815,6 +6800,31 @@
     {
       "code": "73113U",
       "name": "弘塑凱基65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73114U",
+      "name": "巨有國票64售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73115U",
+      "name": "旭然國票68售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73116U",
+      "name": "昇達科國票64售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73117U",
+      "name": "萊德光國票64售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73118U",
+      "name": "東捷凱基63售03",
       "market": "TPEx"
     }
   ]

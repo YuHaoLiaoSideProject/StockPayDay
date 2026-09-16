@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-15",
+  "last_updated": "2026-09-16",
   "source": "moneydj",
   "records": [
     {
@@ -65,6 +65,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-10-02",
+      "type": "息"
+    },
+    {
+      "code": "00406A",
+      "name": "主動中信台灣收益",
+      "earnings_dividend": 0.138,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.138,
+      "pay_date": "2026-11-02",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-05",
       "type": "息"
     },
     {
