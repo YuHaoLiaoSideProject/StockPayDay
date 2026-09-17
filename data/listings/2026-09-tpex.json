@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-16",
+  "last_updated": "2026-09-17",
   "source": "TPEx",
   "records": [
     {
@@ -5163,11 +5163,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72697U",
-      "name": "穩懋凱基59售04",
-      "market": "TPEx"
-    },
-    {
       "code": "72700U",
       "name": "博智凱基59售03",
       "market": "TPEx"
@@ -5350,16 +5345,6 @@
     {
       "code": "72820U",
       "name": "鑫聯國票5A售03",
-      "market": "TPEx"
-    },
-    {
-      "code": "72823U",
-      "name": "弘塑凱基59售05",
-      "market": "TPEx"
-    },
-    {
-      "code": "72824U",
-      "name": "亞泰國票59售03",
       "market": "TPEx"
     },
     {
@@ -6825,6 +6810,36 @@
     {
       "code": "73118U",
       "name": "東捷凱基63售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73119U",
+      "name": "台燿台新63售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73120U",
+      "name": "良維台新63售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73121U",
+      "name": "穩懋群益63售08",
+      "market": "TPEx"
+    },
+    {
+      "code": "73122U",
+      "name": "台燿國票66售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73123U",
+      "name": "信昌電國票64售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73124U",
+      "name": "信昌電國票65售03",
       "market": "TPEx"
     }
   ]
