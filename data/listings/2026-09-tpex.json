@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-17",
+  "last_updated": "2026-09-18",
   "source": "TPEx",
   "records": [
     {
@@ -235,11 +235,6 @@
     {
       "code": "00792B",
       "name": "群益A級公司債",
-      "market": "TPEx"
-    },
-    {
-      "code": "00793B",
-      "name": "群益AAA-A醫療債",
       "market": "TPEx"
     },
     {
@@ -5163,11 +5158,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72700U",
-      "name": "博智凱基59售03",
-      "market": "TPEx"
-    },
-    {
       "code": "72704U",
       "name": "點序群益61售01",
       "market": "TPEx"
@@ -5345,11 +5335,6 @@
     {
       "code": "72820U",
       "name": "鑫聯國票5A售03",
-      "market": "TPEx"
-    },
-    {
-      "code": "72825U",
-      "name": "頎邦元富59售03",
       "market": "TPEx"
     },
     {
@@ -6840,6 +6825,26 @@
     {
       "code": "73124U",
       "name": "信昌電國票65售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73125U",
+      "name": "台燿凱基63售05",
+      "market": "TPEx"
+    },
+    {
+      "code": "73126U",
+      "name": "穩懋凱基63售11",
+      "market": "TPEx"
+    },
+    {
+      "code": "73127U",
+      "name": "穩懋國票64售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73128U",
+      "name": "青雲群益66售01",
       "market": "TPEx"
     }
   ]

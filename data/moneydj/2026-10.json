@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-17",
+  "last_updated": "2026-09-18",
   "source": "moneydj",
   "records": [
     {
@@ -209,6 +209,32 @@
       "stock_dividend": 0.8,
       "ex_date": "2026-10-06",
       "type": "權息"
+    },
+    {
+      "code": "00946",
+      "name": "群益科技高息成長",
+      "earnings_dividend": 0.058,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.058,
+      "pay_date": "2026-10-30",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-07",
+      "type": "息"
+    },
+    {
+      "code": "2947",
+      "name": "振宇五金",
+      "earnings_dividend": 1.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.0,
+      "pay_date": "2026-11-04",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-07",
+      "type": "息"
     },
     {
       "code": "6108",
