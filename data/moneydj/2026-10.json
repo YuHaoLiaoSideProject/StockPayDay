@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-20",
+  "last_updated": "2026-09-21",
   "source": "moneydj",
   "records": [
     {
@@ -211,11 +211,50 @@
       "type": "權息"
     },
     {
+      "code": "00940",
+      "name": "元大台灣價值高息",
+      "earnings_dividend": 0.055,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.055,
+      "pay_date": "2026-11-02",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-07",
+      "type": "息"
+    },
+    {
       "code": "00946",
       "name": "群益科技高息成長",
       "earnings_dividend": 0.058,
       "reserve_dividend": 0.0,
       "cash_dividend": 0.058,
+      "pay_date": "2026-10-30",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-07",
+      "type": "息"
+    },
+    {
+      "code": "00953B",
+      "name": "群益優選非投等債",
+      "earnings_dividend": 0.067,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.067,
+      "pay_date": "2026-10-30",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-07",
+      "type": "息"
+    },
+    {
+      "code": "00985B",
+      "name": "群益ESG投等債0-5",
+      "earnings_dividend": 0.053,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.053,
       "pay_date": "2026-10-30",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
@@ -260,6 +299,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-10-07",
+      "type": "息"
+    },
+    {
+      "code": "00400A",
+      "name": "主動國泰動能高息",
+      "earnings_dividend": 0.12,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.12,
+      "pay_date": "2026-11-05",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-08",
       "type": "息"
     },
     {

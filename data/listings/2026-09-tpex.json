@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-20",
+  "last_updated": "2026-09-21",
   "source": "TPEx",
   "records": [
     {
@@ -1725,6 +1725,11 @@
     {
       "code": "3709",
       "name": "鑫聯大投控",
+      "market": "TPEx"
+    },
+    {
+      "code": "3710",
+      "name": "連展投控",
       "market": "TPEx"
     },
     {
@@ -4498,6 +4503,11 @@
       "market": "TPEx"
     },
     {
+      "code": "8059",
+      "name": "凱碩",
+      "market": "TPEx"
+    },
+    {
       "code": "8064",
       "name": "東捷",
       "market": "TPEx"
@@ -4690,6 +4700,11 @@
     {
       "code": "8272",
       "name": "全景軟體",
+      "market": "TPEx"
+    },
+    {
+      "code": "8277",
+      "name": "商丞",
       "market": "TPEx"
     },
     {
@@ -6845,6 +6860,71 @@
     {
       "code": "73128U",
       "name": "青雲群益66售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73129U",
+      "name": "東捷群益63售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73130U",
+      "name": "穩懋群益63售10",
+      "market": "TPEx"
+    },
+    {
+      "code": "73131U",
+      "name": "久元國票65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73132U",
+      "name": "千如國票65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73133U",
+      "name": "立端國票65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73134U",
+      "name": "全宇昕國票65售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73135U",
+      "name": "宏碁資國票65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73136U",
+      "name": "長科*國票65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73137U",
+      "name": "胡連國票65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73138U",
+      "name": "晶呈國票65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73139U",
+      "name": "翔名國票65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73140U",
+      "name": "廣閎科國票65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73141U",
+      "name": "台燿台新63售03",
       "market": "TPEx"
     }
   ]

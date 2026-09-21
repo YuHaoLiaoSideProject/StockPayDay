@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-20",
+  "last_updated": "2026-09-21",
   "source": "TWSE",
   "records": [
     {
@@ -2688,6 +2688,11 @@
       "market": "TWSE"
     },
     {
+      "code": "2321",
+      "name": "東訊",
+      "market": "TWSE"
+    },
+    {
       "code": "2323",
       "name": "中環",
       "market": "TWSE"
@@ -4343,6 +4348,11 @@
       "market": "TWSE"
     },
     {
+      "code": "3356",
+      "name": "奇偶",
+      "market": "TWSE"
+    },
+    {
       "code": "3376",
       "name": "新日興",
       "market": "TWSE"
@@ -4490,6 +4500,11 @@
     {
       "code": "3588",
       "name": "通嘉",
+      "market": "TWSE"
+    },
+    {
+      "code": "3591",
+      "name": "艾笛森",
       "market": "TWSE"
     },
     {
