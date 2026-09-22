@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-21",
+  "last_updated": "2026-09-22",
   "source": "moneydj",
   "records": [
     {
@@ -315,6 +315,19 @@
       "type": "息"
     },
     {
+      "code": "1449",
+      "name": "佳和",
+      "ex_date": "2026-10-12",
+      "type": "權",
+      "earnings_dividend": 0,
+      "reserve_dividend": 0,
+      "cash_dividend": 0,
+      "pay_date": "",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0999999434,
+      "stock_dividend": 0.0999999434
+    },
+    {
       "code": "1565",
       "name": "精華",
       "earnings_dividend": 5.8,
@@ -377,6 +390,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-10-28",
+      "type": "息"
+    },
+    {
+      "code": "5522",
+      "name": "遠雄",
+      "earnings_dividend": 1.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.0,
+      "pay_date": "2026-11-20",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-29",
       "type": "息"
     }
   ]

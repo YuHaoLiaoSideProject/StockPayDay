@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-21",
+  "last_updated": "2026-09-22",
   "source": "TWSE",
   "records": [
     {
@@ -6330,6 +6330,11 @@
     {
       "code": "7803",
       "name": "雲象科技-創",
+      "market": "TWSE"
+    },
+    {
+      "code": "7812",
+      "name": "稜研科技*-創",
       "market": "TWSE"
     },
     {
