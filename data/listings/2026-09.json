@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-22",
+  "last_updated": "2026-09-23",
   "source": "TWSE",
   "records": [
     {
@@ -3460,11 +3460,6 @@
     {
       "code": "2597",
       "name": "潤弘",
-      "market": "TWSE"
-    },
-    {
-      "code": "2601",
-      "name": "益航",
       "market": "TWSE"
     },
     {

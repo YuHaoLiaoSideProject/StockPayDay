@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-22",
+  "last_updated": "2026-09-23",
   "source": "TPEx",
   "records": [
     {
@@ -2265,11 +2265,6 @@
     {
       "code": "4772",
       "name": "台特化",
-      "market": "TPEx"
-    },
-    {
-      "code": "4806",
-      "name": "桂田文創",
       "market": "TPEx"
     },
     {
@@ -4678,11 +4673,6 @@
       "market": "TPEx"
     },
     {
-      "code": "8183",
-      "name": "精星",
-      "market": "TPEx"
-    },
-    {
       "code": "8227",
       "name": "巨有科技",
       "market": "TPEx"
@@ -5088,11 +5078,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72348U",
-      "name": "良維群益59售01",
-      "market": "TPEx"
-    },
-    {
       "code": "72400U",
       "name": "博智群益5A售02",
       "market": "TPEx"
@@ -5340,11 +5325,6 @@
     {
       "code": "72820U",
       "name": "鑫聯國票5A售03",
-      "market": "TPEx"
-    },
-    {
-      "code": "72826U",
-      "name": "頎邦元富59售06",
       "market": "TPEx"
     },
     {
@@ -6955,6 +6935,61 @@
     {
       "code": "73149U",
       "name": "環球晶永豐63售10",
+      "market": "TPEx"
+    },
+    {
+      "code": "73150U",
+      "name": "旺矽凱基63售09",
+      "market": "TPEx"
+    },
+    {
+      "code": "73151U",
+      "name": "弘塑元大63售11",
+      "market": "TPEx"
+    },
+    {
+      "code": "73152U",
+      "name": "旺矽元大63售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73153U",
+      "name": "富喬元大63售09",
+      "market": "TPEx"
+    },
+    {
+      "code": "73154U",
+      "name": "旺矽國票64售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73155U",
+      "name": "旺矽國票67售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73156U",
+      "name": "旺矽國票69售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73157U",
+      "name": "世界群益63售06",
+      "market": "TPEx"
+    },
+    {
+      "code": "73158U",
+      "name": "旺矽群益63售05",
+      "market": "TPEx"
+    },
+    {
+      "code": "73159U",
+      "name": "欣銓群益69售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73160U",
+      "name": "頎邦群益63售09",
       "market": "TPEx"
     }
   ]
