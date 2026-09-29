@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-28",
+  "last_updated": "2026-09-29",
   "source": "TPEx",
   "records": [
     {
@@ -5343,33 +5343,13 @@
       "market": "TPEx"
     },
     {
-      "code": "72834U",
-      "name": "台燿中信59售08",
-      "market": "TPEx"
-    },
-    {
-      "code": "72835U",
-      "name": "東捷群益59售03",
-      "market": "TPEx"
-    },
-    {
       "code": "72836U",
       "name": "東捷群益5B售01",
       "market": "TPEx"
     },
     {
-      "code": "72837U",
-      "name": "鈊象群益59售04",
-      "market": "TPEx"
-    },
-    {
       "code": "72838U",
       "name": "鈊象群益5B售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72839U",
-      "name": "台燿元大59售25",
       "market": "TPEx"
     },
     {
@@ -5390,11 +5370,6 @@
     {
       "code": "72843U",
       "name": "精材群益63售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72844U",
-      "name": "雙鴻群益59售15",
       "market": "TPEx"
     },
     {
@@ -6990,6 +6965,11 @@
     {
       "code": "73163U",
       "name": "新盛力群益63售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73164U",
+      "name": "光頡群益65售02",
       "market": "TPEx"
     }
   ]

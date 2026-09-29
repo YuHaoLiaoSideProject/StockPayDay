@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-28",
+  "last_updated": "2026-09-29",
   "source": "moneydj",
   "records": [
     {
@@ -364,6 +364,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-10-14",
+      "type": "息"
+    },
+    {
+      "code": "1463",
+      "name": "強盛新",
+      "earnings_dividend": 0.1273,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.1273,
+      "pay_date": "2026-11-12",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-15",
       "type": "息"
     },
     {
