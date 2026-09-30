@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-09-29",
+  "last_updated": "2026-09-30",
   "source": "moneydj",
   "records": [
     {
@@ -390,6 +390,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-10-15",
+      "type": "息"
+    },
+    {
+      "code": "7909",
+      "name": "鈺祥",
+      "earnings_dividend": 0.365,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.365,
+      "pay_date": "2026-11-06",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-16",
       "type": "息"
     },
     {
