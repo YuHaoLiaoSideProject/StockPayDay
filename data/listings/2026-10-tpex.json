@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-01",
+  "last_updated": "2026-10-02",
   "source": "TPEx",
   "records": [
     {
@@ -2255,6 +2255,11 @@
     {
       "code": "4772",
       "name": "台特化",
+      "market": "TPEx"
+    },
+    {
+      "code": "4806",
+      "name": "桂田文創",
       "market": "TPEx"
     },
     {
@@ -5203,18 +5208,8 @@
       "market": "TPEx"
     },
     {
-      "code": "72781U",
-      "name": "系統電國票5A售01",
-      "market": "TPEx"
-    },
-    {
       "code": "72782U",
       "name": "環球晶群益62售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72785U",
-      "name": "旺矽富邦5A售02",
       "market": "TPEx"
     },
     {
@@ -5470,11 +5465,6 @@
     {
       "code": "72869U",
       "name": "立碁國票5B售03",
-      "market": "TPEx"
-    },
-    {
-      "code": "72870U",
-      "name": "群聯國票5B售06",
       "market": "TPEx"
     },
     {
@@ -6975,6 +6965,16 @@
     {
       "code": "73170U",
       "name": "倚強群益63售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73171U",
+      "name": "陽程台新64售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73172U",
+      "name": "穩懋群益64售06",
       "market": "TPEx"
     }
   ]
