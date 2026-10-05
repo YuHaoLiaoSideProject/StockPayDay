@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-04",
+  "last_updated": "2026-10-05",
   "source": "TPEx",
   "records": [
     {
@@ -285,11 +285,6 @@
     {
       "code": "00846B",
       "name": "富邦歐洲銀行債",
-      "market": "TPEx"
-    },
-    {
-      "code": "00847B",
-      "name": "中信美國市政債",
       "market": "TPEx"
     },
     {
@@ -5068,11 +5063,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72400U",
-      "name": "博智群益5A售02",
-      "market": "TPEx"
-    },
-    {
       "code": "72414U",
       "name": "振曜群益5A售01",
       "market": "TPEx"
@@ -5345,21 +5335,6 @@
     {
       "code": "72843U",
       "name": "精材群益63售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72846U",
-      "name": "鈊象凱基5A售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72847U",
-      "name": "印能國票5A售04",
-      "market": "TPEx"
-    },
-    {
-      "code": "72848U",
-      "name": "雙鴻群益5A售06",
       "market": "TPEx"
     },
     {
@@ -6975,6 +6950,21 @@
     {
       "code": "73172U",
       "name": "穩懋群益64售06",
+      "market": "TPEx"
+    },
+    {
+      "code": "73173U",
+      "name": "萬潤國票65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73174U",
+      "name": "萬潤永豐64售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73175U",
+      "name": "穩懋永豐64售04",
       "market": "TPEx"
     }
   ]
