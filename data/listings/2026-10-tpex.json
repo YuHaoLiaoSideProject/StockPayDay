@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-05",
+  "last_updated": "2026-10-06",
   "source": "TPEx",
   "records": [
     {
@@ -3718,6 +3718,11 @@
       "market": "TPEx"
     },
     {
+      "code": "6604",
+      "name": "儒億",
+      "market": "TPEx"
+    },
+    {
       "code": "6609",
       "name": "瀧澤科",
       "market": "TPEx"
@@ -5093,11 +5098,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72587U",
-      "name": "華電網國票5A售01",
-      "market": "TPEx"
-    },
-    {
       "code": "72610U",
       "name": "富喬國票5C售02",
       "market": "TPEx"
@@ -5335,16 +5335,6 @@
     {
       "code": "72843U",
       "name": "精材群益63售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72849U",
-      "name": "印能凱基5A售04",
-      "market": "TPEx"
-    },
-    {
-      "code": "72850U",
-      "name": "印能國票5A售05",
       "market": "TPEx"
     },
     {
