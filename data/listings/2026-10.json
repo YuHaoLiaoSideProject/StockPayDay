@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-06",
+  "last_updated": "2026-10-07",
   "source": "TWSE",
   "records": [
     {
@@ -4690,11 +4690,6 @@
     {
       "code": "4148",
       "name": "全宇生技-KY",
-      "market": "TWSE"
-    },
-    {
-      "code": "4155",
-      "name": "訊映",
       "market": "TWSE"
     },
     {

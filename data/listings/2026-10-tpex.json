@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-06",
+  "last_updated": "2026-10-07",
   "source": "TPEx",
   "records": [
     {
@@ -715,11 +715,6 @@
     {
       "code": "2066",
       "name": "世德",
-      "market": "TPEx"
-    },
-    {
-      "code": "2067",
-      "name": "嘉鋼",
       "market": "TPEx"
     },
     {
@@ -1638,11 +1633,6 @@
       "market": "TPEx"
     },
     {
-      "code": "3632",
-      "name": "研勤",
-      "market": "TPEx"
-    },
-    {
       "code": "3646",
       "name": "艾恩特",
       "market": "TPEx"
@@ -2030,6 +2020,11 @@
     {
       "code": "4523",
       "name": "永彰",
+      "market": "TPEx"
+    },
+    {
+      "code": "4527",
+      "name": "方土霖",
       "market": "TPEx"
     },
     {
@@ -2525,6 +2520,11 @@
     {
       "code": "5299",
       "name": "杰力",
+      "market": "TPEx"
+    },
+    {
+      "code": "5301",
+      "name": "寶得利",
       "market": "TPEx"
     },
     {
@@ -3108,11 +3108,6 @@
       "market": "TPEx"
     },
     {
-      "code": "6167",
-      "name": "久正",
-      "market": "TPEx"
-    },
-    {
       "code": "6169",
       "name": "昱泉",
       "market": "TPEx"
@@ -3125,11 +3120,6 @@
     {
       "code": "6171",
       "name": "大城地產",
-      "market": "TPEx"
-    },
-    {
-      "code": "6173",
-      "name": "信昌電",
       "market": "TPEx"
     },
     {
@@ -5153,21 +5143,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72735U",
-      "name": "世界群益5A售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72736U",
-      "name": "精材群益5A售04",
-      "market": "TPEx"
-    },
-    {
-      "code": "72737U",
-      "name": "雙鴻群益5A售04",
-      "market": "TPEx"
-    },
-    {
       "code": "72747U",
       "name": "閎康群益5A售02",
       "market": "TPEx"
@@ -5213,28 +5188,8 @@
       "market": "TPEx"
     },
     {
-      "code": "72794U",
-      "name": "雙鴻凱基5A售02",
-      "market": "TPEx"
-    },
-    {
       "code": "72795U",
       "name": "神盾群益61售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72797U",
-      "name": "台特化國票5A售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72798U",
-      "name": "宏觀國票5A售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72799U",
-      "name": "雙鴻國票5A售01",
       "market": "TPEx"
     },
     {
@@ -6693,16 +6648,6 @@
       "market": "TPEx"
     },
     {
-      "code": "73123U",
-      "name": "信昌電國票64售03",
-      "market": "TPEx"
-    },
-    {
-      "code": "73124U",
-      "name": "信昌電國票65售03",
-      "market": "TPEx"
-    },
-    {
       "code": "73125U",
       "name": "台燿凱基63售05",
       "market": "TPEx"
@@ -6955,6 +6900,16 @@
     {
       "code": "73175U",
       "name": "穩懋永豐64售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73176U",
+      "name": "穩懋國票64售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73177U",
+      "name": "穩懋國票69售03",
       "market": "TPEx"
     }
   ]
