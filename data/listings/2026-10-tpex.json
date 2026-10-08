@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-07",
+  "last_updated": "2026-10-08",
   "source": "TPEx",
   "records": [
     {
@@ -540,6 +540,11 @@
     {
       "code": "00990B",
       "name": "國泰收益非投等債",
+      "market": "TPEx"
+    },
+    {
+      "code": "00992B",
+      "name": "街口優息非投債",
       "market": "TPEx"
     },
     {
@@ -1605,11 +1610,6 @@
     {
       "code": "3624",
       "name": "光頡",
-      "market": "TPEx"
-    },
-    {
-      "code": "3625",
-      "name": "西勝",
       "market": "TPEx"
     },
     {
@@ -5058,11 +5058,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72414U",
-      "name": "振曜群益5A售01",
-      "market": "TPEx"
-    },
-    {
       "code": "72479U",
       "name": "擎亞群益5B售01",
       "market": "TPEx"
@@ -5143,16 +5138,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72747U",
-      "name": "閎康群益5A售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72748U",
-      "name": "精測群益5A售02",
-      "market": "TPEx"
-    },
-    {
       "code": "72749U",
       "name": "精測群益62售04",
       "market": "TPEx"
@@ -5195,26 +5180,6 @@
     {
       "code": "72800U",
       "name": "信驊永豐5B售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72807U",
-      "name": "新應材國泰5A售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72808U",
-      "name": "新應材國票5A售03",
-      "market": "TPEx"
-    },
-    {
-      "code": "72809U",
-      "name": "萬泰科國票5A售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72810U",
-      "name": "鑫聯國票5A售02",
       "market": "TPEx"
     },
     {
