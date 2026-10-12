@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-11",
+  "last_updated": "2026-10-12",
   "source": "moneydj",
   "records": [
     {
@@ -1730,6 +1730,19 @@
       "stock_dividend": 0.0,
       "ex_date": "2026-10-28",
       "type": "息"
+    },
+    {
+      "code": "2063",
+      "name": "世鎧",
+      "earnings_dividend": 0.0,
+      "reserve_dividend": 0.5000208,
+      "cash_dividend": 0.5000208,
+      "pay_date": "2026-12-02",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.9999999376,
+      "stock_dividend": 0.9999999376,
+      "ex_date": "2026-10-28",
+      "type": "權息"
     },
     {
       "code": "4552",

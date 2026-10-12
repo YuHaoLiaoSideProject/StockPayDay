@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-11",
+  "last_updated": "2026-10-12",
   "source": "TWSE",
   "records": [
     {
@@ -74,7 +74,7 @@
     },
     {
       "code": "0053",
-      "name": "元大電子",
+      "name": "元大科技市值",
       "market": "TWSE"
     },
     {
@@ -2690,6 +2690,11 @@
     {
       "code": "2321",
       "name": "東訊",
+      "market": "TWSE"
+    },
+    {
+      "code": "2323",
+      "name": "中環",
       "market": "TWSE"
     },
     {

@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-11",
+  "last_updated": "2026-10-12",
   "source": "TPEx",
   "records": [
     {
@@ -930,6 +930,11 @@
     {
       "code": "3083",
       "name": "網龍",
+      "market": "TPEx"
+    },
+    {
+      "code": "3085",
+      "name": "新零售",
       "market": "TPEx"
     },
     {
@@ -5263,16 +5268,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72852U",
-      "name": "旺矽元大5A售03",
-      "market": "TPEx"
-    },
-    {
-      "code": "72853U",
-      "name": "信驊元大5A售01",
-      "market": "TPEx"
-    },
-    {
       "code": "72854U",
       "name": "信驊永豐61售01",
       "market": "TPEx"
@@ -6875,6 +6870,36 @@
     {
       "code": "73177U",
       "name": "穩懋國票69售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73178U",
+      "name": "環球晶群益65售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73179U",
+      "name": "世界台新64售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73180U",
+      "name": "陽程台新64售07",
+      "market": "TPEx"
+    },
+    {
+      "code": "73181U",
+      "name": "環球晶台新64售09",
+      "market": "TPEx"
+    },
+    {
+      "code": "73182U",
+      "name": "環球晶台新64售10",
+      "market": "TPEx"
+    },
+    {
+      "code": "73183U",
+      "name": "昇達科國票66售02",
       "market": "TPEx"
     }
   ]
