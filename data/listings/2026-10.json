@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-12",
+  "last_updated": "2026-10-13",
   "source": "TWSE",
   "records": [
     {
@@ -55,6 +55,11 @@
     {
       "code": "00410A",
       "name": "主動永豐科技趨勢",
+      "market": "TWSE"
+    },
+    {
+      "code": "00412A",
+      "name": "主動安聯亞半導體",
       "market": "TWSE"
     },
     {

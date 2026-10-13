@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-12",
+  "last_updated": "2026-10-13",
   "source": "moneydj",
   "records": [
     {
@@ -1719,6 +1719,19 @@
       "type": "息"
     },
     {
+      "code": "00726B",
+      "name": "國泰新興投等債",
+      "earnings_dividend": 0.46,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.46,
+      "pay_date": "2026-11-23",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-28",
+      "type": "息"
+    },
+    {
       "code": "00990B",
       "name": "國泰收益非投等債",
       "earnings_dividend": 0.08,
@@ -1755,6 +1768,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-10-28",
+      "type": "息"
+    },
+    {
+      "code": "2762",
+      "name": "世界健身-KY",
+      "earnings_dividend": 1.80719799,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.80719799,
+      "pay_date": "2026-11-23",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-10-29",
       "type": "息"
     },
     {
