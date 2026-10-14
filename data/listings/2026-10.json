@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-13",
+  "last_updated": "2026-10-14",
   "source": "TWSE",
   "records": [
     {
@@ -1305,11 +1305,6 @@
     {
       "code": "020038",
       "name": "元大ESG配息N",
-      "market": "TWSE"
-    },
-    {
-      "code": "020039",
-      "name": "元大加權N",
       "market": "TWSE"
     },
     {
