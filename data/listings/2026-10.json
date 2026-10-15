@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-14",
+  "last_updated": "2026-10-15",
   "source": "TWSE",
   "records": [
     {
@@ -1855,11 +1855,6 @@
     {
       "code": "1515",
       "name": "力山",
-      "market": "TWSE"
-    },
-    {
-      "code": "1516",
-      "name": "川飛",
       "market": "TWSE"
     },
     {
@@ -5335,11 +5330,6 @@
     {
       "code": "6141",
       "name": "柏承",
-      "market": "TWSE"
-    },
-    {
-      "code": "6142",
-      "name": "友勁",
       "market": "TWSE"
     },
     {

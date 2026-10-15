@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-14",
+  "last_updated": "2026-10-15",
   "source": "TPEx",
   "records": [
     {
@@ -4368,6 +4368,11 @@
       "market": "TPEx"
     },
     {
+      "code": "7806",
+      "name": "精華生醫",
+      "market": "TPEx"
+    },
+    {
       "code": "7810",
       "name": "捷創科技",
       "market": "TPEx"
@@ -4460,11 +4465,6 @@
     {
       "code": "8044",
       "name": "網家",
-      "market": "TPEx"
-    },
-    {
-      "code": "8047",
-      "name": "星雲",
       "market": "TPEx"
     },
     {
@@ -5275,11 +5275,6 @@
     {
       "code": "72859U",
       "name": "弘塑國票5B售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72860U",
-      "name": "弘塑元大5A售03",
       "market": "TPEx"
     },
     {
@@ -6925,6 +6920,26 @@
     {
       "code": "73192U",
       "name": "蜜望實群益6A售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73193U",
+      "name": "台星科國票65售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73194U",
+      "name": "上詮群益64售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73195U",
+      "name": "台星科群益64售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73196U",
+      "name": "欣銓群益64售05",
       "market": "TPEx"
     }
   ]
