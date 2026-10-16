@@ -1,7 +1,20 @@
 {
-  "last_updated": "2026-10-15",
+  "last_updated": "2026-10-16",
   "source": "moneydj",
   "records": [
+    {
+      "code": "6165",
+      "name": "浪凡",
+      "earnings_dividend": 5.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 5.0,
+      "pay_date": "2026-12-08",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-02",
+      "type": "息"
+    },
     {
       "code": "8467",
       "name": "波力-KY",
