@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-19",
+  "last_updated": "2026-10-20",
   "source": "moneydj",
   "records": [
     {
@@ -146,6 +146,45 @@
       "type": "息"
     },
     {
+      "code": "00953B",
+      "name": "群益優選非投等債",
+      "earnings_dividend": 0.067,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.067,
+      "pay_date": "2026-11-30",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-04",
+      "type": "息"
+    },
+    {
+      "code": "009823",
+      "name": "群益S＆P500",
+      "earnings_dividend": 0.054,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.054,
+      "pay_date": "2026-11-30",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-04",
+      "type": "息"
+    },
+    {
+      "code": "00985B",
+      "name": "群益ESG投等債0-5",
+      "earnings_dividend": 0.053,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.053,
+      "pay_date": "2026-11-30",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-04",
+      "type": "息"
+    },
+    {
       "code": "8467",
       "name": "波力-KY",
       "earnings_dividend": 2.0,
@@ -182,6 +221,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-11-12",
+      "type": "息"
+    },
+    {
+      "code": "01007T",
+      "name": "兆豐國泰R2",
+      "earnings_dividend": 0.215313472,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.215313472,
+      "pay_date": "2026-12-21",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-19",
       "type": "息"
     }
   ]

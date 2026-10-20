@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-19",
+  "last_updated": "2026-10-20",
   "source": "TWSE",
   "records": [
     {
@@ -60,6 +60,11 @@
     {
       "code": "00412A",
       "name": "主動安聯亞半導體",
+      "market": "TWSE"
+    },
+    {
+      "code": "00415A",
+      "name": "主動群益核心50",
       "market": "TWSE"
     },
     {
@@ -5625,6 +5630,11 @@
     {
       "code": "6464",
       "name": "台數科",
+      "market": "TWSE"
+    },
+    {
+      "code": "6467",
+      "name": "泰合",
       "market": "TWSE"
     },
     {
