@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-20",
+  "last_updated": "2026-10-21",
   "source": "moneydj",
   "records": [
     {
@@ -198,6 +198,19 @@
       "type": "息"
     },
     {
+      "code": "3289",
+      "name": "宜特",
+      "earnings_dividend": 1.6,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.6,
+      "pay_date": "2026-11-27",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-05",
+      "type": "息"
+    },
+    {
       "code": "5523",
       "name": "豐謙",
       "earnings_dividend": 0.5,
@@ -208,6 +221,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-11-05",
+      "type": "息"
+    },
+    {
+      "code": "00400A",
+      "name": "主動國泰動能高息",
+      "earnings_dividend": 0.12,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.12,
+      "pay_date": "2026-12-02",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-06",
       "type": "息"
     },
     {

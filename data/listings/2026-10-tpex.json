@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-20",
+  "last_updated": "2026-10-21",
   "source": "TPEx",
   "records": [
     {
@@ -7015,6 +7015,31 @@
     {
       "code": "73210U",
       "name": "雙鴻凱基65售05",
+      "market": "TPEx"
+    },
+    {
+      "code": "73211U",
+      "name": "環球晶凱基64售15",
+      "market": "TPEx"
+    },
+    {
+      "code": "73212U",
+      "name": "上詮國票65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73213U",
+      "name": "頎邦群益6A售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73214U",
+      "name": "漢達群益64售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73215U",
+      "name": "漢達群益66售02",
       "market": "TPEx"
     }
   ]
