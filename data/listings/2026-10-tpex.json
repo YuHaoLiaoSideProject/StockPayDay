@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-21",
+  "last_updated": "2026-10-22",
   "source": "TPEx",
   "records": [
     {
@@ -750,6 +750,11 @@
     {
       "code": "2235",
       "name": "謚源",
+      "market": "TPEx"
+    },
+    {
+      "code": "2249",
+      "name": "湧盛",
       "market": "TPEx"
     },
     {
@@ -7040,6 +7045,41 @@
     {
       "code": "73215U",
       "name": "漢達群益66售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73216U",
+      "name": "信昌電台新64售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73217U",
+      "name": "臺慶科台新64售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73218U",
+      "name": "信昌電凱基64售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73219U",
+      "name": "頎邦凱基64售07",
+      "market": "TPEx"
+    },
+    {
+      "code": "73220U",
+      "name": "威剛群益6A售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73221U",
+      "name": "群聯群益66售06",
+      "market": "TPEx"
+    },
+    {
+      "code": "73222U",
+      "name": "旺矽富邦65售03",
       "market": "TPEx"
     }
   ]
