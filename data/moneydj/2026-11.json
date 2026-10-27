@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-26",
+  "last_updated": "2026-10-27",
   "source": "moneydj",
   "records": [
     {
@@ -237,11 +237,24 @@
       "type": "息"
     },
     {
+      "code": "00940",
+      "name": "元大台灣價值高息",
+      "earnings_dividend": 0.06,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.06,
+      "pay_date": "2026-12-01",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-10",
+      "type": "息"
+    },
+    {
       "code": "3680",
       "name": "家登",
-      "earnings_dividend": 6.0,
-      "reserve_dividend": 4.0,
-      "cash_dividend": 10.0,
+      "earnings_dividend": 5.94884736,
+      "reserve_dividend": 3.96589824,
+      "cash_dividend": 9.9147456,
       "pay_date": "2026-12-18",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,

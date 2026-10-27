@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-26",
+  "last_updated": "2026-10-27",
   "source": "TPEx",
   "records": [
     {
@@ -4128,6 +4128,11 @@
       "market": "TPEx"
     },
     {
+      "code": "6898",
+      "name": "程曦資訊",
+      "market": "TPEx"
+    },
+    {
       "code": "6899",
       "name": "創為精密",
       "market": "TPEx"
@@ -4170,6 +4175,11 @@
     {
       "code": "6929",
       "name": "佑全",
+      "market": "TPEx"
+    },
+    {
+      "code": "6938",
+      "name": "藍新資訊",
       "market": "TPEx"
     },
     {
@@ -4495,6 +4505,11 @@
     {
       "code": "8044",
       "name": "網家",
+      "market": "TPEx"
+    },
+    {
+      "code": "8047",
+      "name": "星雲",
       "market": "TPEx"
     },
     {
@@ -5178,11 +5193,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72766U",
-      "name": "富喬群益5A售02",
-      "market": "TPEx"
-    },
-    {
       "code": "72772U",
       "name": "穩懋群益63售01",
       "market": "TPEx"
@@ -5465,11 +5475,6 @@
     {
       "code": "72899U",
       "name": "立敦台新5B售04",
-      "market": "TPEx"
-    },
-    {
-      "code": "72900U",
-      "name": "德微國票5C售04",
       "market": "TPEx"
     },
     {
@@ -7080,6 +7085,26 @@
     {
       "code": "73222U",
       "name": "旺矽富邦65售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73223U",
+      "name": "群聯凱基64售15",
+      "market": "TPEx"
+    },
+    {
+      "code": "73224U",
+      "name": "信昌電元大64售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73225U",
+      "name": "光頡台新64售05",
+      "market": "TPEx"
+    },
+    {
+      "code": "73226U",
+      "name": "穩懋凱基64售07",
       "market": "TPEx"
     }
   ]
