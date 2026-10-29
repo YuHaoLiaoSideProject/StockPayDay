@@ -1,0 +1,19 @@
+{
+  "last_updated": "2026-10-29",
+  "source": "moneydj",
+  "records": [
+    {
+      "code": "6561",
+      "name": "是方",
+      "earnings_dividend": 6.8,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 6.8,
+      "pay_date": "2027-01-29",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2027-01-06",
+      "type": "息"
+    }
+  ]
+}

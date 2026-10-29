@@ -1,0 +1,19 @@
+{
+  "last_updated": "2026-10-29",
+  "source": "moneydj",
+  "records": [
+    {
+      "code": "4966",
+      "name": "譜瑞-KY",
+      "earnings_dividend": 7.3,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 7.3,
+      "pay_date": "2027-04-29",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2027-04-01",
+      "type": "息"
+    }
+  ]
+}

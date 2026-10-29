@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-28",
+  "last_updated": "2026-10-29",
   "source": "TWSE",
   "records": [
     {
@@ -1110,6 +1110,16 @@
     {
       "code": "00982T",
       "name": "平衡兆豐台美動能",
+      "market": "TWSE"
+    },
+    {
+      "code": "009831",
+      "name": "FT核心AI電力算力",
+      "market": "TWSE"
+    },
+    {
+      "code": "009832",
+      "name": "兆豐美國黃金",
       "market": "TWSE"
     },
     {

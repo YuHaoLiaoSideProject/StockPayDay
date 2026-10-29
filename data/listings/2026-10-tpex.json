@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-28",
+  "last_updated": "2026-10-29",
   "source": "TPEx",
   "records": [
     {
@@ -1938,11 +1938,6 @@
       "market": "TPEx"
     },
     {
-      "code": "4207",
-      "name": "環泰",
-      "market": "TPEx"
-    },
-    {
       "code": "4303",
       "name": "信立",
       "market": "TPEx"
@@ -2630,11 +2625,6 @@
     {
       "code": "5353",
       "name": "台林",
-      "market": "TPEx"
-    },
-    {
-      "code": "5355",
-      "name": "佳總",
       "market": "TPEx"
     },
     {
@@ -4690,11 +4680,6 @@
     {
       "code": "8171",
       "name": "天宇",
-      "market": "TPEx"
-    },
-    {
-      "code": "8176",
-      "name": "智捷",
       "market": "TPEx"
     },
     {
@@ -7105,6 +7090,26 @@
     {
       "code": "73226U",
       "name": "穩懋凱基64售07",
+      "market": "TPEx"
+    },
+    {
+      "code": "73227U",
+      "name": "巨漢台新64售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73228U",
+      "name": "信昌電凱基64售07",
+      "market": "TPEx"
+    },
+    {
+      "code": "73229U",
+      "name": "光頡元大64售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73230U",
+      "name": "穩懋群益6A售01",
       "market": "TPEx"
     }
   ]
