@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-10-29",
+  "last_updated": "2026-10-30",
   "source": "TPEx",
   "records": [
     {
@@ -4023,6 +4023,11 @@
       "market": "TPEx"
     },
     {
+      "code": "6825",
+      "name": "和暢科技",
+      "market": "TPEx"
+    },
+    {
       "code": "6829",
       "name": "千附精密",
       "market": "TPEx"
@@ -5250,11 +5255,6 @@
     {
       "code": "72838U",
       "name": "鈊象群益5B售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72840U",
-      "name": "世界群益5B售04",
       "market": "TPEx"
     },
     {
@@ -7110,6 +7110,86 @@
     {
       "code": "73230U",
       "name": "穩懋群益6A售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73231U",
+      "name": "信驊永豐65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73232U",
+      "name": "信驊永豐66售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73233U",
+      "name": "力旺台新64售06",
+      "market": "TPEx"
+    },
+    {
+      "code": "73234U",
+      "name": "力旺台新64售07",
+      "market": "TPEx"
+    },
+    {
+      "code": "73235U",
+      "name": "元債20台新64售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73236U",
+      "name": "信驊台新64售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73237U",
+      "name": "信驊台新64售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73238U",
+      "name": "信驊台新65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73239U",
+      "name": "力旺凱基64售07",
+      "market": "TPEx"
+    },
+    {
+      "code": "73240U",
+      "name": "信驊凱基64售09",
+      "market": "TPEx"
+    },
+    {
+      "code": "73241U",
+      "name": "信昌電國票66售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73242U",
+      "name": "群聯統一6A售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73243U",
+      "name": "力旺群益64售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73244U",
+      "name": "力旺群益6A售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73245U",
+      "name": "信驊群益64售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73246U",
+      "name": "信驊群益6A售02",
       "market": "TPEx"
     }
   ]
