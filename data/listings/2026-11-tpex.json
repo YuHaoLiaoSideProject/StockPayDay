@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-03",
+  "last_updated": "2026-11-04",
   "source": "TPEx",
   "records": [
     {
@@ -5093,11 +5093,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72485U",
-      "name": "信驊群益5B售01",
-      "market": "TPEx"
-    },
-    {
       "code": "72501U",
       "name": "雙鴻中信5B售02",
       "market": "TPEx"
@@ -5310,11 +5305,6 @@
     {
       "code": "72871U",
       "name": "群聯群益61售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72872U",
-      "name": "聖暉*台新5B售01",
       "market": "TPEx"
     },
     {
@@ -7245,6 +7235,41 @@
     {
       "code": "73259U",
       "name": "穩懋群益67售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73260U",
+      "name": "群聯凱基65售12",
+      "market": "TPEx"
+    },
+    {
+      "code": "73261U",
+      "name": "信驊元大65售07",
+      "market": "TPEx"
+    },
+    {
+      "code": "73262U",
+      "name": "群聯元大65售06",
+      "market": "TPEx"
+    },
+    {
+      "code": "73263U",
+      "name": "光頡台新65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73264U",
+      "name": "頎邦台新65售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73265U",
+      "name": "雙鴻群益67售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73266U",
+      "name": "譜瑞群益67售02",
       "market": "TPEx"
     }
   ]

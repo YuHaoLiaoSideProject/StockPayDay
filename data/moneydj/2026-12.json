@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-03",
+  "last_updated": "2026-11-04",
   "source": "moneydj",
   "records": [
     {
@@ -52,6 +52,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-12-21",
+      "type": "息"
+    },
+    {
+      "code": "6488",
+      "name": "環球晶",
+      "earnings_dividend": 6.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 6.0,
+      "pay_date": "2027-01-22",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-29",
       "type": "息"
     }
   ]

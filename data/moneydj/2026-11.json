@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-03",
+  "last_updated": "2026-11-04",
   "source": "moneydj",
   "records": [
     {
@@ -1004,6 +1004,19 @@
       "type": "息"
     },
     {
+      "code": "009808",
+      "name": "華南永昌優選50",
+      "earnings_dividend": 0.76,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.76,
+      "pay_date": "2026-12-04",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-17",
+      "type": "息"
+    },
+    {
       "code": "00980A",
       "name": "主動野村臺灣優選",
       "earnings_dividend": 0.688,
@@ -1121,6 +1134,97 @@
       "type": "息"
     },
     {
+      "code": "00731",
+      "name": "復華富時高息低波",
+      "earnings_dividend": 1.828,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.828,
+      "pay_date": "2026-12-14",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-18",
+      "type": "息"
+    },
+    {
+      "code": "00758B",
+      "name": "復華能源債",
+      "earnings_dividend": 0.62,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.62,
+      "pay_date": "2026-12-14",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-18",
+      "type": "息"
+    },
+    {
+      "code": "00759B",
+      "name": "復華製藥債",
+      "earnings_dividend": 0.65,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.65,
+      "pay_date": "2026-12-14",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-18",
+      "type": "息"
+    },
+    {
+      "code": "00760B",
+      "name": "復華新興企業債",
+      "earnings_dividend": 0.71,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.71,
+      "pay_date": "2026-12-14",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-18",
+      "type": "息"
+    },
+    {
+      "code": "00768B",
+      "name": "復華20年美債",
+      "earnings_dividend": 0.85,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.85,
+      "pay_date": "2026-12-14",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-18",
+      "type": "息"
+    },
+    {
+      "code": "00929",
+      "name": "復華台灣科技優息",
+      "earnings_dividend": 0.38,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.38,
+      "pay_date": "2026-12-14",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-18",
+      "type": "息"
+    },
+    {
+      "code": "00949",
+      "name": "復華日本龍頭",
+      "earnings_dividend": 3.02,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 3.02,
+      "pay_date": "2026-12-14",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-18",
+      "type": "息"
+    },
+    {
       "code": "00985D",
       "name": "主動貝萊德優投等",
       "earnings_dividend": 0.061,
@@ -1134,12 +1238,38 @@
       "type": "息"
     },
     {
+      "code": "00986D",
+      "name": "主動復華金融債息",
+      "earnings_dividend": 0.09,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.09,
+      "pay_date": "2026-12-14",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-18",
+      "type": "息"
+    },
+    {
       "code": "00991B",
       "name": "貝萊德A級公司債",
       "earnings_dividend": 0.073,
       "reserve_dividend": 0.0,
       "cash_dividend": 0.073,
       "pay_date": "2026-12-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-18",
+      "type": "息"
+    },
+    {
+      "code": "2344",
+      "name": "華邦電",
+      "earnings_dividend": 2.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 2.0,
+      "pay_date": "2026-12-17",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
