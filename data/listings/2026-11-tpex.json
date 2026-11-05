@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-04",
+  "last_updated": "2026-11-05",
   "source": "TPEx",
   "records": [
     {
@@ -2065,11 +2065,6 @@
     {
       "code": "4533",
       "name": "協易機",
-      "market": "TPEx"
-    },
-    {
-      "code": "4534",
-      "name": "慶騰",
       "market": "TPEx"
     },
     {
@@ -7270,6 +7265,31 @@
     {
       "code": "73266U",
       "name": "譜瑞群益67售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73267U",
+      "name": "群聯台新65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73268U",
+      "name": "群聯台新65售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73269U",
+      "name": "聖暉*台新65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73270U",
+      "name": "群聯群益67售09",
+      "market": "TPEx"
+    },
+    {
+      "code": "73271U",
+      "name": "頎邦群益67售02",
       "market": "TPEx"
     }
   ]
