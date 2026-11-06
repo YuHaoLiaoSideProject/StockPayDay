@@ -1,0 +1,19 @@
+{
+  "last_updated": "2026-11-06",
+  "source": "moneydj",
+  "records": [
+    {
+      "code": "6613",
+      "name": "朋億*",
+      "earnings_dividend": 5.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 5.0,
+      "pay_date": "2027-03-04",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2027-02-11",
+      "type": "息"
+    }
+  ]
+}

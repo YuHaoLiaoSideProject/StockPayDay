@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-05",
+  "last_updated": "2026-11-06",
   "source": "TPEx",
   "records": [
     {
@@ -5188,11 +5188,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72800U",
-      "name": "信驊永豐5B售01",
-      "market": "TPEx"
-    },
-    {
       "code": "72813U",
       "name": "宜鼎群益5B售03",
       "market": "TPEx"
@@ -5310,11 +5305,6 @@
     {
       "code": "72874U",
       "name": "威剛群益5C售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72875U",
-      "name": "威剛凱基5B售05",
       "market": "TPEx"
     },
     {
@@ -7290,6 +7280,11 @@
     {
       "code": "73271U",
       "name": "頎邦群益67售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73272U",
+      "name": "聖暉*群益6B售01",
       "market": "TPEx"
     }
   ]
