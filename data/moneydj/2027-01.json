@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-08",
+  "last_updated": "2026-11-09",
   "source": "moneydj",
   "records": [
     {
@@ -8,6 +8,19 @@
       "earnings_dividend": 24.5,
       "reserve_dividend": 0.0,
       "cash_dividend": 24.5,
+      "pay_date": "2027-01-29",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2027-01-05",
+      "type": "息"
+    },
+    {
+      "code": "5483",
+      "name": "中美晶",
+      "earnings_dividend": 2.8,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 2.8,
       "pay_date": "2027-01-29",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,

@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-08",
+  "last_updated": "2026-11-09",
   "source": "TPEx",
   "records": [
     {
@@ -1938,6 +1938,11 @@
       "market": "TPEx"
     },
     {
+      "code": "4207",
+      "name": "環泰",
+      "market": "TPEx"
+    },
+    {
       "code": "4303",
       "name": "信立",
       "market": "TPEx"
@@ -2620,6 +2625,11 @@
     {
       "code": "5353",
       "name": "台林",
+      "market": "TPEx"
+    },
+    {
+      "code": "5355",
+      "name": "佳總",
       "market": "TPEx"
     },
     {
@@ -4683,6 +4693,11 @@
       "market": "TPEx"
     },
     {
+      "code": "8176",
+      "name": "智捷",
+      "market": "TPEx"
+    },
+    {
       "code": "8182",
       "name": "加高",
       "market": "TPEx"
@@ -5088,11 +5103,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72501U",
-      "name": "雙鴻中信5B售02",
-      "market": "TPEx"
-    },
-    {
       "code": "72523U",
       "name": "新應材群益5B售01",
       "market": "TPEx"
@@ -5305,26 +5315,6 @@
     {
       "code": "72874U",
       "name": "威剛群益5C售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72876U",
-      "name": "合晶台新5B售05",
-      "market": "TPEx"
-    },
-    {
-      "code": "72877U",
-      "name": "群聯台新5B售07",
-      "market": "TPEx"
-    },
-    {
-      "code": "72878U",
-      "name": "群聯台新5B售08",
-      "market": "TPEx"
-    },
-    {
-      "code": "72879U",
-      "name": "世界凱基5B售02",
       "market": "TPEx"
     },
     {
@@ -7285,6 +7275,36 @@
     {
       "code": "73272U",
       "name": "聖暉*群益6B售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73273U",
+      "name": "中美晶群益67售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73274U",
+      "name": "信驊群益67售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73275U",
+      "name": "博智群益69售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73276U",
+      "name": "力旺國票67售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73277U",
+      "name": "力旺國票6B售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73278U",
+      "name": "信驊國票66售02",
       "market": "TPEx"
     }
   ]
