@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-09",
+  "last_updated": "2026-11-10",
   "source": "TPEx",
   "records": [
     {
@@ -5323,21 +5323,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72881U",
-      "name": "鈊象台新5B售03",
-      "market": "TPEx"
-    },
-    {
-      "code": "72882U",
-      "name": "環球晶台新5B售03",
-      "market": "TPEx"
-    },
-    {
-      "code": "72883U",
-      "name": "環球晶國票5B售02",
-      "market": "TPEx"
-    },
-    {
       "code": "72884U",
       "name": "鈊象群益61售01",
       "market": "TPEx"
@@ -7305,6 +7290,16 @@
     {
       "code": "73278U",
       "name": "信驊國票66售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73279U",
+      "name": "環球晶元大65售17",
+      "market": "TPEx"
+    },
+    {
+      "code": "73280U",
+      "name": "力旺群益6B售02",
       "market": "TPEx"
     }
   ]

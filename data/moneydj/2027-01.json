@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-09",
+  "last_updated": "2026-11-10",
   "source": "moneydj",
   "records": [
     {
@@ -39,6 +39,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2027-01-06",
+      "type": "息"
+    },
+    {
+      "code": "5536",
+      "name": "聖暉*",
+      "earnings_dividend": 12.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 12.0,
+      "pay_date": "2027-01-29",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2027-01-11",
       "type": "息"
     }
   ]
