@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-10",
+  "last_updated": "2026-11-11",
   "source": "moneydj",
   "records": [
     {
@@ -29,12 +29,38 @@
       "type": "息"
     },
     {
+      "code": "4749",
+      "name": "新應材",
+      "earnings_dividend": 4.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 4.5,
+      "pay_date": "2026-12-28",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-04",
+      "type": "息"
+    },
+    {
       "code": "2330",
       "name": "台積電",
       "earnings_dividend": 7.0,
       "reserve_dividend": 0.0,
       "cash_dividend": 7.0,
       "pay_date": "2027-01-07",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-10",
+      "type": "息"
+    },
+    {
+      "code": "8942",
+      "name": "森鉅",
+      "earnings_dividend": 1.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.0,
+      "pay_date": "2027-01-08",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
