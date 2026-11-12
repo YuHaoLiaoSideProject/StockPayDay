@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-11",
+  "last_updated": "2026-11-12",
   "source": "moneydj",
   "records": [
     {
@@ -1495,6 +1495,32 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-11-24",
+      "type": "息"
+    },
+    {
+      "code": "009817",
+      "name": "國泰日本不動產",
+      "earnings_dividend": 0.33,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.33,
+      "pay_date": "2026-12-22",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-26",
+      "type": "息"
+    },
+    {
+      "code": "6523",
+      "name": "達爾膚",
+      "earnings_dividend": 2.0,
+      "reserve_dividend": 2.0,
+      "cash_dividend": 4.0,
+      "pay_date": "2026-12-31",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-11-26",
       "type": "息"
     }
   ]

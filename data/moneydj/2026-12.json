@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-11",
+  "last_updated": "2026-11-12",
   "source": "moneydj",
   "records": [
     {
@@ -35,6 +35,19 @@
       "reserve_dividend": 0.0,
       "cash_dividend": 4.5,
       "pay_date": "2026-12-28",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-04",
+      "type": "息"
+    },
+    {
+      "code": "7780",
+      "name": "大研生醫*",
+      "earnings_dividend": 0.14137263,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.14137263,
+      "pay_date": "2027-01-07",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
