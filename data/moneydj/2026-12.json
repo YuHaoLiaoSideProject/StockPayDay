@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-12",
+  "last_updated": "2026-11-13",
   "source": "moneydj",
   "records": [
     {
@@ -55,11 +55,37 @@
       "type": "息"
     },
     {
+      "code": "4414",
+      "name": "如興",
+      "earnings_dividend": 0.00915,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.00915,
+      "pay_date": "2026-12-30",
+      "earnings_stock": 0.1,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.1,
+      "ex_date": "2026-12-08",
+      "type": "息"
+    },
+    {
       "code": "2330",
       "name": "台積電",
       "earnings_dividend": 7.0,
       "reserve_dividend": 0.0,
       "cash_dividend": 7.0,
+      "pay_date": "2027-01-07",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-10",
+      "type": "息"
+    },
+    {
+      "code": "6438",
+      "name": "迅得",
+      "earnings_dividend": 3.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 3.0,
       "pay_date": "2027-01-07",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
@@ -79,6 +105,19 @@
       "stock_dividend": 0.0,
       "ex_date": "2026-12-10",
       "type": "息"
+    },
+    {
+      "code": "2236",
+      "name": "百達-KY",
+      "earnings_dividend": 0.38667858,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.38667858,
+      "pay_date": "2027-01-14",
+      "earnings_stock": 0.24167423,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.24167423,
+      "ex_date": "2026-12-11",
+      "type": "權息"
     },
     {
       "code": "6021",
