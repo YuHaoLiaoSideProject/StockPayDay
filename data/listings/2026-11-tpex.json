@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-15",
+  "last_updated": "2026-11-16",
   "source": "TPEx",
   "records": [
     {
@@ -2070,6 +2070,11 @@
     {
       "code": "4533",
       "name": "協易機",
+      "market": "TPEx"
+    },
+    {
+      "code": "4534",
+      "name": "慶騰",
       "market": "TPEx"
     },
     {
@@ -4458,6 +4463,11 @@
       "market": "TPEx"
     },
     {
+      "code": "7848",
+      "name": "騏億鑫",
+      "market": "TPEx"
+    },
+    {
       "code": "7856",
       "name": "漢測",
       "market": "TPEx"
@@ -5103,11 +5113,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72523U",
-      "name": "新應材群益5B售01",
-      "market": "TPEx"
-    },
-    {
       "code": "72572U",
       "name": "精測群益62售01",
       "market": "TPEx"
@@ -5300,16 +5305,6 @@
     {
       "code": "72884U",
       "name": "鈊象群益61售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72891U",
-      "name": "世界台新5B售03",
-      "market": "TPEx"
-    },
-    {
-      "code": "72892U",
-      "name": "台特化台新5B售04",
       "market": "TPEx"
     },
     {
