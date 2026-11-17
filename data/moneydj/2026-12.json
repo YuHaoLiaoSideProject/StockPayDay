@@ -1,7 +1,72 @@
 {
-  "last_updated": "2026-11-16",
+  "last_updated": "2026-11-17",
   "source": "moneydj",
   "records": [
+    {
+      "code": "00939",
+      "name": "統一台灣高息動能",
+      "earnings_dividend": 0.15,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.15,
+      "pay_date": "2026-12-23",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-01",
+      "type": "息"
+    },
+    {
+      "code": "00984D",
+      "name": "主動聯博全球非投",
+      "earnings_dividend": 0.085,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.085,
+      "pay_date": "2026-12-23",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-01",
+      "type": "息"
+    },
+    {
+      "code": "00986B",
+      "name": "FT金融債10+",
+      "earnings_dividend": 0.02,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.02,
+      "pay_date": "2026-12-24",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-01",
+      "type": "息"
+    },
+    {
+      "code": "4735",
+      "name": "豪展",
+      "earnings_dividend": 0.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.5,
+      "pay_date": "2026-12-21",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-01",
+      "type": "息"
+    },
+    {
+      "code": "00406A",
+      "name": "主動中信台灣收益",
+      "earnings_dividend": 0.138,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.138,
+      "pay_date": "2026-12-29",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-02",
+      "type": "息"
+    },
     {
       "code": "3040",
       "name": "遠見",

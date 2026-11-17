@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-16",
+  "last_updated": "2026-11-17",
   "source": "TWSE",
   "records": [
     {
@@ -305,6 +305,11 @@
     {
       "code": "00661",
       "name": "元大日經225",
+      "market": "TWSE"
+    },
+    {
+      "code": "00662",
+      "name": "富邦NASDAQ",
       "market": "TWSE"
     },
     {
