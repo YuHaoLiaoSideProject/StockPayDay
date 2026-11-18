@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-17",
+  "last_updated": "2026-11-18",
   "source": "moneydj",
   "records": [
     {
@@ -68,16 +68,42 @@
       "type": "息"
     },
     {
+      "code": "00950B",
+      "name": "凱基A級公司債",
+      "earnings_dividend": 0.063,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.063,
+      "pay_date": "2026-12-29",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-02",
+      "type": "息"
+    },
+    {
       "code": "3040",
       "name": "遠見",
       "earnings_dividend": 3.5,
       "reserve_dividend": 0.0,
       "cash_dividend": 3.5,
-      "pay_date": "2026-12-30",
+      "pay_date": "",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-12-02",
+      "type": "息"
+    },
+    {
+      "code": "00946",
+      "name": "群益科技高息成長",
+      "earnings_dividend": 0.058,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.058,
+      "pay_date": "2026-12-30",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-03",
       "type": "息"
     },
     {
@@ -185,6 +211,19 @@
       "type": "權息"
     },
     {
+      "code": "8299",
+      "name": "群聯",
+      "earnings_dividend": 60.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 60.0,
+      "pay_date": "2027-01-08",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-15",
+      "type": "息"
+    },
+    {
       "code": "6021",
       "name": "美好證",
       "earnings_dividend": 1.0,
@@ -221,6 +260,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-12-17",
+      "type": "息"
+    },
+    {
+      "code": "1817",
+      "name": "凱撒衛",
+      "earnings_dividend": 1.8,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.8,
+      "pay_date": "2027-01-22",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-21",
       "type": "息"
     },
     {
