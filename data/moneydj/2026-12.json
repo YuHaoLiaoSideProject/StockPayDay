@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-18",
+  "last_updated": "2026-11-19",
   "source": "moneydj",
   "records": [
     {
@@ -107,6 +107,71 @@
       "type": "息"
     },
     {
+      "code": "00953B",
+      "name": "群益優選非投等債",
+      "earnings_dividend": 0.067,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.067,
+      "pay_date": "2026-12-30",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-03",
+      "type": "息"
+    },
+    {
+      "code": "00959B",
+      "name": "大華投等美債15Y+",
+      "earnings_dividend": 0.048,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.048,
+      "pay_date": "2026-12-24",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-03",
+      "type": "息"
+    },
+    {
+      "code": "00983B",
+      "name": "大華優利美公債20",
+      "earnings_dividend": 0.063,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.063,
+      "pay_date": "2026-12-24",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-03",
+      "type": "息"
+    },
+    {
+      "code": "00984B",
+      "name": "大華優利美A債15",
+      "earnings_dividend": 0.081,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.081,
+      "pay_date": "2026-12-24",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-03",
+      "type": "息"
+    },
+    {
+      "code": "00985B",
+      "name": "群益ESG投等債0-5",
+      "earnings_dividend": 0.053,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.053,
+      "pay_date": "2026-12-30",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-03",
+      "type": "息"
+    },
+    {
       "code": "1437",
       "name": "勤益控",
       "earnings_dividend": 0.62465299,
@@ -117,6 +182,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-12-03",
+      "type": "息"
+    },
+    {
+      "code": "3701",
+      "name": "大眾控",
+      "earnings_dividend": 0.19989298,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.19989298,
+      "pay_date": "2026-12-31",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-04",
       "type": "息"
     },
     {

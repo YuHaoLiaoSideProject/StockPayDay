@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-18",
+  "last_updated": "2026-11-19",
   "source": "TPEx",
   "records": [
     {
@@ -4753,11 +4753,6 @@
       "market": "TPEx"
     },
     {
-      "code": "8291",
-      "name": "尚茂",
-      "market": "TPEx"
-    },
-    {
       "code": "8299",
       "name": "群聯",
       "market": "TPEx"
@@ -5245,11 +5240,6 @@
     {
       "code": "72855U",
       "name": "信驊富邦5C售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72862U",
-      "name": "群聯國票5B售02",
       "market": "TPEx"
     },
     {
@@ -7290,6 +7280,31 @@
     {
       "code": "73295U",
       "name": "群聯永豐65售19",
+      "market": "TPEx"
+    },
+    {
+      "code": "73296U",
+      "name": "群聯國泰67售03",
+      "market": "TPEx"
+    },
+    {
+      "code": "73297U",
+      "name": "雙鴻國票66售06",
+      "market": "TPEx"
+    },
+    {
+      "code": "73298U",
+      "name": "世界永豐65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73299U",
+      "name": "雙鴻群益69售06",
+      "market": "TPEx"
+    },
+    {
+      "code": "73300U",
+      "name": "雙鴻群益69售07",
       "market": "TPEx"
     }
   ]
