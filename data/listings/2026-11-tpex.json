@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-19",
+  "last_updated": "2026-11-20",
   "source": "TPEx",
   "records": [
     {
@@ -5243,11 +5243,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72865U",
-      "name": "信驊永豐5B售03",
-      "market": "TPEx"
-    },
-    {
       "code": "72867U",
       "name": "旺矽富邦61售01",
       "market": "TPEx"
@@ -5295,11 +5290,6 @@
     {
       "code": "72894U",
       "name": "世界群益62售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72898U",
-      "name": "雷科國票5B售03",
       "market": "TPEx"
     },
     {
@@ -5503,11 +5493,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72940U",
-      "name": "臺慶科國票62售01",
-      "market": "TPEx"
-    },
-    {
       "code": "72941U",
       "name": "雙鴻永豐61售04",
       "market": "TPEx"
@@ -5578,11 +5563,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72955U",
-      "name": "宜鼎國票61售03",
-      "market": "TPEx"
-    },
-    {
       "code": "72956U",
       "name": "群聯國票61售05",
       "market": "TPEx"
@@ -5618,11 +5598,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72963U",
-      "name": "中美晶國票61售06",
-      "market": "TPEx"
-    },
-    {
       "code": "72964U",
       "name": "中美晶國票64售02",
       "market": "TPEx"
@@ -5645,11 +5620,6 @@
     {
       "code": "72968U",
       "name": "群聯國票64售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72969U",
-      "name": "聖暉*國票61售05",
       "market": "TPEx"
     },
     {
@@ -5680,11 +5650,6 @@
     {
       "code": "72975U",
       "name": "譜瑞國票61售01",
-      "market": "TPEx"
-    },
-    {
-      "code": "72976U",
-      "name": "順達凱基61售06",
       "market": "TPEx"
     },
     {
@@ -7305,6 +7270,21 @@
     {
       "code": "73300U",
       "name": "雙鴻群益69售07",
+      "market": "TPEx"
+    },
+    {
+      "code": "73301U",
+      "name": "博智群益69售05",
+      "market": "TPEx"
+    },
+    {
+      "code": "73302U",
+      "name": "萬潤群益65售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73303U",
+      "name": "群聯凱基65售16",
       "market": "TPEx"
     }
   ]

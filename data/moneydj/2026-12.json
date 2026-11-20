@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-19",
+  "last_updated": "2026-11-20",
   "source": "moneydj",
   "records": [
     {
@@ -74,6 +74,19 @@
       "reserve_dividend": 0.0,
       "cash_dividend": 0.063,
       "pay_date": "2026-12-29",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-02",
+      "type": "息"
+    },
+    {
+      "code": "00966B",
+      "name": "統一ESG投等債15+",
+      "earnings_dividend": 0.068,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.068,
+      "pay_date": "2026-12-24",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
@@ -338,6 +351,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-12-17",
+      "type": "息"
+    },
+    {
+      "code": "5278",
+      "name": "尚凡*",
+      "earnings_dividend": 0.30810707,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.30810707,
+      "pay_date": "2027-01-22",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-18",
       "type": "息"
     },
     {
