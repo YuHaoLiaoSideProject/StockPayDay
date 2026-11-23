@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-22",
+  "last_updated": "2026-11-23",
   "source": "TWSE",
   "records": [
     {
@@ -2315,6 +2315,11 @@
     {
       "code": "1806",
       "name": "冠軍",
+      "market": "TWSE"
+    },
+    {
+      "code": "1808",
+      "name": "潤隆",
       "market": "TWSE"
     },
     {

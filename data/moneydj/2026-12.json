@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-22",
+  "last_updated": "2026-11-23",
   "source": "moneydj",
   "records": [
     {
@@ -237,6 +237,19 @@
       "type": "息"
     },
     {
+      "code": "00400A",
+      "name": "主動國泰動能高息",
+      "earnings_dividend": 0.06,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.06,
+      "pay_date": "2027-01-05",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-08",
+      "type": "息"
+    },
+    {
       "code": "4414",
       "name": "如興",
       "earnings_dividend": 0.00915,
@@ -246,6 +259,32 @@
       "earnings_stock": 0.1,
       "reserve_stock": 0.0,
       "stock_dividend": 0.1,
+      "ex_date": "2026-12-08",
+      "type": "息"
+    },
+    {
+      "code": "4912",
+      "name": "聯德控股-KY",
+      "earnings_dividend": 1.0,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 1.0,
+      "pay_date": "2027-01-08",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-08",
+      "type": "息"
+    },
+    {
+      "code": "6277",
+      "name": "宏正",
+      "earnings_dividend": 2.3,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 2.3,
+      "pay_date": "2027-01-06",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
       "ex_date": "2026-12-08",
       "type": "息"
     },
