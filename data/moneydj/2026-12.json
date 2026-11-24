@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-23",
+  "last_updated": "2026-11-24",
   "source": "moneydj",
   "records": [
     {
@@ -351,6 +351,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-12-15",
+      "type": "息"
+    },
+    {
+      "code": "3040",
+      "name": "遠見",
+      "earnings_dividend": 3.5,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 3.5,
+      "pay_date": "2027-01-15",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-17",
       "type": "息"
     },
     {

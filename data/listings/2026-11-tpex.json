@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-23",
+  "last_updated": "2026-11-24",
   "source": "TPEx",
   "records": [
     {
@@ -5193,11 +5193,6 @@
       "market": "TPEx"
     },
     {
-      "code": "72830U",
-      "name": "元太凱基5B售03",
-      "market": "TPEx"
-    },
-    {
       "code": "72836U",
       "name": "東捷群益5B售01",
       "market": "TPEx"
@@ -5285,31 +5280,6 @@
     {
       "code": "72901U",
       "name": "德微國票5C售05",
-      "market": "TPEx"
-    },
-    {
-      "code": "72902U",
-      "name": "擎亞國票5B售03",
-      "market": "TPEx"
-    },
-    {
-      "code": "72903U",
-      "name": "群聯凱基5B售08",
-      "market": "TPEx"
-    },
-    {
-      "code": "72904U",
-      "name": "欣銓台新5B售05",
-      "market": "TPEx"
-    },
-    {
-      "code": "72905U",
-      "name": "臺慶科台新5B售05",
-      "market": "TPEx"
-    },
-    {
-      "code": "72906U",
-      "name": "博智群益5B售04",
       "market": "TPEx"
     },
     {
@@ -7270,6 +7240,76 @@
     {
       "code": "73303U",
       "name": "群聯凱基65售16",
+      "market": "TPEx"
+    },
+    {
+      "code": "73304U",
+      "name": "中美晶群益65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73305U",
+      "name": "均華群益66售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73306U",
+      "name": "威剛群益66售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73307U",
+      "name": "茂綸群益67售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73308U",
+      "name": "倚強群益65售04",
+      "market": "TPEx"
+    },
+    {
+      "code": "73309U",
+      "name": "博智群益69售07",
+      "market": "TPEx"
+    },
+    {
+      "code": "73310U",
+      "name": "鈊象群益68售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73311U",
+      "name": "新應材群益65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73312U",
+      "name": "萬潤群益66售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73313U",
+      "name": "群聯群益65售10",
+      "market": "TPEx"
+    },
+    {
+      "code": "73314U",
+      "name": "漢達群益6A售01",
+      "market": "TPEx"
+    },
+    {
+      "code": "73315U",
+      "name": "雙鴻群益65售02",
+      "market": "TPEx"
+    },
+    {
+      "code": "73316U",
+      "name": "群聯元大65售26",
+      "market": "TPEx"
+    },
+    {
+      "code": "73317U",
+      "name": "雙鴻國票66售09",
       "market": "TPEx"
     }
   ]
