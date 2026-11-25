@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-24",
+  "last_updated": "2026-11-25",
   "source": "moneydj",
   "records": [
     {
@@ -339,6 +339,19 @@
       "stock_dividend": 0.24167423,
       "ex_date": "2026-12-11",
       "type": "權息"
+    },
+    {
+      "code": "6994",
+      "name": "富威電力",
+      "earnings_dividend": 0.6067,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.6067,
+      "pay_date": "2027-03-17",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.99999999,
+      "stock_dividend": 0.99999999,
+      "ex_date": "2026-12-11",
+      "type": "息"
     },
     {
       "code": "8299",
