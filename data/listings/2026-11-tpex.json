@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-25",
+  "last_updated": "2026-11-26",
   "source": "TPEx",
   "records": [
     {
@@ -4473,6 +4473,11 @@
       "market": "TPEx"
     },
     {
+      "code": "7869",
+      "name": "宏于電機",
+      "market": "TPEx"
+    },
+    {
       "code": "8024",
       "name": "佑華",
       "market": "TPEx"
@@ -5298,23 +5303,8 @@
       "market": "TPEx"
     },
     {
-      "code": "72910U",
-      "name": "精材台新5B售06",
-      "market": "TPEx"
-    },
-    {
-      "code": "72911U",
-      "name": "威剛元大5B售16",
-      "market": "TPEx"
-    },
-    {
       "code": "72912U",
       "name": "良維群益61售02",
-      "market": "TPEx"
-    },
-    {
-      "code": "72913U",
-      "name": "威剛群益5B售04",
       "market": "TPEx"
     },
     {

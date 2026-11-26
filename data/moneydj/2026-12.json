@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-25",
+  "last_updated": "2026-11-26",
   "source": "moneydj",
   "records": [
     {
@@ -289,11 +289,24 @@
       "type": "息"
     },
     {
+      "code": "00940",
+      "name": "元大台灣價值高息",
+      "earnings_dividend": 0.06,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.06,
+      "pay_date": "2027-01-04",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-10",
+      "type": "息"
+    },
+    {
       "code": "2330",
       "name": "台積電",
-      "earnings_dividend": 7.0,
+      "earnings_dividend": 7.00000137,
       "reserve_dividend": 0.0,
-      "cash_dividend": 7.0,
+      "cash_dividend": 7.00000137,
       "pay_date": "2027-01-07",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
@@ -308,6 +321,19 @@
       "reserve_dividend": 0.0,
       "cash_dividend": 3.0,
       "pay_date": "2027-01-07",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-10",
+      "type": "息"
+    },
+    {
+      "code": "7951",
+      "name": "大易橙",
+      "earnings_dividend": 0.0,
+      "reserve_dividend": 4.0,
+      "cash_dividend": 4.0,
+      "pay_date": "2026-12-30",
       "earnings_stock": 0.0,
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
@@ -455,6 +481,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-12-21",
+      "type": "息"
+    },
+    {
+      "code": "2753",
+      "name": "八方雲集",
+      "earnings_dividend": 4.95238093,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 4.95238093,
+      "pay_date": "2027-01-20",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-23",
       "type": "息"
     },
     {
