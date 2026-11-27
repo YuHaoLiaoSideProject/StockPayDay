@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-26",
+  "last_updated": "2026-11-27",
   "source": "moneydj",
   "records": [
     {
@@ -393,6 +393,19 @@
       "type": "息"
     },
     {
+      "code": "01010T",
+      "name": "京城樂富R1",
+      "earnings_dividend": 0.09014664085,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 0.09014664085,
+      "pay_date": "2027-01-07",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-17",
+      "type": "息"
+    },
+    {
       "code": "3040",
       "name": "遠見",
       "earnings_dividend": 3.5,
@@ -494,6 +507,19 @@
       "reserve_stock": 0.0,
       "stock_dividend": 0.0,
       "ex_date": "2026-12-23",
+      "type": "息"
+    },
+    {
+      "code": "6629",
+      "name": "泰金-KY",
+      "earnings_dividend": 4.8,
+      "reserve_dividend": 0.0,
+      "cash_dividend": 4.8,
+      "pay_date": "2027-02-01",
+      "earnings_stock": 0.0,
+      "reserve_stock": 0.0,
+      "stock_dividend": 0.0,
+      "ex_date": "2026-12-28",
       "type": "息"
     },
     {
